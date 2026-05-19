@@ -1,0 +1,18 @@
+{
+  "home": {
+    "hero": null,
+    "sections": []
+  },
+  "cases": [
+    {
+      "slug": "claude",
+      "title": "Claude",
+      "hero": "case-claude-hero.png",
+      "sections": [
+        "case-claude-section-01.png",
+        "case-claude-section-02.png",
+        "case-claude-section-03.png"
+      ]
+    }
+  ]
+}
