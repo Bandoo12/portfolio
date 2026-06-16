@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useInView, useMotionValue, animate, AnimatePresence } from 'framer-motion';
+import { motion, useInView, useMotionValue, animate, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
 import { CaseTabs } from '@/components/case/CaseTabs';
 
@@ -512,31 +512,152 @@ function AnalyticsDashboardScreen() {
   );
 }
 
+/* ─── Parallax Hero (twelve.ru style: sky bg + building silhouette) ─── */
+function ParallaxHero() {
+  const { scrollY } = useScroll();
+  const skyY = useTransform(scrollY, [0, 700], [0, -150]);
+  const bldY = useTransform(scrollY, [0, 700], [0, -55]);
+  const textO = useTransform(scrollY, [0, 280], [1, 0]);
+  const textY = useTransform(scrollY, [0, 280], [0, -36]);
+
+  const lit = (r: number, c: number) => ((r * 13 + c * 7) % 11) > 3;
+
+  return (
+    <div style={{ position: 'relative', height: '100vh', minHeight: 700, overflow: 'hidden' }}>
+
+      {/* SKY LAYER */}
+      <motion.div style={{
+        position: 'absolute', top: '-10%', left: 0, right: 0, bottom: 0,
+        background: 'linear-gradient(180deg,#3A7DBF 0%,#5FA3D4 14%,#89BEE0 34%,#B4D5EA 54%,#CDE5F2 70%,#DFF0F8 82%,#EEF7FC 100%)',
+        y: skyY,
+      }}>
+        <div style={{ position: 'absolute', top: '7%', left: '4%', width: 290, height: 90, background: 'rgba(255,255,255,0.52)', borderRadius: '50%', filter: 'blur(30px)' }} />
+        <div style={{ position: 'absolute', top: '4%', left: '8%', width: 170, height: 60, background: 'rgba(255,255,255,0.62)', borderRadius: '50%', filter: 'blur(18px)' }} />
+        <div style={{ position: 'absolute', top: '13%', left: '22%', width: 130, height: 50, background: 'rgba(255,255,255,0.38)', borderRadius: '50%', filter: 'blur(22px)' }} />
+        <div style={{ position: 'absolute', top: '5%', right: '8%', width: 240, height: 80, background: 'rgba(255,255,255,0.46)', borderRadius: '50%', filter: 'blur(26px)' }} />
+        <div style={{ position: 'absolute', top: '20%', right: '22%', width: 160, height: 55, background: 'rgba(255,255,255,0.32)', borderRadius: '50%', filter: 'blur(20px)' }} />
+        <div style={{ position: 'absolute', top: '10%', left: '38%', width: 100, height: 40, background: 'rgba(255,255,255,0.28)', borderRadius: '50%', filter: 'blur(16px)' }} />
+      </motion.div>
+
+      {/* BUILDING SILHOUETTE */}
+      <motion.div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, y: bldY }}>
+        <svg viewBox="0 0 1400 680" xmlns="http://www.w3.org/2000/svg"
+          preserveAspectRatio="xMidYMax meet"
+          style={{ width: '100%', display: 'block', maxHeight: '74vh' }}>
+
+          {/* ── Massing ── */}
+          <rect x={0}    y={560} width={150} height={120} fill="#0C1220" />
+          <rect x={100}  y={468} width={210} height={212} fill="#0F1628" />
+          <rect x={248}  y={355} width={155} height={325} fill="#0C1220" />
+          <rect x={358}  y={238} width={125} height={442} fill="#0F1628" />
+          <rect x={438}  y={18}  width={368} height={662} fill="#0D1424" />
+          <rect x={780}  y={272} width={132} height={408} fill="#0F1628" />
+          <rect x={870}  y={375} width={158} height={305} fill="#0C1220" />
+          <rect x={990}  y={458} width={198} height={222} fill="#0F1628" />
+          <rect x={1148} y={538} width={252} height={142} fill="#0C1220" />
+
+          {/* Roofline details */}
+          <rect x={438} y={18}  width={368} height={5}  fill="#182038" />
+          <rect x={358} y={238} width={125} height={4}  fill="#182038" />
+          <rect x={780} y={272} width={132} height={4}  fill="#182038" />
+          <rect x={248} y={355} width={155} height={3}  fill="#182038" />
+          <rect x={870} y={375} width={158} height={3}  fill="#182038" />
+
+          {/* ── Windows: Central tower 23×6 ── */}
+          {Array.from({ length: 23 }, (_, r) =>
+            Array.from({ length: 6 }, (_, c) => (
+              <rect key={`ct-${r}-${c}`} x={453 + c * 57} y={38 + r * 27}
+                width={30} height={16} rx={2}
+                fill={lit(r, c) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
+            ))
+          ).flat()}
+
+          {/* ── Windows: Left high block 8×2 ── */}
+          {Array.from({ length: 8 }, (_, r) =>
+            Array.from({ length: 2 }, (_, c) => (
+              <rect key={`lh-${r}-${c}`} x={372 + c * 52} y={256 + r * 27}
+                width={28} height={16} rx={2}
+                fill={lit(r + 5, c + 2) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
+            ))
+          ).flat()}
+
+          {/* ── Windows: Left mid block 5×2 ── */}
+          {Array.from({ length: 5 }, (_, r) =>
+            Array.from({ length: 2 }, (_, c) => (
+              <rect key={`lm-${r}-${c}`} x={262 + c * 54} y={374 + r * 27}
+                width={28} height={16} rx={2}
+                fill={lit(r + 3, c) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
+            ))
+          ).flat()}
+
+          {/* ── Windows: Right high block 9×2 ── */}
+          {Array.from({ length: 9 }, (_, r) =>
+            Array.from({ length: 2 }, (_, c) => (
+              <rect key={`rh-${r}-${c}`} x={793 + c * 56} y={292 + r * 27}
+                width={28} height={16} rx={2}
+                fill={lit(r + 7, c + 4) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
+            ))
+          ).flat()}
+
+          {/* ── Windows: Right mid block 5×2 ── */}
+          {Array.from({ length: 5 }, (_, r) =>
+            Array.from({ length: 2 }, (_, c) => (
+              <rect key={`rm-${r}-${c}`} x={884 + c * 58} y={394 + r * 27}
+                width={28} height={16} rx={2}
+                fill={lit(r + 2, c + 5) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
+            ))
+          ).flat()}
+
+          {/* Ground shadow */}
+          <rect x={0} y={674} width={1400} height={6} fill="#06090F" />
+        </svg>
+      </motion.div>
+
+      {/* FADE TO DARK */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 260,
+        background: 'linear-gradient(to bottom, transparent, #04091E)',
+        pointerEvents: 'none', zIndex: 5 }} />
+
+      {/* TEXT */}
+      <motion.div style={{
+        position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+        zIndex: 10, opacity: textO, y: textY,
+      }}>
+        <div className="mx-auto max-w-[1512px] px-11 w-full"
+          style={{ display: 'grid', gridTemplateColumns: '361px 1fr', gap: 148, paddingBottom: '18vh' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <h1 style={{ fontSize: 48, fontWeight: 400, lineHeight: 1.2, color: 'rgba(5,10,28,0.45)', margin: 0 }}>PropTech</h1>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {['UX Research', 'AI-поиск', 'Mobile', 'Web', '2021–2022'].map(t => (
+                <span key={t} style={{ height: 44, padding: '0 16px', borderRadius: 12,
+                  display: 'flex', alignItems: 'center', fontSize: 18, fontWeight: 500,
+                  border: '1px solid rgba(5,10,28,0.14)', color: 'rgba(5,10,28,0.6)',
+                  background: 'rgba(255,255,255,0.38)', backdropFilter: 'blur(8px)' }}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+            <h2 style={{ fontSize: 64, fontWeight: 400, lineHeight: 1.15, color: '#080D1C', margin: 0 }}>
+              Персонализированный поиск недвижимости
+            </h2>
+            <p style={{ fontSize: 22, fontWeight: 400, color: 'rgba(8,13,28,0.58)', maxWidth: 720, lineHeight: 1.6, margin: 0 }}>
+              Заменили 40+ числовых фильтров на сценарный онбординг и персональную ленту с AI-скорингом. Конверсия в звонок агенту выросла в 2.8× за три месяца.
+            </p>
+          </div>
+        </div>
+      </motion.div>
+
+    </div>
+  );
+}
+
 /* ─── Page ─── */
 export default function DomclickPage() {
   return (
     <div style={{ background: BG, color: '#fff', fontFamily: 'var(--font-manrope, Manrope, sans-serif)', minHeight: '100vh' }}>
       <CaseTabs />
 
-      {/* HERO */}
-      <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-[72px]" style={{ display: 'grid', gridTemplateColumns: '361px 1fr', gap: 148 }}>
-        <motion.div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
-          <motion.h1 variants={fUp} style={{ fontSize: 48, fontWeight: 400, lineHeight: 1.2, opacity: 0.5, margin: 0 }}>PropTech</motion.h1>
-          <motion.div variants={fUp} style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {['UX Research', 'AI-поиск', 'Mobile', 'Web', '2021–2022'].map(t => (
-              <span key={t} style={{ height: 44, padding: '0 16px', borderRadius: 12, display: 'flex', alignItems: 'center', fontSize: 18, fontWeight: 500, border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>{t}</span>
-            ))}
-          </motion.div>
-        </motion.div>
-        <motion.div style={{ display: 'flex', flexDirection: 'column', gap: 32 }} initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
-          <motion.h2 variants={fUp} style={{ fontSize: 64, fontWeight: 400, lineHeight: 1.15, margin: 0 }}>
-            Персонализированный поиск недвижимости
-          </motion.h2>
-          <motion.p variants={fUp} style={{ fontSize: 22, fontWeight: 400, color: 'rgba(255,255,255,0.65)', maxWidth: 720, lineHeight: 1.6, margin: 0 }}>
-            Заменили 40+ числовых фильтров на сценарный онбординг и персональную ленту с AI-скорингом. Конверсия в звонок агенту выросла в 2.8× за три месяца.
-          </motion.p>
-        </motion.div>
-      </section>
+      <ParallaxHero />
 
       {/* KEY VISUAL — Property Card (ref-style) */}
       <motion.section className="mx-auto max-w-[1512px] px-11 pb-[72px]"
