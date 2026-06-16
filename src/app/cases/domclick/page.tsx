@@ -4,8 +4,9 @@ import { motion, useInView, useMotionValue, animate, AnimatePresence } from 'fra
 import { useRef, useEffect, useState } from 'react';
 import { CaseTabs } from '@/components/case/CaseTabs';
 
-const A = '#4361EE';
-const BG = '#04091E';
+const A = '#B5EE50';        // lime green accent
+const AD = '#1A1A1A';       // dark text on lime
+const BG = '#04091E';       // portfolio dark bg
 const ease: [number, number, number, number] = [0.33, 1, 0.68, 1];
 const fUp = {
   hidden: { opacity: 0, y: 32 },
@@ -18,15 +19,10 @@ function Mac({ url, children }: { url: string; children: React.ReactNode }) {
     <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.09)', boxShadow: '0 48px 120px rgba(0,0,0,0.7)' }}>
       <div style={{ height: 44, background: '#1C1F2E', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 8 }}>
         <div style={{ display: 'flex', gap: 6 }}>
-          {['#FF5F57', '#FEBC2E', '#28C840'].map(c => (
-            <div key={c} style={{ width: 12, height: 12, borderRadius: '50%', background: c }} />
-          ))}
+          {['#FF5F57', '#FEBC2E', '#28C840'].map(c => <div key={c} style={{ width: 12, height: 12, borderRadius: '50%', background: c }} />)}
         </div>
         <div style={{ flex: 1, margin: '0 16px', height: 26, background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', alignItems: 'center', padding: '0 10px', gap: 6 }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-            <path d="M2 12h20M12 2c-3 3-4 6-4 10s1 7 4 10M12 2c3 3 4 6 4 10s-1 7-4 10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-          </svg>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" /><path d="M2 12h20M12 2c-3 3-4 6-4 10s1 7 4 10M12 2c3 3 4 6 4 10s-1 7-4 10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" /></svg>
           <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace' }}>{url}</span>
         </div>
       </div>
@@ -38,8 +34,7 @@ function Mac({ url, children }: { url: string; children: React.ReactNode }) {
 /* ─── Research row ─── */
 function Row({ label, children, i = 0 }: { label: string; children: React.ReactNode; i?: number }) {
   return (
-    <motion.div
-      style={{ display: 'flex', alignItems: 'flex-start', padding: '40px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+    <motion.div style={{ display: 'flex', alignItems: 'flex-start', padding: '40px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
       initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }}
       transition={{ duration: 0.6, delay: i * 0.08, ease }}>
       <span style={{ fontSize: 40, fontWeight: 400, flexShrink: 0, minWidth: 360 }}>{label}</span>
@@ -93,86 +88,208 @@ function Stat({ stat, label, desc, i }: { stat: string; label: string; desc: str
 }
 
 /* ══════════════════════════════════════════
-   SCREEN 1 — Property Grid  (ref 1 + 2 style)
-   Light white UI, card grid, notification toast
+   SCREEN 1 — Property Card  (ref style)
+   Lime green header, agent card, tabs, specs list, AI bar
    ══════════════════════════════════════════ */
-function PropertyGridScreen() {
-  const [showToast, setShowToast] = useState(false);
+function PropertyCardScreen() {
+  const [activeTab, setActiveTab] = useState(0);
   const [activeCard, setActiveCard] = useState(0);
-  const [query, setQuery] = useState('');
-  const [del, setDel] = useState(false);
-  const [pi, setPi] = useState(0);
-  const phrases = ['Квартира для семьи с детьми', 'Новостройка рядом с метро'];
+  const tabs = [
+    { icon: '🏠', label: 'Купить' },
+    { icon: '💰', label: 'Цена' },
+    { icon: '📅', label: 'Сроки' },
+    { icon: '👁', label: 'Просмотр' },
+  ];
+  const cards = [
+    { label: 'Базовое', sub: 'Полнота 80% · Высокое' },
+    { label: 'Сделки', sub: 'Полнота' },
+    { label: 'Ремонт', sub: 'Полнота' },
+    { label: 'Особенности', sub: '' },
+  ];
+  const specs = [
+    { icon: '🏢', key: 'Этаж', val: 'Высокий (17 всего)' },
+    { icon: '☀️', key: 'Ориентация', val: 'Юго-восток' },
+    { icon: '🚪', key: 'Планировка', val: '2-к, 1 санузел, 48 м²' },
+    { icon: '📐', key: 'Площадь', val: '48 м²' },
+  ];
+
+  return (
+    <div style={{ background: '#fff', fontFamily: 'inherit' }}>
+      {/* ── Lime green header ── */}
+      <div style={{ background: A, padding: '22px 24px 0', position: 'relative', minHeight: 180 }}>
+        {/* Address */}
+        <p style={{ fontSize: 13, fontWeight: 500, color: 'rgba(0,0,0,0.55)', margin: '0 0 6px' }}>Тверская ул. | 48 м²</p>
+
+        {/* Price row */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+            <span style={{ fontSize: 52, fontWeight: 900, color: AD, lineHeight: 1, letterSpacing: -2 }}>12 400</span>
+            <div>
+              <span style={{ fontSize: 22, fontWeight: 700, color: AD }}>₽</span>
+              <div style={{ marginTop: 2 }}>
+                <span style={{ fontSize: 11, background: AD, color: A, padding: '2px 8px', borderRadius: 6, fontWeight: 700, letterSpacing: 0.3 }}>Новинка</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Agent pill */}
+          <motion.div initial={{ opacity: 0, scale: 0.9, x: 12 }} animate={{ opacity: 1, scale: 1, x: 0 }} transition={{ delay: 0.4, type: 'spring', stiffness: 260, damping: 20 }}
+            style={{ background: '#fff', borderRadius: 18, padding: '10px 14px', boxShadow: '0 8px 32px rgba(0,0,0,0.18)', display: 'flex', alignItems: 'center', gap: 10, marginTop: 4 }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: `${A}40`, border: `2px solid ${A}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>👤</div>
+            <div>
+              <p style={{ fontSize: 13, fontWeight: 700, color: AD, margin: '0 0 1px' }}>Агент</p>
+              <p style={{ fontSize: 10, color: '#6B7280', margin: '0 0 3px' }}>6 лет | 113 сделок</p>
+              <span style={{ fontSize: 9, background: '#FEF3C7', color: '#92400E', padding: '1px 6px', borderRadius: 4, fontWeight: 700 }}>★ Топ</span>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: 8, marginTop: 20, paddingBottom: 0 }}>
+          {tabs.map((t, i) => (
+            <motion.button key={t.label} onClick={() => setActiveTab(i)}
+              whileTap={{ scale: 0.95 }}
+              style={{ padding: '8px 16px', borderRadius: 24, fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer', border: 'none', transition: 'all 0.2s',
+                background: activeTab === i ? AD : 'rgba(0,0,0,0.12)',
+                color: activeTab === i ? A : AD }}>
+              <span style={{ fontSize: 14 }}>{t.icon}</span>{t.label}
+            </motion.button>
+          ))}
+        </div>
+
+        {/* Bottom curve cutout */}
+        <div style={{ height: 20, background: '#fff', marginLeft: -24, marginRight: -24, borderRadius: '0 0 0 0', marginTop: 0, clipPath: 'ellipse(60% 100% at 50% 100%)' }} />
+      </div>
+
+      {/* ── Stacked info cards ── */}
+      <div style={{ padding: '4px 24px 0', position: 'relative' }}>
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+          {cards.map((c, i) => (
+            <motion.div key={c.label} onClick={() => setActiveCard(i)} whileTap={{ scale: 0.97 }}
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.08, ease }}
+              style={{ padding: '12px 16px', borderRadius: 16, cursor: 'pointer', flexShrink: 0, minWidth: 120, transition: 'all 0.2s',
+                background: activeCard === i ? '#fff' : '#F4F4F4',
+                boxShadow: activeCard === i ? '0 4px 20px rgba(0,0,0,0.12)' : 'none',
+                border: activeCard === i ? `1.5px solid ${A}` : '1.5px solid transparent' }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: AD, margin: '0 0 2px' }}>{c.label}</p>
+              {c.sub && <p style={{ fontSize: 11, color: '#6B7280', margin: 0 }}>{c.sub}</p>}
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Spec list ── */}
+      <div style={{ padding: '16px 24px' }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: AD, margin: '0 0 12px' }}>Базовая информация 80%</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {specs.map((s, i) => (
+            <motion.div key={s.key}
+              initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.08, ease }}
+              style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 0', borderBottom: i < specs.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+              <span style={{ fontSize: 16, width: 20, textAlign: 'center' }}>{s.icon}</span>
+              <span style={{ fontSize: 13, color: '#9CA3AF', minWidth: 100, fontWeight: 500 }}>{s.key}</span>
+              <span style={{ fontSize: 13, color: AD, fontWeight: 500 }}>{s.val}</span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── AI assistant bar ── */}
+      <div style={{ padding: '0 16px 16px' }}>
+        <div style={{ borderTop: '1px solid #F3F4F6', paddingTop: 12, marginBottom: 8, display: 'flex', gap: 8, overflowX: 'auto' }}>
+          {['Могу ли я купить это жильё?', 'Что важно покупателям?'].map((q, i) => (
+            <span key={i} style={{ padding: '6px 12px', borderRadius: 20, fontSize: 11, color: '#374151', background: '#F9FAFB', border: '1px solid #E5E7EB', whiteSpace: 'nowrap', cursor: 'pointer' }}>{q}</span>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', background: '#F9FAFB', borderRadius: 24, border: '1px solid #E5E7EB' }}>
+          <svg width="16" height="20" viewBox="0 0 16 20" fill="none"><rect x="5" y="1" width="6" height="10" rx="3" stroke="#9CA3AF" strokeWidth="1.5" /><path d="M1 9c0 3.866 3.134 7 7 7s7-3.134 7-7M8 16v3" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" /></svg>
+          <span style={{ fontSize: 12, color: '#9CA3AF', flex: 1 }}>Нажмите и держите, чтобы узнать...</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.02 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════
+   SCREEN 2 — Listing Grid  (card search)
+   Lime green accents, property cards with score
+   ══════════════════════════════════════════ */
+function PropertySearchScreen() {
+  const [activeCard, setActiveCard] = useState(0);
+  const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
-    const p = phrases[pi];
-    if (!del && query.length < p.length) { const t = setTimeout(() => setQuery(p.slice(0, query.length + 1)), 52); return () => clearTimeout(t); }
-    if (!del && query.length === p.length) { const t = setTimeout(() => setDel(true), 2200); return () => clearTimeout(t); }
-    if (del && query.length > 0) { const t = setTimeout(() => setQuery(query.slice(0, -1)), 26); return () => clearTimeout(t); }
-    if (del && query.length === 0) { setDel(false); setPi((pi + 1) % phrases.length); }
-  });
-
-  useEffect(() => {
-    const t = setTimeout(() => setShowToast(true), 2400);
+    const t = setTimeout(() => setShowToast(true), 2200);
     return () => clearTimeout(t);
   }, []);
 
   const props = [
-    { price: '12.4 млн ₽', addr: 'Тверская ул., 24', meta: '2-к · 48 м² · 8/17', score: 97, badge: 'Новинка', color: A, type: 'Новостройка' },
-    { price: '8.1 млн ₽', addr: 'Хамовнический пер., 7', meta: '1-к · 35 м² · 4/9', score: 84, badge: 'ЖК', color: '#10B981', type: 'Вторичка' },
-    { price: '19.9 млн ₽', addr: 'Арбат ул., 16', meta: '3-к · 72 м² · 12/22', score: 91, badge: 'Хит', color: '#F59E0B', type: 'Новостройка' },
-    { price: '6.7 млн ₽', addr: 'Бутово, ул. Мичурина', meta: 'Студия · 28 м² · 2/9', score: 71, badge: '', color: '#8B5CF6', type: 'Вторичка' },
+    { price: '12.4 млн ₽', addr: 'Тверская, 24', meta: '2-к · 48 м² · 8/17', score: 97, badge: 'AI Pick', tag: 'Новостройка', scoreColor: '#16A34A' },
+    { price: '8.1 млн ₽', addr: 'Хамовники, 7', meta: '1-к · 35 м² · 4/9', score: 84, badge: '', tag: 'Вторичка', scoreColor: '#4361EE' },
+    { price: '19.9 млн ₽', addr: 'Арбат, 16', meta: '3-к · 72 м² · 12/22', score: 91, badge: 'Хит', tag: 'Новостройка', scoreColor: '#16A34A' },
+    { price: '6.7 млн ₽', addr: 'Бутово, 12', meta: 'Студия · 28 м²', score: 71, badge: '', tag: 'Вторичка', scoreColor: '#9CA3AF' },
   ];
 
   return (
-    <div style={{ background: '#F1F4F9', position: 'relative', overflow: 'hidden' }}>
-      {/* Nav */}
-      <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '0 20px', height: 52, display: 'flex', alignItems: 'center', gap: 20 }}>
-        <span style={{ fontSize: 22, fontWeight: 800, color: '#111827', letterSpacing: -1 }}>P.</span>
-        <div style={{ display: 'flex', gap: 2 }}>
-          {['Купить', 'Снять', 'Ипотека'].map((tab, i) => (
-            <span key={tab} style={{ padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: i === 0 ? 600 : 400, background: i === 0 ? A : 'transparent', color: i === 0 ? '#fff' : '#6B7280', cursor: 'pointer' }}>{tab}</span>
-          ))}
-        </div>
+    <div style={{ background: '#F4F7F2', position: 'relative', overflow: 'hidden' }}>
+      {/* Top bar */}
+      <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '0 20px', height: 50, display: 'flex', alignItems: 'center', gap: 16 }}>
+        <span style={{ fontSize: 20, fontWeight: 900, color: AD, letterSpacing: -1 }}>P.</span>
         <div style={{ flex: 1, height: 32, background: '#F4F6FA', borderRadius: 8, display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8, border: '1px solid #E5E7EB' }}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#9CA3AF" strokeWidth="2" /><path d="M20 20l-3-3" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" /></svg>
-          <span style={{ fontSize: 12, color: '#9CA3AF', overflow: 'hidden', whiteSpace: 'nowrap' }}>{query}<span style={{ opacity: 0.6 }}>|</span></span>
+          <span style={{ fontSize: 12, color: '#9CA3AF' }}>Квартира для семьи...</span>
         </div>
-        <div style={{ width: 30, height: 30, borderRadius: '50%', background: A, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: '#fff', fontWeight: 700, flexShrink: 0 }}>А</div>
+        <div style={{ width: 32, height: 32, borderRadius: 10, background: A, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M7 12h10M10 18h4" stroke={AD} strokeWidth="2" strokeLinecap="round" /></svg>
+        </div>
       </div>
 
-      {/* Filter chips */}
+      {/* Filter strip */}
       <div style={{ background: '#fff', borderBottom: '1px solid #E5E7EB', padding: '8px 20px', display: 'flex', gap: 6 }}>
-        {['Новостройки', '2–3 комн.', 'до 18 млн', 'Метро ≤10 мин', '✦ AI-подбор'].map((f, i) => (
-          <span key={f} style={{ padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500, background: i === 0 || i === 4 ? A : 'transparent', color: i === 0 || i === 4 ? '#fff' : '#374151', border: `1px solid ${i === 0 || i === 4 ? A : '#D1D5DB'}`, whiteSpace: 'nowrap', cursor: 'pointer' }}>{f}</span>
+        {['Новостройки', '2–3 комн.', 'до 18 млн', '≤10 мин метро'].map((f, i) => (
+          <span key={f} style={{ padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
+            background: i === 0 ? A : 'transparent', color: i === 0 ? AD : '#374151',
+            border: `1px solid ${i === 0 ? A : '#D1D5DB'}`, whiteSpace: 'nowrap' }}>{f}</span>
         ))}
       </div>
 
+      {/* Results count */}
+      <div style={{ padding: '12px 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: AD }}>2 024 объявления</span>
+        <span style={{ fontSize: 11, color: '#9CA3AF' }}>AI-сортировка ✦</span>
+      </div>
+
       {/* Card grid */}
-      <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ padding: '4px 16px 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
         {props.map((p, i) => (
           <motion.div key={i}
-            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.1, ease }}
-            onClick={() => setActiveCard(i)}
-            style={{ background: '#fff', borderRadius: 14, overflow: 'hidden', cursor: 'pointer',
+            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.1, ease }}
+            onClick={() => setActiveCard(i)} whileHover={{ y: -2 }}
+            style={{ background: '#fff', borderRadius: 16, overflow: 'hidden', cursor: 'pointer',
               border: `2px solid ${activeCard === i ? A : '#E5E7EB'}`,
-              boxShadow: activeCard === i ? `0 0 0 3px ${A}20, 0 4px 20px ${A}12` : '0 2px 8px rgba(0,0,0,0.05)',
-              transition: 'border-color 0.2s, box-shadow 0.2s' }}>
-            <div style={{ height: 80, background: `linear-gradient(135deg, ${p.color}18 0%, ${p.color}06 100%)`, position: 'relative', borderBottom: '1px solid #F3F4F6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="36" height="36" viewBox="0 0 40 40" fill="none">
-                <path d="M4 20L20 6L36 20V36H26V28H14V36H4V20Z" fill={p.color} fillOpacity="0.18" stroke={p.color} strokeOpacity="0.5" strokeWidth="1.5" strokeLinejoin="round" />
-                <rect x="16" y="27" width="8" height="9" rx="1" fill={p.color} fillOpacity="0.35" />
+              boxShadow: activeCard === i ? `0 0 0 3px ${A}30, 0 4px 16px rgba(0,0,0,0.08)` : '0 2px 8px rgba(0,0,0,0.04)',
+              transition: 'all 0.2s ease' }}>
+            {/* Visual top */}
+            <div style={{ height: 76, background: activeCard === i ? `${A}18` : '#F9FAFB', borderBottom: '1px solid #F3F4F6', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="34" height="34" viewBox="0 0 40 40" fill="none">
+                <path d="M4 20L20 6L36 20V36H26V28H14V36H4V20Z"
+                  fill={activeCard === i ? A : '#E5E7EB'}
+                  stroke={activeCard === i ? '#7BBF2A' : '#D1D5DB'} strokeWidth="1.5" strokeLinejoin="round" />
+                <rect x="16" y="27" width="8" height="9" rx="1" fill={activeCard === i ? '#7BBF2A' : '#D1D5DB'} />
               </svg>
-              <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, padding: '2px 7px', borderRadius: 6, background: p.color, color: '#fff', fontWeight: 700 }}>{p.type}</span>
-              {p.badge && <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, padding: '2px 7px', borderRadius: 6, background: '#F3F4F6', color: '#374151', fontWeight: 600 }}>{p.badge}</span>}
-              <div style={{ position: 'absolute', bottom: 8, right: 8, display: 'flex', alignItems: 'center', gap: 4, padding: '3px 7px', borderRadius: 8, background: 'white', boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
-                <span style={{ fontSize: 9, color: '#6B7280', fontWeight: 500 }}>AI</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: p.score >= 90 ? '#10B981' : p.score >= 80 ? A : '#9CA3AF' }}>{p.score}%</span>
+              <span style={{ position: 'absolute', top: 8, left: 8, fontSize: 9, padding: '2px 6px', borderRadius: 5, background: '#1A1A1A', color: A, fontWeight: 700 }}>{p.tag}</span>
+              {p.badge && <span style={{ position: 'absolute', top: 8, right: 8, fontSize: 9, padding: '2px 6px', borderRadius: 5, background: A, color: AD, fontWeight: 700 }}>{p.badge}</span>}
+              {/* Score */}
+              <div style={{ position: 'absolute', bottom: 8, right: 8, padding: '2px 7px', borderRadius: 8, background: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                <span style={{ fontSize: 9, color: '#9CA3AF' }}>AI</span>
+                <span style={{ fontSize: 11, fontWeight: 800, color: p.scoreColor }}>{p.score}%</span>
               </div>
             </div>
+            {/* Card body */}
             <div style={{ padding: '10px 12px' }}>
-              <p style={{ fontSize: 14, fontWeight: 700, color: '#111827', margin: '0 0 2px' }}>{p.price}</p>
-              <p style={{ fontSize: 10, color: '#9CA3AF', margin: '0 0 4px' }}>{p.addr}</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: AD, margin: '0 0 2px' }}>{p.price}</p>
+              <p style={{ fontSize: 10, color: '#9CA3AF', margin: '0 0 3px' }}>{p.addr}</p>
               <p style={{ fontSize: 11, color: '#374151', margin: 0 }}>{p.meta}</p>
             </div>
           </motion.div>
@@ -182,17 +299,14 @@ function PropertyGridScreen() {
       {/* Toast */}
       <AnimatePresence>
         {showToast && (
-          <motion.div
-            initial={{ opacity: 0, y: -16, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: -10, x: '-50%' }}
-            style={{ position: 'absolute', top: 62, left: '50%', background: '#111827', borderRadius: 14, padding: '10px 14px', boxShadow: '0 16px 48px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', gap: 10, zIndex: 10, minWidth: 240 }}>
-            <div style={{ width: 32, height: 32, borderRadius: 10, background: `${A}22`, border: `1px solid ${A}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🏠</div>
+          <motion.div initial={{ opacity: 0, y: -20, x: '-50%' }} animate={{ opacity: 1, y: 0, x: '-50%' }} exit={{ opacity: 0 }}
+            style={{ position: 'absolute', top: 58, left: '50%', background: '#111827', borderRadius: 14, padding: '10px 14px', boxShadow: '0 16px 40px rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', gap: 10, zIndex: 10, minWidth: 230 }}>
+            <div style={{ width: 30, height: 30, borderRadius: 9, background: `${A}25`, border: `1px solid ${A}50`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>🏠</div>
             <div style={{ flex: 1 }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#fff', margin: '0 0 1px' }}>Новое объявление</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#fff', margin: '0 0 1px' }}>Новое по запросу</p>
               <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)', margin: 0 }}>Тверская · 12.4 млн · AI 97%</p>
             </div>
-            <div style={{ padding: '4px 10px', borderRadius: 8, background: A, fontSize: 10, color: '#fff', fontWeight: 600, cursor: 'pointer', flexShrink: 0 }}>Открыть</div>
+            <div style={{ padding: '4px 10px', borderRadius: 8, background: A, fontSize: 10, color: AD, fontWeight: 700 }}>Открыть</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -201,157 +315,53 @@ function PropertyGridScreen() {
 }
 
 /* ══════════════════════════════════════════
-   SCREEN 2 — Property Detail  (ref 3 style)
-   Split: white left panel + dark right AI panel
-   ══════════════════════════════════════════ */
-function PropertyDetailScreen() {
-  const [tab, setTab] = useState(0);
-  const tabs = ['Описание', 'Планировка', 'Ипотека'];
-
-  return (
-    <div style={{ display: 'flex', background: '#F1F4F9', minHeight: 380 }}>
-      {/* Left: property info */}
-      <div style={{ flex: 1, padding: '20px 22px', background: '#F1F4F9', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14 }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M10 7l-5 5 5 5" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          <span style={{ fontSize: 11, color: '#9CA3AF' }}>Результаты</span>
-          <span style={{ fontSize: 11, color: '#D1D5DB' }}>/</span>
-          <span style={{ fontSize: 11, color: '#374151', fontWeight: 500 }}>Тверская 24</span>
-        </div>
-
-        <p style={{ fontSize: 24, fontWeight: 800, color: '#111827', margin: '0 0 3px' }}>12 400 000 ₽</p>
-        <p style={{ fontSize: 12, color: '#6B7280', margin: '0 0 12px' }}>Тверская ул., 24 · Метро Тверская, 7 мин</p>
-
-        <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
-          {['2-к', '48 м²', '8/17 эт', 'Новостройка', '2024'].map(f => (
-            <span key={f} style={{ padding: '3px 10px', borderRadius: 20, fontSize: 11, background: '#fff', border: '1px solid #E5E7EB', color: '#374151', fontWeight: 500 }}>{f}</span>
-          ))}
-        </div>
-
-        {/* Photo grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gridTemplateRows: '70px 70px', gap: 6, marginBottom: 14 }}>
-          <div style={{ gridRow: '1 / 3', background: `linear-gradient(135deg, ${A}18 0%, ${A}06 100%)`, borderRadius: 10, border: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
-              <path d="M4 20L20 6L36 20V36H26V28H14V36H4V20Z" fill={A} fillOpacity="0.18" stroke={A} strokeOpacity="0.4" strokeWidth="1.5" />
-            </svg>
-          </div>
-          <div style={{ background: '#E0F2FE', borderRadius: 10, border: '1px solid #E5E7EB' }} />
-          <div style={{ background: '#FEF9C3', borderRadius: 10, border: '1px solid #E5E7EB' }} />
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid #E5E7EB', marginBottom: 10 }}>
-          {tabs.map((t, i) => (
-            <button key={t} onClick={() => setTab(i)}
-              style={{ padding: '6px 14px', fontSize: 12, fontWeight: tab === i ? 600 : 400, color: tab === i ? A : '#9CA3AF',
-                borderBottom: `2px solid ${tab === i ? A : 'transparent'}`, background: 'none', border: 'none',
-                borderBottomStyle: 'solid', cursor: 'pointer', transition: 'color 0.2s' }}>{t}</button>
-          ))}
-        </div>
-        <p style={{ fontSize: 12, color: '#6B7280', margin: 0, lineHeight: 1.6 }}>
-          {tab === 0
-            ? 'Просторная 2-к квартира в ЖК бизнес-класса. Высокие потолки 3.2 м, панорамные окна, чистовая отделка.'
-            : tab === 1 ? 'Европланировка, совмещённая кухня-гостиная 18 м².'
-            : 'Ипотека от 4 812 ₽/мес при первоначальном взносе 30%'}
-        </p>
-      </div>
-
-      {/* Right: dark AI panel */}
-      <div style={{ width: 190, background: '#0F172A', padding: '22px 18px', display: 'flex', flexDirection: 'column', gap: 14, flexShrink: 0 }}>
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: 1, fontWeight: 500 }}>AI Оценка</p>
-          <div style={{ position: 'relative', width: 76, height: 76, margin: '0 auto 8px' }}>
-            <svg width="76" height="76" viewBox="0 0 76 76">
-              <circle cx="38" cy="38" r="32" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="6" />
-              <motion.circle cx="38" cy="38" r="32" fill="none" stroke={A} strokeWidth="6" strokeLinecap="round"
-                strokeDasharray={`${2 * Math.PI * 32}`}
-                initial={{ strokeDashoffset: 2 * Math.PI * 32 }}
-                whileInView={{ strokeDashoffset: 2 * Math.PI * 32 * 0.03 }}
-                viewport={{ once: true }} transition={{ duration: 1.5, ease: 'easeOut', delay: 0.3 }}
-                transform="rotate(-90 38 38)" />
-            </svg>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-              <span style={{ fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1 }}>97</span>
-              <span style={{ fontSize: 8, color: 'rgba(255,255,255,0.35)' }}>из 100</span>
-            </div>
-          </div>
-          <p style={{ fontSize: 11, color: '#10B981', margin: 0, fontWeight: 500 }}>Отличный выбор</p>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {[['Цена рынка', '#10B981'], ['Транспорт', '#10B981'], ['Новый дом', '#10B981'], ['Инфраструктура', '#10B981']].map(([c, clr]) => (
-            <div key={c} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: 'rgba(255,255,255,0.04)' }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: clr as string, flexShrink: 0 }} />
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.65)' }}>{c}</span>
-            </div>
-          ))}
-        </div>
-
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-          style={{ padding: '9px 0', borderRadius: 10, background: A, border: 'none', color: '#fff', fontSize: 12, fontWeight: 600, cursor: 'pointer', width: '100%' }}>
-          Связаться
-        </motion.button>
-
-        <div style={{ padding: '10px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', textAlign: 'center' }}>
-          <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: '0 0 3px' }}>Ипотека от</p>
-          <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0 }}>4 812 ₽/мес</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════
-   SCREEN 3 — Onboarding Wizard  (ref 5 style)
-   Clean white, gradient header, canvas-card grid
+   SCREEN 3 — Onboarding Wizard
+   Lime accent, question cards, animated radio
    ══════════════════════════════════════════ */
 function OnboardingWizardScreen() {
   const [goal, setGoal] = useState(0);
   const goals = ['Для семьи', 'Инвестиция', 'Аренда'];
+  const districts = ['ЦАО', 'ЗАО', 'СЗАО', 'ЮАО'];
+  const [selDistricts, setSelDistricts] = useState([0, 1]);
 
   useEffect(() => {
     const t = setInterval(() => setGoal(g => (g + 1) % 3), 2000);
     return () => clearInterval(t);
   }, []);
 
-  const districts = ['ЦАО', 'ЗАО', 'СЗАО', 'ЮАО'];
-  const [selDistricts, setSelDistricts] = useState([0, 1]);
-
   return (
     <div style={{ background: '#fff' }}>
-      {/* Header with gradient */}
-      <div style={{ background: 'linear-gradient(135deg, #EEF2FF 0%, #F0FDF4 100%)', padding: '20px 24px 16px', borderBottom: '1px solid #E5E7EB' }}>
+      {/* Header */}
+      <div style={{ background: `linear-gradient(135deg, ${A} 0%, #D4F57A 100%)`, padding: '22px 24px 18px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
           <div>
-            <p style={{ fontSize: 10, color: '#6B7280', margin: '0 0 4px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>Шаг 1 из 3</p>
-            <h3 style={{ fontSize: 20, fontWeight: 700, color: '#111827', margin: 0 }}>Расскажите о себе</h3>
+            <p style={{ fontSize: 10, fontWeight: 700, color: 'rgba(0,0,0,0.45)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: 0.8 }}>Шаг 1 из 3</p>
+            <h3 style={{ fontSize: 22, fontWeight: 800, color: AD, margin: 0 }}>Расскажите о себе</h3>
           </div>
-          <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, background: `${A}15`, color: A, fontWeight: 600 }}>~2 минуты</span>
+          <span style={{ fontSize: 11, padding: '5px 12px', borderRadius: 20, background: 'rgba(0,0,0,0.12)', color: AD, fontWeight: 600 }}>~2 мин</span>
         </div>
-        <div style={{ height: 4, background: '#E5E7EB', borderRadius: 4, overflow: 'hidden' }}>
-          <div style={{ width: '33%', height: '100%', background: `linear-gradient(90deg, ${A}80, ${A})`, borderRadius: 4 }} />
+        <div style={{ height: 4, background: 'rgba(0,0,0,0.15)', borderRadius: 4, overflow: 'hidden' }}>
+          <div style={{ width: '33%', height: '100%', background: AD, borderRadius: 4 }} />
         </div>
       </div>
 
-      {/* Question cards */}
-      <div style={{ padding: '16px 24px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-        {/* Goal card */}
-        <div style={{ background: '#F8F9FC', border: '1px solid #E5E7EB', borderRadius: 14, padding: '14px' }}>
-          <p style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: 0.5 }}>Цель покупки</p>
+      {/* Questions */}
+      <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        {/* Goal */}
+        <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 16, padding: '14px' }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: 0.5 }}>Цель покупки</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
             {goals.map((g, i) => (
               <motion.div key={g} onClick={() => setGoal(i)}
-                animate={{ background: goal === i ? A : '#fff', borderColor: goal === i ? A : '#E5E7EB' }}
-                transition={{ duration: 0.2 }}
-                style={{ padding: '9px 12px', borderRadius: 10, border: '1px solid', fontSize: 13, fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
-                  color: goal === i ? '#fff' : '#374151' }}>
-                <motion.div
-                  animate={{ background: goal === i ? 'rgba(255,255,255,0.35)' : '#F3F4F6', borderColor: goal === i ? 'rgba(255,255,255,0.4)' : '#D1D5DB' }}
+                animate={{ background: goal === i ? A : '#fff', borderColor: goal === i ? '#7BBF2A' : '#E5E7EB', color: goal === i ? AD : '#374151' }}
+                transition={{ duration: 0.18 }}
+                style={{ padding: '9px 12px', borderRadius: 10, border: '1.5px solid', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <motion.div animate={{ background: goal === i ? AD : '#F3F4F6', borderColor: goal === i ? AD : '#D1D5DB' }}
                   style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <AnimatePresence>
                     {goal === i && (
                       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} exit={{ scale: 0 }}
-                        style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />
+                        style={{ width: 6, height: 6, borderRadius: '50%', background: A }} />
                     )}
                   </AnimatePresence>
                 </motion.div>
@@ -361,44 +371,42 @@ function OnboardingWizardScreen() {
           </div>
         </div>
 
-        {/* Budget + district card */}
-        <div style={{ background: '#F8F9FC', border: '1px solid #E5E7EB', borderRadius: 14, padding: '14px' }}>
-          <p style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.5 }}>Бюджет</p>
-          <div style={{ textAlign: 'center', marginBottom: 12 }}>
-            <p style={{ fontSize: 22, fontWeight: 800, color: A, margin: '0 0 1px' }}>до 18 млн ₽</p>
-            <p style={{ fontSize: 11, color: '#9CA3AF', margin: 0 }}>5 млн — 40 млн</p>
-          </div>
+        {/* Budget + district */}
+        <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: 16, padding: '14px' }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.5 }}>Бюджет</p>
+          <p style={{ fontSize: 22, fontWeight: 900, color: AD, margin: '0 0 1px' }}>до 18 млн ₽</p>
+          <p style={{ fontSize: 11, color: '#9CA3AF', margin: '0 0 12px' }}>5 млн — 40 млн</p>
           <div style={{ position: 'relative', height: 18, display: 'flex', alignItems: 'center', marginBottom: 14 }}>
-            <div style={{ width: '100%', height: 4, background: '#E5E7EB', borderRadius: 4, position: 'relative' }}>
-              <div style={{ width: '46%', height: '100%', background: `linear-gradient(90deg, ${A}50, ${A})`, borderRadius: 4 }} />
-              <div style={{ position: 'absolute', left: '46%', top: '50%', transform: 'translate(-50%, -50%)', width: 16, height: 16, borderRadius: '50%', background: '#fff', border: `2px solid ${A}`, boxShadow: `0 0 0 4px ${A}20` }} />
+            <div style={{ width: '100%', height: 5, background: '#E5E7EB', borderRadius: 4 }}>
+              <div style={{ width: '46%', height: '100%', background: `linear-gradient(90deg, ${A}70, ${A})`, borderRadius: 4 }} />
+              <div style={{ position: 'absolute', left: '46%', top: '50%', transform: 'translate(-50%, -50%)', width: 18, height: 18, borderRadius: '50%', background: '#fff', border: `2.5px solid ${A}`, boxShadow: `0 0 0 4px ${A}30` }} />
             </div>
           </div>
-          <p style={{ fontSize: 10, fontWeight: 600, color: '#9CA3AF', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.5 }}>Район</p>
+          <p style={{ fontSize: 10, fontWeight: 700, color: '#9CA3AF', margin: '0 0 7px', textTransform: 'uppercase', letterSpacing: 0.5 }}>Район</p>
           <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
             {districts.map((d, i) => (
               <motion.span key={d}
-                animate={{ background: selDistricts.includes(i) ? A : '#fff', color: selDistricts.includes(i) ? '#fff' : '#374151', borderColor: selDistricts.includes(i) ? A : '#D1D5DB' }}
+                animate={{ background: selDistricts.includes(i) ? A : '#fff', color: selDistricts.includes(i) ? AD : '#374151', borderColor: selDistricts.includes(i) ? '#7BBF2A' : '#D1D5DB' }}
                 onClick={() => setSelDistricts(s => s.includes(i) ? s.filter(x => x !== i) : [...s, i])}
-                style={{ padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 500, border: '1px solid', cursor: 'pointer' }}>{d}</motion.span>
+                style={{ padding: '3px 9px', borderRadius: 20, fontSize: 11, fontWeight: 600, border: '1.5px solid', cursor: 'pointer' }}>{d}</motion.span>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Footer CTA */}
-      <div style={{ padding: '0 24px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+      {/* CTA */}
+      <div style={{ padding: '0 20px 20px', display: 'flex', gap: 12, alignItems: 'center' }}>
         <div style={{ padding: '10px 14px', borderRadius: 12, background: '#F0FDF4', border: '1px solid #BBF7D0', display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-          <div style={{ width: 28, height: 28, borderRadius: 8, background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12 }}>✓</div>
+          <div style={{ width: 28, height: 28, borderRadius: 8, background: '#16A34A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, fontWeight: 700 }}>✓</div>
           <div>
-            <p style={{ fontSize: 12, fontWeight: 600, color: '#065F46', margin: '0 0 1px' }}>Подобрано 24 варианта</p>
-            <p style={{ fontSize: 10, color: '#10B981', margin: 0 }}>AI нашёл лучшие</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: '#065F46', margin: '0 0 1px' }}>Подобрано 24 варианта</p>
+            <p style={{ fontSize: 10, color: '#16A34A', margin: 0 }}>AI выбрал лучшие</p>
           </div>
         </div>
-        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-          animate={{ boxShadow: [`0 0 0 0px ${A}40`, `0 0 0 6px ${A}00`] }}
+        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
+          animate={{ boxShadow: [`0 0 0 0px ${A}50`, `0 0 0 8px ${A}00`] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          style={{ padding: '11px 18px', borderRadius: 12, background: A, border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+          style={{ padding: '12px 20px', borderRadius: 12, background: A, border: 'none', color: AD, fontSize: 13, fontWeight: 800, cursor: 'pointer', whiteSpace: 'nowrap' }}>
           Смотреть ленту →
         </motion.button>
       </div>
@@ -407,8 +415,8 @@ function OnboardingWizardScreen() {
 }
 
 /* ══════════════════════════════════════════
-   SCREEN 4 — Analytics Dashboard  (ref 1 style)
-   White bg, KPI tiles row, animated SVG chart
+   SCREEN 4 — Analytics Dashboard
+   White bg, lime KPIs, animated chart
    ══════════════════════════════════════════ */
 function AnalyticsDashboardScreen() {
   const pts = [32, 41, 37, 49, 44, 58, 67, 62, 75, 82, 78, 96];
@@ -421,9 +429,9 @@ function AnalyticsDashboardScreen() {
   const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
 
   const kpis = [
-    { label: 'Просмотров', val: '2 024', delta: '+24%', color: '#10B981' },
-    { label: 'Обращений', val: '34', delta: '+12%', color: '#10B981' },
-    { label: 'Рост цен', val: '+34%', delta: 'за год', color: A },
+    { label: 'Просмотров', val: '2 024', delta: '+24%' },
+    { label: 'Обращений', val: '34', delta: '+12%' },
+    { label: 'Рост цен', val: '+34%', delta: 'за год' },
   ];
 
   const listings = [
@@ -437,24 +445,26 @@ function AnalyticsDashboardScreen() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
         <div>
-          <h3 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: '0 0 2px' }}>Аналитика рынка</h3>
+          <h3 style={{ fontSize: 18, fontWeight: 800, color: AD, margin: '0 0 2px' }}>Аналитика рынка</h3>
           <p style={{ fontSize: 12, color: '#9CA3AF', margin: 0 }}>Москва · Последние 12 месяцев</p>
         </div>
         <div style={{ display: 'flex', gap: 2, background: '#F3F4F6', borderRadius: 10, padding: 3 }}>
-          {['Неделя', 'Месяц', 'Год'].map((t, i) => (
-            <span key={t} style={{ padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: i === 2 ? 600 : 400, background: i === 2 ? '#fff' : 'transparent', color: i === 2 ? '#111827' : '#9CA3AF', cursor: 'pointer', boxShadow: i === 2 ? '0 1px 4px rgba(0,0,0,0.08)' : 'none' }}>{t}</span>
+          {['Нед', 'Мес', 'Год'].map((t, i) => (
+            <span key={t} style={{ padding: '4px 10px', borderRadius: 8, fontSize: 11, fontWeight: i === 2 ? 700 : 400,
+              background: i === 2 ? A : 'transparent', color: i === 2 ? AD : '#9CA3AF', cursor: 'pointer',
+              boxShadow: i === 2 ? '0 1px 4px rgba(0,0,0,0.1)' : 'none' }}>{t}</span>
           ))}
         </div>
       </div>
 
       {/* KPI tiles */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 20 }}>
         {kpis.map(k => (
-          <div key={k.label} style={{ padding: '12px 14px', borderRadius: 12, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+          <div key={k.label} style={{ padding: '12px 14px', borderRadius: 14, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
             <p style={{ fontSize: 11, color: '#9CA3AF', margin: '0 0 5px' }}>{k.label}</p>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
-              <span style={{ fontSize: 20, fontWeight: 800, color: '#111827' }}>{k.val}</span>
-              <span style={{ fontSize: 11, fontWeight: 600, color: k.color, padding: '1px 6px', borderRadius: 6, background: k.color === '#10B981' ? '#F0FDF4' : `${A}12` }}>{k.delta}</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+              <span style={{ fontSize: 20, fontWeight: 900, color: AD }}>{k.val}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: AD, padding: '1px 6px', borderRadius: 6, background: A }}>{k.delta}</span>
             </div>
           </div>
         ))}
@@ -463,36 +473,36 @@ function AnalyticsDashboardScreen() {
       {/* Chart */}
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', overflow: 'visible', display: 'block', marginBottom: 6 }}>
         <defs>
-          <linearGradient id="dc-chart-light" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={A} stopOpacity="0.14" />
+          <linearGradient id="dc-lime-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={A} stopOpacity="0.22" />
             <stop offset="100%" stopColor={A} stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0, 0.33, 0.66, 1].map(t => (
           <line key={t} x1="12" y1={ty(min + t * (max - min))} x2={W - 12} y2={ty(min + t * (max - min))} stroke="#F3F4F6" strokeWidth="1" />
         ))}
-        <motion.path d={area} fill="url(#dc-chart-light)" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 1.2 }} />
+        <motion.path d={area} fill="url(#dc-lime-grad)" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 1.2 }} />
         <motion.path d={line} stroke={A} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"
           initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.8, ease: 'easeOut' }} />
-        <motion.circle cx={tx(pts.length - 1)} cy={ty(pts[pts.length - 1])} r="5" fill={A} stroke="#fff" strokeWidth="2.5"
-          initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 1.8, type: 'spring' }} />
+        <motion.circle cx={tx(pts.length - 1)} cy={ty(pts[pts.length - 1])} r="6" fill={A} stroke="#fff" strokeWidth="2.5"
+          initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 1.8, type: 'spring', stiffness: 300 }} />
       </svg>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 18 }}>
         {months.map((m, i) => <span key={i} style={{ fontSize: 9, color: '#D1D5DB' }}>{m}</span>)}
       </div>
 
-      {/* Listings mini-table */}
+      {/* Mini listings */}
       <div style={{ borderTop: '1px solid #F3F4F6', paddingTop: 14 }}>
-        <p style={{ fontSize: 11, fontWeight: 600, color: '#9CA3AF', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: 0.5 }}>Избранное</p>
+        <p style={{ fontSize: 11, fontWeight: 700, color: '#9CA3AF', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: 0.5 }}>Избранное</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
           {listings.map((l, i) => (
             <motion.div key={l.name}
-              initial={{ opacity: 0, x: -12 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, ease }}
-              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: 8, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
-              <span style={{ fontSize: 12, fontWeight: 500, color: '#374151' }}>{l.name}</span>
+              initial={{ opacity: 0, x: -10 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.09, ease }}
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 12px', borderRadius: 10, background: '#F9FAFB', border: '1px solid #F3F4F6' }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: '#374151' }}>{l.name}</span>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>{l.price} млн</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: l.up ? '#10B981' : '#EF4444', padding: '1px 6px', borderRadius: 6, background: l.up ? '#F0FDF4' : '#FEF2F2' }}>{l.trend}</span>
+                <span style={{ fontSize: 12, fontWeight: 800, color: AD }}>{l.price} млн</span>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 6, background: l.up ? A : '#FEE2E2', color: l.up ? AD : '#DC2626' }}>{l.trend}</span>
               </div>
             </motion.div>
           ))}
@@ -528,11 +538,11 @@ export default function DomclickPage() {
         </motion.div>
       </section>
 
-      {/* KEY VISUAL */}
+      {/* KEY VISUAL — Property Card (ref-style) */}
       <motion.section className="mx-auto max-w-[1512px] px-11 pb-[72px]"
         initial={{ opacity: 0, y: 48 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}>
-        <Mac url="proptech.io/search">
-          <PropertyGridScreen />
+        <Mac url="proptech.io/property/12345">
+          <PropertyCardScreen />
         </Mac>
       </motion.section>
 
@@ -563,7 +573,7 @@ export default function DomclickPage() {
             initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ visible: { transition: { staggerChildren: 0.07 } } }}>
             {['AI-скоринг', 'Сценарный онбординг', 'Умная выдача', 'Карта объектов', 'A/B тесты', 'User Research'].map((t, i) => (
               <motion.span key={t} variants={fUp} custom={i}
-                style={{ height: 44, padding: '0 16px', borderRadius: 12, display: 'flex', alignItems: 'center', fontSize: 16, fontWeight: 500, border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.06)' }}>{t}</motion.span>
+                style={{ height: 44, padding: '0 16px', borderRadius: 12, display: 'flex', alignItems: 'center', fontSize: 16, fontWeight: 500, border: `1px solid ${A}40`, color: A, background: `${A}10` }}>{t}</motion.span>
             ))}
           </motion.div>
         </Row>
@@ -572,7 +582,7 @@ export default function DomclickPage() {
       {/* SOLUTION SCREENS */}
       <section className="mx-auto max-w-[1512px] px-11 pb-10" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <motion.div initial={{ opacity: 0, x: -32 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease }}>
-          <Mac url="proptech.io/property/12345"><PropertyDetailScreen /></Mac>
+          <Mac url="proptech.io/search"><PropertySearchScreen /></Mac>
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 32 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease }}>
           <Mac url="proptech.io/onboarding"><OnboardingWizardScreen /></Mac>
@@ -588,7 +598,7 @@ export default function DomclickPage() {
       {/* RESULTS */}
       <section className="mx-auto max-w-[1512px] px-11 pb-[88px]" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          style={{ fontSize: 18, background: 'linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.5) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
+          style={{ fontSize: 18, background: `linear-gradient(135deg, ${A} 0%, rgba(181,238,80,0.5) 100%)`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
           Результаты после 3 месяцев в продакшне
         </motion.p>
         <motion.div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}
