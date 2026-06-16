@@ -2,8 +2,8 @@
 
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { useRef, useState, useEffect } from 'react';
-import SiteHeader from '@/components/SiteHeader';
 import { BackLink } from '@/components/case/CaseUtils';
+import { CaseTabs } from '@/components/case/CaseTabs';
 
 const ACCENT = '#EF4444';
 const BG = '#0C0404';
@@ -353,7 +353,7 @@ export default function SamocatPage() {
 
   return (
     <div style={{ background: BG, color: '#fff', fontFamily: 'var(--font-manrope, Manrope, sans-serif)', minHeight: '100vh' }}>
-      <SiteHeader />
+      <CaseTabs />
 
       <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-8">
         <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}

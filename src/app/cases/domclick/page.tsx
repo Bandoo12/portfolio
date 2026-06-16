@@ -2,8 +2,8 @@
 
 import { motion, useInView, useMotionValue, animate } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
-import SiteHeader from '@/components/SiteHeader';
 import { BackLink } from '@/components/case/CaseUtils';
+import { CaseTabs } from '@/components/case/CaseTabs';
 
 const ACCENT = '#4361EE';
 const BG = '#04091E';
@@ -287,7 +287,7 @@ export default function DomclickPage() {
   return (
     <div style={{ background: BG, color: '#fff', fontFamily: 'var(--font-manrope, Manrope, sans-serif)', minHeight: '100vh' }}>
       <style>{`@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }`}</style>
-      <SiteHeader />
+      <CaseTabs />
 
       <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-8">
         <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }} style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 700 }}>
