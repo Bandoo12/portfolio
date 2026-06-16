@@ -58,9 +58,6 @@ export function CaseTabs() {
                 textDecoration: 'none', whiteSpace: 'nowrap', transition: 'all 0.18s',
                 display: 'flex', alignItems: 'center', gap: 7,
               }}>
-                {active && (
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: c.accent, flexShrink: 0, boxShadow: `0 0 6px ${c.accent}` }} />
-                )}
                 {c.label}
               </Link>
             );
