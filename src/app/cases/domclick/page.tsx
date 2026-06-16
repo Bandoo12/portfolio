@@ -512,105 +512,35 @@ function AnalyticsDashboardScreen() {
   );
 }
 
-/* ─── Parallax Hero (twelve.ru style: sky bg + building silhouette) ─── */
+/* ─── Parallax Hero ─── */
 function ParallaxHero() {
+  const base = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
   const { scrollY } = useScroll();
   const skyY = useTransform(scrollY, [0, 700], [0, -150]);
   const bldY = useTransform(scrollY, [0, 700], [0, -55]);
   const textO = useTransform(scrollY, [0, 280], [1, 0]);
   const textY = useTransform(scrollY, [0, 280], [0, -36]);
 
-  const lit = (r: number, c: number) => ((r * 13 + c * 7) % 11) > 3;
-
   return (
     <div style={{ position: 'relative', height: '100vh', minHeight: 700, overflow: 'hidden' }}>
 
-      {/* SKY LAYER */}
+      {/* SKY LAYER — real photo */}
       <motion.div style={{
         position: 'absolute', top: '-10%', left: 0, right: 0, bottom: 0,
-        background: 'linear-gradient(180deg,#3A7DBF 0%,#5FA3D4 14%,#89BEE0 34%,#B4D5EA 54%,#CDE5F2 70%,#DFF0F8 82%,#EEF7FC 100%)',
         y: skyY,
       }}>
-        <div style={{ position: 'absolute', top: '7%', left: '4%', width: 290, height: 90, background: 'rgba(255,255,255,0.52)', borderRadius: '50%', filter: 'blur(30px)' }} />
-        <div style={{ position: 'absolute', top: '4%', left: '8%', width: 170, height: 60, background: 'rgba(255,255,255,0.62)', borderRadius: '50%', filter: 'blur(18px)' }} />
-        <div style={{ position: 'absolute', top: '13%', left: '22%', width: 130, height: 50, background: 'rgba(255,255,255,0.38)', borderRadius: '50%', filter: 'blur(22px)' }} />
-        <div style={{ position: 'absolute', top: '5%', right: '8%', width: 240, height: 80, background: 'rgba(255,255,255,0.46)', borderRadius: '50%', filter: 'blur(26px)' }} />
-        <div style={{ position: 'absolute', top: '20%', right: '22%', width: 160, height: 55, background: 'rgba(255,255,255,0.32)', borderRadius: '50%', filter: 'blur(20px)' }} />
-        <div style={{ position: 'absolute', top: '10%', left: '38%', width: 100, height: 40, background: 'rgba(255,255,255,0.28)', borderRadius: '50%', filter: 'blur(16px)' }} />
+        <img src={`${base}/img/domclick-sky.png`} alt=""
+          style={{ width: '100%', height: '115%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }} />
       </motion.div>
 
-      {/* BUILDING SILHOUETTE */}
-      <motion.div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, y: bldY }}>
-        <svg viewBox="0 0 1400 680" xmlns="http://www.w3.org/2000/svg"
-          preserveAspectRatio="xMidYMax meet"
-          style={{ width: '100%', display: 'block', maxHeight: '74vh' }}>
-
-          {/* ── Massing ── */}
-          <rect x={0}    y={560} width={150} height={120} fill="#0C1220" />
-          <rect x={100}  y={468} width={210} height={212} fill="#0F1628" />
-          <rect x={248}  y={355} width={155} height={325} fill="#0C1220" />
-          <rect x={358}  y={238} width={125} height={442} fill="#0F1628" />
-          <rect x={438}  y={18}  width={368} height={662} fill="#0D1424" />
-          <rect x={780}  y={272} width={132} height={408} fill="#0F1628" />
-          <rect x={870}  y={375} width={158} height={305} fill="#0C1220" />
-          <rect x={990}  y={458} width={198} height={222} fill="#0F1628" />
-          <rect x={1148} y={538} width={252} height={142} fill="#0C1220" />
-
-          {/* Roofline details */}
-          <rect x={438} y={18}  width={368} height={5}  fill="#182038" />
-          <rect x={358} y={238} width={125} height={4}  fill="#182038" />
-          <rect x={780} y={272} width={132} height={4}  fill="#182038" />
-          <rect x={248} y={355} width={155} height={3}  fill="#182038" />
-          <rect x={870} y={375} width={158} height={3}  fill="#182038" />
-
-          {/* ── Windows: Central tower 23×6 ── */}
-          {Array.from({ length: 23 }, (_, r) =>
-            Array.from({ length: 6 }, (_, c) => (
-              <rect key={`ct-${r}-${c}`} x={453 + c * 57} y={38 + r * 27}
-                width={30} height={16} rx={2}
-                fill={lit(r, c) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
-            ))
-          ).flat()}
-
-          {/* ── Windows: Left high block 8×2 ── */}
-          {Array.from({ length: 8 }, (_, r) =>
-            Array.from({ length: 2 }, (_, c) => (
-              <rect key={`lh-${r}-${c}`} x={372 + c * 52} y={256 + r * 27}
-                width={28} height={16} rx={2}
-                fill={lit(r + 5, c + 2) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
-            ))
-          ).flat()}
-
-          {/* ── Windows: Left mid block 5×2 ── */}
-          {Array.from({ length: 5 }, (_, r) =>
-            Array.from({ length: 2 }, (_, c) => (
-              <rect key={`lm-${r}-${c}`} x={262 + c * 54} y={374 + r * 27}
-                width={28} height={16} rx={2}
-                fill={lit(r + 3, c) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
-            ))
-          ).flat()}
-
-          {/* ── Windows: Right high block 9×2 ── */}
-          {Array.from({ length: 9 }, (_, r) =>
-            Array.from({ length: 2 }, (_, c) => (
-              <rect key={`rh-${r}-${c}`} x={793 + c * 56} y={292 + r * 27}
-                width={28} height={16} rx={2}
-                fill={lit(r + 7, c + 4) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
-            ))
-          ).flat()}
-
-          {/* ── Windows: Right mid block 5×2 ── */}
-          {Array.from({ length: 5 }, (_, r) =>
-            Array.from({ length: 2 }, (_, c) => (
-              <rect key={`rm-${r}-${c}`} x={884 + c * 58} y={394 + r * 27}
-                width={28} height={16} rx={2}
-                fill={lit(r + 2, c + 5) ? '#FEF0BF' : 'rgba(255,255,255,0.04)'} />
-            ))
-          ).flat()}
-
-          {/* Ground shadow */}
-          <rect x={0} y={674} width={1400} height={6} fill="#06090F" />
-        </svg>
+      {/* BUILDING — real render, black bg removed via screen blend */}
+      <motion.div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        mixBlendMode: 'screen',
+        y: bldY,
+      }}>
+        <img src={`${base}/img/domclick-building.png`} alt=""
+          style={{ width: '100%', maxHeight: '82vh', objectFit: 'contain', objectPosition: 'center bottom', display: 'block' }} />
       </motion.div>
 
       {/* FADE TO DARK */}
