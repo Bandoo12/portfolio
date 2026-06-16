@@ -516,8 +516,8 @@ function AnalyticsDashboardScreen() {
 function ParallaxHero() {
   const base = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
   const { scrollY } = useScroll();
-  const skyY = useTransform(scrollY, [0, 700], [0, -60]);
-  const bldY = useTransform(scrollY, [0, 700], [0, -180]);
+  const skyY = useTransform(scrollY, [0, 800], [0, -80]);
+  const bldY = useTransform(scrollY, [0, 800], [320, -60]);
   const textO = useTransform(scrollY, [0, 280], [1, 0]);
   const textY = useTransform(scrollY, [0, 280], [0, -36]);
 
