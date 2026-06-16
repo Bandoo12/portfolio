@@ -532,7 +532,7 @@ function ParallaxHero() {
         <motion.img src={`${base}/img/domclick-building.png`} alt=""
           style={{ position: 'absolute', bottom: 0, left: 0, width: '100%',
             maxHeight: '82vh', objectFit: 'contain', objectPosition: 'center bottom', display: 'block',
-            mixBlendMode: 'screen', y: bldY }} />
+            y: bldY }} />
       </div>
 
       {/* FADE TO DARK */}
