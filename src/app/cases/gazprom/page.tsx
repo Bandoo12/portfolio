@@ -1,212 +1,346 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import SiteHeader from '@/components/SiteHeader';
-import { casesData } from '@/content/casesData';
-import { fadeUp, MetricCard, TagsRow, ResearchRow, SummaryCard, BackLink } from '@/components/case/CaseUtils';
+import { BackLink } from '@/components/case/CaseUtils';
 
-const d = casesData['gazprom'];
 const ACCENT = '#F59E0B';
+const BG = '#0A0800';
 
-/* ── Radial gauge ── */
-function Gauge({ value, max, label, color, delay }: { value: number; max: number; label: string; color: string; delay: number }) {
-  const ref = useRef<SVGCircleElement>(null);
+const cardReveal = {
+  hidden: { opacity: 0, y: 24, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: [0.33, 1, 0.68, 1] as const } },
+};
+
+function Label({ text }: { text: string }) {
+  return <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', marginBottom: 18, textTransform: 'uppercase' }}>{text}</p>;
+}
+
+/* ─── 1. Радиальный gauge (1 col) ─── */
+function GaugeCard() {
+  const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref as React.RefObject<Element>, { once: true });
-  const r = 54;
-  const circ = 2 * Math.PI * r;
-  const pct = value / max;
+  const [val, setVal] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    const target = 94, dur = 1600, start = Date.now();
+    const t = setInterval(() => {
+      const p = Math.min((Date.now() - start) / dur, 1);
+      setVal(Math.round(target * (1 - Math.pow(1 - p, 3))));
+      if (p >= 1) clearInterval(t);
+    }, 16);
+    return () => clearInterval(t);
+  }, [inView]);
+
+  const R = 70, CX = 90, CY = 90, C = 2 * Math.PI * R, arc = C * 0.75;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-      <div style={{ position: 'relative', width: '128px', height: '128px' }}>
-        <svg width="128" height="128" viewBox="0 0 128 128" style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx="64" cy="64" r={r} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="10" />
-          <motion.circle
-            ref={ref}
-            cx="64" cy="64" r={r}
-            fill="none"
-            stroke={color}
-            strokeWidth="10"
-            strokeLinecap="round"
-            strokeDasharray={circ}
-            initial={{ strokeDashoffset: circ }}
-            animate={inView ? { strokeDashoffset: circ * (1 - pct) } : {}}
-            transition={{ duration: 1.4, delay, ease: [0.33, 1, 0.68, 1] }}
-          />
+    <div ref={ref}>
+      <Label text="Охват цифрового учёта" />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <svg viewBox="0 0 180 180" style={{ width: 180, height: 180 }}>
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="16"
+            strokeDasharray={`${arc} ${C - arc}`} strokeLinecap="round" transform={`rotate(135 ${CX} ${CY})`} />
+          <motion.circle cx={CX} cy={CY} r={R} fill="none" stroke={ACCENT} strokeWidth="16" strokeLinecap="round"
+            strokeDasharray={`${arc} ${C - arc}`}
+            initial={{ strokeDashoffset: arc }}
+            animate={inView ? { strokeDashoffset: arc * (1 - val / 100) } : { strokeDashoffset: arc }}
+            transition={{ duration: 1.6, ease: [0.33, 1, 0.68, 1] }}
+            transform={`rotate(135 ${CX} ${CY})`}
+            style={{ filter: `drop-shadow(0 0 8px ${ACCENT}88)` }} />
+          <text x={CX} y={CY - 4} textAnchor="middle" fontSize="30" fontWeight="800" fill="#fff">{val}%</text>
+          <text x={CX} y={CY + 18} textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.35)">объектов</text>
         </svg>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: '22px', fontWeight: 700, color: '#fff' }}>{value}%</span>
+        <div style={{ display: 'flex', gap: 12, marginTop: 4 }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: 0 }}>До</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>18%</p>
+          </div>
+          <div style={{ width: 1, background: 'rgba(255,255,255,0.1)' }} />
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', margin: 0 }}>После</p>
+            <p style={{ fontSize: 16, fontWeight: 600, color: ACCENT, margin: '2px 0 0' }}>100%</p>
+          </div>
         </div>
       </div>
-      <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.45)', textAlign: 'center', maxWidth: '100px', lineHeight: 1.4 }}>{label}</span>
     </div>
   );
 }
 
-/* ── Shift timeline ── */
-function ShiftTimeline() {
+/* ─── 2. Смены — таймлайн (2 cols) ─── */
+function ShiftTimelineCard() {
+  const events = [
+    { time: '08:00', label: 'Начало смены', role: 'Мастер смены', color: ACCENT, done: true },
+    { time: '10:15', label: 'Наряд на ремонт насоса', role: 'Слесарь ПР-2', color: '#60A5FA', done: true },
+    { time: '13:40', label: 'Перевыполнение нормы', role: 'Оператор МБ-7', color: '#34D399', done: true },
+    { time: '18:00', label: 'Закрытие смены', role: 'Мастер смены', color: 'rgba(255,255,255,0.3)', done: false },
+  ];
+  return (
+    <div>
+      <Label text="Журнал текущей смены" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {events.map((ev, i) => (
+          <motion.div key={ev.time}
+            initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+            transition={{ delay: 0.1 + i * 0.18, ease: [0.33, 1, 0.68, 1] }}
+            style={{ display: 'flex', gap: 16, paddingBottom: i < events.length - 1 ? 16 : 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0, width: 20, flexShrink: 0 }}>
+              <motion.div initial={{ scale: 0 }} whileInView={{ scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 + i * 0.18, type: 'spring', stiffness: 400 }}
+                style={{ width: 12, height: 12, borderRadius: '50%', background: ev.done ? ev.color : 'rgba(255,255,255,0.15)', flexShrink: 0, boxShadow: ev.done ? `0 0 8px ${ev.color}66` : 'none' }} />
+              {i < events.length - 1 && (
+                <motion.div initial={{ scaleY: 0 }} whileInView={{ scaleY: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 + i * 0.18, duration: 0.3 }}
+                  style={{ width: 1, flex: 1, background: ev.done ? `${ev.color}40` : 'rgba(255,255,255,0.08)', transformOrigin: 'top', minHeight: 28 }} />
+              )}
+            </div>
+            <div style={{ flex: 1, paddingBottom: i < events.length - 1 ? 4 : 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: ev.done ? '#fff' : 'rgba(255,255,255,0.35)' }}>{ev.label}</span>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>{ev.time}</span>
+              </div>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)' }}>{ev.role}</span>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── 3. Реальный график — SVG рисует себя (2 cols) ─── */
+function RealTimeChartCard() {
+  const vals = [62, 71, 65, 78, 72, 85, 80, 92, 88, 95, 91, 98, 94];
+  const W = 500, H = 110, px = 6, py = 10;
+  const max = Math.max(...vals), min = Math.min(...vals);
+  const toX = (i: number) => px + (i / (vals.length - 1)) * (W - 2 * px);
+  const toY = (v: number) => H - py - ((v - min) / (max - min)) * (H - 2 * py);
+  const line = vals.map((v, i) => `${i === 0 ? 'M' : 'L'} ${toX(i)} ${toY(v)}`).join(' ');
+  const area = `${line} L ${toX(vals.length - 1)} ${H} L ${toX(0)} ${H} Z`;
+
+  return (
+    <div>
+      <Label text="Производительность скважин — реальное время" />
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+        {[{ label: 'Добыча', val: '98.4 т/ч', up: true }, { label: 'Давление', val: '24.1 МПа', up: false }, { label: 'КПД', val: '94%', up: true }].map(s => (
+          <div key={s.label}>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 2px' }}>{s.label}</p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: s.up ? ACCENT : '#fff', margin: 0 }}>{s.val}</p>
+          </div>
+        ))}
+      </div>
+      <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
+        <defs>
+          <linearGradient id="grad-energy" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={ACCENT} stopOpacity="0.3" />
+            <stop offset="100%" stopColor={ACCENT} stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <motion.path d={area} fill="url(#grad-energy)" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 1.2 }} />
+        <motion.path d={line} stroke={ACCENT} strokeWidth="2.5" fill="none" strokeLinecap="round" strokeLinejoin="round"
+          initial={{ pathLength: 0, opacity: 0 }} whileInView={{ pathLength: 1, opacity: 1 }} viewport={{ once: true }}
+          transition={{ duration: 1.6, ease: 'easeOut', delay: 0.2 }}
+          style={{ filter: `drop-shadow(0 0 4px ${ACCENT}66)` }} />
+        {vals.map((v, i) => (
+          <motion.circle key={i} cx={toX(i)} cy={toY(v)} r="3" fill={ACCENT}
+            initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }}
+            transition={{ delay: 0.2 + (i / vals.length) * 1.6 }} />
+        ))}
+      </svg>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+        {['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00'].map(h => (
+          <span key={h} style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>{h}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── 4. Алерты (1 col) ─── */
+function AlertFeedCard() {
+  const alerts = [
+    { title: 'Аномалия давления', loc: 'Скважина МБ-12', sev: 'Критично', color: '#EF4444', time: '1 мин' },
+    { title: 'Ошибка в наряде', loc: 'Наряд #4821', sev: 'Важно', color: '#F59E0B', time: '8 мин' },
+    { title: 'Норма выполнена', loc: 'Бригада А / смена 1', sev: 'Инфо', color: '#34D399', time: '22 мин' },
+  ];
+  return (
+    <div>
+      <Label text="Алерты смены" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {alerts.map((a, i) => (
+          <motion.div key={a.title}
+            initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+            transition={{ delay: 0.1 + i * 0.15, type: 'spring', stiffness: 260 }}
+            style={{ padding: '12px 14px', borderRadius: 14, background: `${a.color}0D`, border: `1px solid ${a.color}35`, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+            <motion.div animate={{ scale: [1, 1.4, 1], opacity: [1, 0.6, 1] }} transition={{ repeat: Infinity, duration: 2, delay: i * 0.5 }}
+              style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, flexShrink: 0, marginTop: 4, boxShadow: `0 0 6px ${a.color}` }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#fff', margin: '0 0 3px' }}>{a.title}</p>
+                <span style={{ fontSize: 10, padding: '1px 7px', borderRadius: 5, background: `${a.color}30`, color: a.color, fontWeight: 700, flexShrink: 0 }}>{a.sev}</span>
+              </div>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.38)', margin: 0 }}>{a.loc} · {a.time} назад</p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── 5. До/После ошибок (2 cols) ─── */
+function ErrorCompareCard() {
+  const items = [
+    { label: 'Время закрытия смены', bl: '2 ч', al: '20 мин', bv: 85, av: 19 },
+    { label: 'Ошибки при вводе нарядов', bl: '43%', al: '6%', bv: 90, av: 13 },
+    { label: 'Охват цифрового учёта', bl: '18%', al: '100%', bv: 18, av: 100 },
+  ];
+  return (
+    <div>
+      <Label text="До / После перехода на цифровой журнал" />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
+        {items.map((m, i) => (
+          <motion.div key={m.label} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.1 + i * 0.15 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{m.label}</span>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.28)' }}>{m.bl}</span>
+                <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>→</span>
+                <span style={{ fontSize: 13, color: ACCENT, fontWeight: 600 }}>{m.al}</span>
+              </div>
+            </div>
+            <div style={{ position: 'relative', height: 5, background: 'rgba(255,255,255,0.07)', borderRadius: 3, marginBottom: 4 }}>
+              <motion.div initial={{ width: 0 }} whileInView={{ width: `${m.bv}%` }} viewport={{ once: true }}
+                transition={{ delay: 0.2 + i * 0.15, duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
+                style={{ height: '100%', borderRadius: 3, background: 'rgba(255,255,255,0.18)' }} />
+            </div>
+            <div style={{ position: 'relative', height: 5, background: 'rgba(255,255,255,0.07)', borderRadius: 3 }}>
+              <motion.div initial={{ width: 0 }} whileInView={{ width: `${m.av}%` }} viewport={{ once: true }}
+                transition={{ delay: 0.4 + i * 0.15, duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
+                style={{ height: '100%', borderRadius: 3, background: ACCENT, boxShadow: `0 0 6px ${ACCENT}66` }} />
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── 6. KPI-счётчики (1 col) ─── */
+function KpiCountersCard() {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref as React.RefObject<Element>, { once: true });
-  const stages = [
-    { label: 'Начало смены', time: '08:00', done: true },
-    { label: 'Наряды по объектам', time: '08:15', done: true },
-    { label: 'Промежуточный отчёт', time: '12:00', done: true },
-    { label: 'Закрытие нарядов', time: '19:45', done: false },
-    { label: 'Отправка в ERP', time: '20:00', done: false },
+  const kpis = [
+    { label: 'Объектов на цифре', to: 847, suffix: '' },
+    { label: 'Нарядов за смену', to: 1240, suffix: '' },
+    { label: 'Снижение ошибок', to: 86, suffix: '%' },
+    { label: 'Часов сэкономлено', to: 3400, suffix: '' },
+  ];
+  const [vals, setVals] = useState(kpis.map(() => 0));
+
+  useEffect(() => {
+    if (!inView) return;
+    const dur = 1800, start = Date.now();
+    const t = setInterval(() => {
+      const p = Math.min((Date.now() - start) / dur, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setVals(kpis.map(k => Math.round(k.to * eased)));
+      if (p >= 1) clearInterval(t);
+    }, 16);
+    return () => clearInterval(t);
+  }, [inView]);
+
+  return (
+    <div ref={ref}>
+      <Label text="KPI проекта" />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        {kpis.map((k, i) => (
+          <motion.div key={k.label} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+            transition={{ delay: 0.1 + i * 0.12, type: 'spring', stiffness: 260 }}
+            style={{ padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <p style={{ fontSize: 24, fontWeight: 700, color: ACCENT, margin: '0 0 4px', letterSpacing: '-0.02em' }}>
+              {vals[i].toLocaleString()}{k.suffix}
+            </p>
+            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', margin: 0, lineHeight: 1.4 }}>{k.label}</p>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Page ─── */
+export default function GazpromPage() {
+  const metrics = [
+    { before: '2 ч', after: '20 мин', label: 'Время закрытия смены' },
+    { before: '43%', after: '6%', label: 'Ошибки в нарядах при вводе' },
+    { before: '18%', after: '100%', label: 'Охват цифрового учёта объектов' },
   ];
 
   return (
-    <div ref={ref} style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-      {stages.map((s, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, x: -24 }}
-          animate={inView ? { opacity: 1, x: 0 } : {}}
-          transition={{ delay: i * 0.15, duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
-          style={{ display: 'flex', alignItems: 'center', gap: '14px', paddingBottom: i < stages.length - 1 ? '16px' : '0', position: 'relative' }}
-        >
-          {/* Vertical line */}
-          {i < stages.length - 1 && (
-            <div style={{ position: 'absolute', left: '11px', top: '24px', width: '2px', height: '16px', background: s.done ? ACCENT + '60' : 'rgba(255,255,255,0.08)' }} />
-          )}
-          {/* Dot */}
-          <div style={{
-            width: '22px', height: '22px', borderRadius: '50%', flexShrink: 0,
-            background: s.done ? ACCENT : 'rgba(255,255,255,0.08)',
-            border: `2px solid ${s.done ? ACCENT : 'rgba(255,255,255,0.15)'}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {s.done && <svg width="10" height="8" fill="none"><path d="M1 4l3 3 5-6" stroke="#000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
-          </div>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '14px', color: s.done ? '#fff' : 'rgba(255,255,255,0.4)', margin: 0, fontWeight: s.done ? 500 : 400 }}>{s.label}</p>
-          </div>
-          <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>{s.time}</span>
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Error rate comparison ── */
-function ErrorComparison() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref as React.RefObject<Element>, { once: true });
-
-  return (
-    <div ref={ref} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {[
-        { label: 'До: бумажные наряды', pct: 43, color: 'rgba(239,68,68,0.7)' },
-        { label: 'После: цифровой журнал', pct: 6, color: ACCENT },
-      ].map((row, i) => (
-        <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'rgba(255,255,255,0.5)' }}>
-            <span>{row.label}</span>
-            <span style={{ color: row.color, fontWeight: 600 }}>{row.pct}%</span>
-          </div>
-          <div style={{ height: '8px', borderRadius: '4px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={inView ? { width: `${row.pct}%` } : {}}
-              transition={{ duration: 1.2, delay: i * 0.3, ease: [0.33, 1, 0.68, 1] }}
-              style={{ height: '100%', borderRadius: '4px', background: row.color }}
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-export default function GazpromPage() {
-  const metricsRef = useRef<HTMLDivElement>(null);
-  const metricsInView = useInView(metricsRef as React.RefObject<Element>, { once: true });
-
-  return (
-    <div style={{ background: '#0A0A06', color: '#ffffff', fontFamily: 'var(--font-manrope, Manrope, sans-serif)', minHeight: '100vh' }}>
+    <div style={{ background: BG, color: '#fff', fontFamily: 'var(--font-manrope, Manrope, sans-serif)', minHeight: '100vh' }}>
       <SiteHeader />
 
-      {/* ── Hero ── */}
-      <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-16" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'start' }}>
-        <motion.div className="flex flex-col gap-6" initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
-          <motion.div variants={fadeUp}><TagsRow tags={d.tags} period={d.period} /></motion.div>
-          <motion.h1 variants={fadeUp} style={{ fontSize: '52px', fontWeight: 400, lineHeight: 1.1, margin: 0 }}>{d.subtitle}</motion.h1>
-          <motion.p variants={fadeUp} style={{ fontSize: '18px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.65, margin: 0, maxWidth: '460px' }}>{d.descriptionText}</motion.p>
-          <motion.div variants={fadeUp} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)', margin: 0 }}>Ошибки в нарядах</p>
-            <ErrorComparison />
+      <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-8">
+        <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+          style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 700 }}>
+          <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {['EnergyTech', 'web + tablet', '2024–2025'].map(t => (
+                <span key={t} style={{ fontSize: 13, padding: '4px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.45)' }}>{t}</span>
+              ))}
+            </div>
+          </motion.div>
+          <motion.h1 variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
+            style={{ fontSize: 52, fontWeight: 400, lineHeight: 1.1, margin: 0 }}>
+            Цифровой журнал смен и нарядов
+          </motion.h1>
+          <motion.p variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
+            style={{ fontSize: 17, color: 'rgba(255,255,255,0.55)', lineHeight: 1.65, margin: 0 }}>
+            Перевели закрытие смены с бумаги на цифру — с 2 часов до 20 минут, ошибки в нарядах снизились с 43% до 6%
+          </motion.p>
+        </motion.div>
+      </section>
+
+      <section className="mx-auto max-w-[1512px] px-11 pb-12">
+        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <motion.div variants={cardReveal} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
+            <GaugeCard />
+          </motion.div>
+          <motion.div variants={cardReveal} style={{ gridColumn: 'span 2', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
+            <ShiftTimelineCard />
+          </motion.div>
+          <motion.div variants={cardReveal} style={{ gridColumn: 'span 2', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
+            <RealTimeChartCard />
+          </motion.div>
+          <motion.div variants={cardReveal} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
+            <AlertFeedCard />
+          </motion.div>
+          <motion.div variants={cardReveal} style={{ gridColumn: 'span 2', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
+            <ErrorCompareCard />
+          </motion.div>
+          <motion.div variants={cardReveal} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
+            <KpiCountersCard />
           </motion.div>
         </motion.div>
-
-        {/* Gauges + timeline */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: [0.33, 1, 0.68, 1] }}
-          style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}
-        >
-          {/* Gauges */}
-          <div style={{
-            borderRadius: '24px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)',
-            padding: '28px', display: 'flex', justifyContent: 'space-around',
-          }}>
-            <Gauge value={94} max={100} label="Охват объектов цифровым учётом" color={ACCENT} delay={0.4} />
-            <Gauge value={83} max={100} label="Нарядов без ошибок" color="#34D399" delay={0.6} />
-            <Gauge value={71} max={100} label="Автосинхронизация в ERP" color="#60A5FA" delay={0.8} />
-          </div>
-
-          {/* Timeline */}
-          <div style={{ borderRadius: '20px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)', padding: '24px' }}>
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)', margin: '0 0 16px', fontWeight: 600 }}>СМЕНА · СЕГОДНЯ</p>
-            <ShiftTimeline />
-          </div>
-        </motion.div>
       </section>
 
-      {/* ── Metrics ── */}
-      <section ref={metricsRef} className="mx-auto max-w-[1512px] px-11 pb-16">
-        <motion.div className="flex gap-5" initial="hidden" animate={metricsInView ? 'visible' : 'hidden'} variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
-          {d.metrics.map((m, i) => (
-            <motion.div key={i} variants={fadeUp} custom={i} style={{ flex: 1 }}><MetricCard {...m} accent={ACCENT} /></motion.div>
+      <section className="mx-auto max-w-[1512px] px-11 pb-16">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+          {metrics.map((m, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '20px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                <span style={{ fontSize: 22, color: 'rgba(255,255,255,0.3)' }}>{m.before}</span>
+                <svg width="18" height="10" viewBox="0 0 20 12" fill="none"><path d="M1 6h18M13 1l6 5-6 5" stroke={ACCENT} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <span style={{ fontSize: 24, fontWeight: 700, color: '#fff' }}>{m.after}</span>
+              </div>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{m.label}</p>
+            </motion.div>
           ))}
-        </motion.div>
-      </section>
-
-      {/* ── Research ── */}
-      <section className="mx-auto max-w-[1512px] px-11 pb-16" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <ResearchRow label="Гипотеза">
-          <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.65 }}>{d.hypothesis}</p>
-        </ResearchRow>
-        <ResearchRow label="Пользователи">
-          <div className="flex gap-3 flex-wrap">
-            {d.users.map((u, i) => (
-              <motion.div key={u.role} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-                style={{ height: '56px', padding: '0 20px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', fontSize: '16px', fontWeight: 500 }}
-              >{u.role}</motion.div>
-            ))}
-          </div>
-        </ResearchRow>
-        <ResearchRow label="Что сделал">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {d.tasks.map((t) => (
-              <span key={t} style={{ fontSize: '15px', fontWeight: 500, padding: '6px 14px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.65)', background: 'rgba(255,255,255,0.05)' }}>{t}</span>
-            ))}
-          </div>
-        </ResearchRow>
-        <ResearchRow label="Ситуация">
-          <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.65 }}>{d.situationText}</p>
-        </ResearchRow>
-      </section>
-
-      {/* ── Summary cards ── */}
-      <section className="mx-auto max-w-[1512px] px-11 pb-20">
-        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.08em', marginBottom: '24px', fontWeight: 600 }}>РЕЗУЛЬТАТЫ</p>
-        <motion.div className="grid gap-5" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }} initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
-          {d.summaryCards.map((s, i) => (
-            <motion.div key={s.title} variants={fadeUp} custom={i}><SummaryCard {...s} accent={ACCENT} /></motion.div>
-          ))}
-        </motion.div>
+        </div>
       </section>
 
       <BackLink href="/#section-6" />

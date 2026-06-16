@@ -372,7 +372,7 @@ export default function Home() {
         <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
           <div className="case-title-area" style={{ flex: 1 }}>
             <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
-              <span style={{ color: '#fff' }}><RevealText>Домклик:</RevealText></span><br />
+              <span style={{ color: '#fff' }}><RevealText>PropTech:</RevealText></span><br />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Умный поиск жилья</RevealText></span>
             </h2>
             <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
@@ -415,7 +415,7 @@ export default function Home() {
         <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
           <div className="case-title-area" style={{ flex: 1 }}>
             <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
-              <span style={{ color: '#fff' }}><RevealText>СберМаркет:</RevealText></span><br />
+              <span style={{ color: '#fff' }}><RevealText>Маркетплейс:</RevealText></span><br />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Кабинет продавца</RevealText></span>
             </h2>
             <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
@@ -464,7 +464,7 @@ export default function Home() {
         <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
           <div className="case-title-area" style={{ flex: 1 }}>
             <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
-              <span style={{ color: '#fff' }}><RevealText>Газпром Нефть:</RevealText></span><br />
+              <span style={{ color: '#fff' }}><RevealText>EnergyOps:</RevealText></span><br />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Цифровая смена</RevealText></span>
             </h2>
             <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
@@ -510,7 +510,7 @@ export default function Home() {
         <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
           <div className="case-title-area" style={{ flex: 1 }}>
             <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
-              <span style={{ color: '#fff' }}><RevealText>ВТБ Бизнес:</RevealText></span><br />
+              <span style={{ color: '#fff' }}><RevealText>B2B Banking:</RevealText></span><br />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Корпоративный кабинет</RevealText></span>
             </h2>
             <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
@@ -561,7 +561,7 @@ export default function Home() {
         <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
           <div className="case-title-area" style={{ flex: 1 }}>
             <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
-              <span style={{ color: '#fff' }}><RevealText>Самокат:</RevealText></span><br />
+              <span style={{ color: '#fff' }}><RevealText>RetailOps:</RevealText></span><br />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Операционный центр</RevealText></span>
             </h2>
             <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
