@@ -1,342 +1,426 @@
 'use client';
 
-import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { useRef, useState, useEffect } from 'react';
-import { BackLink } from '@/components/case/CaseUtils';
+import { motion, AnimatePresence, useInView, useMotionValue, animate } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
 import { CaseTabs } from '@/components/case/CaseTabs';
 
-const ACCENT = '#EF4444';
+const A = '#EF4444';
 const BG = '#0C0404';
-
-const cardReveal = {
-  hidden: { opacity: 0, y: 24, scale: 0.98 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.55, ease: [0.33, 1, 0.68, 1] as const } },
+const ease: [number, number, number, number] = [0.33, 1, 0.68, 1];
+const fUp = {
+  hidden: { opacity: 0, y: 32 },
+  visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.65, delay: i * 0.1, ease } }),
 };
 
-function Label({ text }: { text: string }) {
-  return <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.25)', marginBottom: 18, textTransform: 'uppercase' }}>{text}</p>;
-}
-
-/* ─── 1. Live Kanban (2 cols) ─── */
-type Order = { id: string; item: string; elapsed: number };
-
-function KanbanCard() {
-  const [cols, setCols] = useState<Record<string, Order[]>>({
-    'Новые': [
-      { id: 'o1', item: 'Молоко + Хлеб', elapsed: 0 },
-      { id: 'o2', item: 'Вода 1.5 л × 2', elapsed: 0 },
-    ],
-    'Сборка': [
-      { id: 'o3', item: 'Йогурт + Сыр', elapsed: 28 },
-    ],
-    'Готово': [
-      { id: 'o4', item: 'Масло + Яйца', elapsed: 45 },
-    ],
-  });
-
-  useEffect(() => {
-    let tick = 0;
-    const t = setInterval(() => {
-      tick++;
-      setCols(prev => {
-        const next = { ...prev };
-        if (tick % 3 === 0) {
-          const newOrders = [...next['Новые']];
-          const sbOrders = [...next['Сборка']];
-          if (newOrders.length > 0) {
-            const [moved, ...rest] = newOrders;
-            next['Новые'] = rest;
-            next['Сборка'] = [...sbOrders, { ...moved, elapsed: 0 }];
-          }
-        }
-        if (tick % 4 === 1) {
-          const sbOrders = [...next['Сборка']];
-          const doneOrders = [...next['Готово']];
-          if (sbOrders.length > 0) {
-            const [moved, ...rest] = sbOrders;
-            next['Сборка'] = rest;
-            next['Готово'] = [...doneOrders, { ...moved, elapsed: 45 }];
-          }
-        }
-        if (tick % 5 === 2) {
-          const doneOrders = [...next['Готово']];
-          const newId = `o${Date.now()}`;
-          const items = ['Сок + Молоко', 'Чай + Сахар', 'Кефир + Творог', 'Хлеб + Масло'];
-          next['Готово'] = doneOrders.slice(-2);
-          next['Новые'] = [...next['Новые'], { id: newId, item: items[tick % items.length], elapsed: 0 }];
-        }
-        return next;
-      });
-    }, 1800);
-    return () => clearInterval(t);
-  }, []);
-
-  const colColors: Record<string, string> = {
-    'Новые': 'rgba(255,255,255,0.15)',
-    'Сборка': '#F59E0B',
-    'Готово': '#34D399',
-  };
-
+/* ─── Browser mockup ─── */
+function Mac({ url, children }: { url: string; children: React.ReactNode }) {
   return (
-    <div>
-      <Label text="Очередь заказов — реальное время" />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-        {Object.entries(cols).map(([col, orders]) => (
-          <div key={col}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: colColors[col], boxShadow: `0 0 6px ${colColors[col]}` }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>{col}</span>
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>{orders.length}</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minHeight: 120 }}>
-              <AnimatePresence mode="popLayout">
-                {orders.map(o => (
-                  <motion.div key={o.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.85, y: -10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.85, x: 20 }}
-                    transition={{ duration: 0.35, ease: [0.33, 1, 0.68, 1] }}
-                    style={{ padding: '8px 10px', borderRadius: 10, background: col === 'Готово' ? 'rgba(52,211,153,0.08)' : col === 'Сборка' ? 'rgba(245,158,11,0.08)' : 'rgba(255,255,255,0.04)',
-                      border: `1px solid ${col === 'Готово' ? 'rgba(52,211,153,0.2)' : col === 'Сборка' ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.07)'}` }}>
-                    <p style={{ fontSize: 12, color: '#fff', margin: '0 0 3px', fontWeight: 500 }}>{o.item}</p>
-                    {col !== 'Новые' && <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', margin: 0 }}>{o.elapsed} сек</p>}
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-        ))}
+    <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.09)', boxShadow: '0 48px 120px rgba(0,0,0,0.7)' }}>
+      <div style={{ height: 44, background: '#0B1020', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {['#FF5F57', '#FEBC2E', '#28C840'].map(c => <div key={c} style={{ width: 12, height: 12, borderRadius: '50%', background: c }} />)}
+        </div>
+        <div style={{ flex: 1, margin: '0 16px', height: 26, background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', alignItems: 'center', padding: '0 10px', gap: 6 }}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" /><path d="M2 12h20M12 2c-3 3-4 6-4 10s1 7 4 10M12 2c3 3 4 6 4 10s-1 7-4 10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" /></svg>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>{url}</span>
+        </div>
       </div>
+      <div style={{ background: BG }}>{children}</div>
     </div>
   );
 }
 
-/* ─── 2. SLA Gauge (1 col) ─── */
-function SlaGaugeCard() {
+/* ─── Research row ─── */
+function Row({ label, children, i = 0 }: { label: string; children: React.ReactNode; i?: number }) {
+  return (
+    <motion.div style={{ display: 'flex', alignItems: 'flex-start', padding: '40px 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+      initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-60px' }}
+      transition={{ duration: 0.6, delay: i * 0.08, ease }}>
+      <span style={{ fontSize: 40, fontWeight: 400, flexShrink: 0, minWidth: 360 }}>{label}</span>
+      <div style={{ flex: 1 }} />
+      <div style={{ maxWidth: 560 }}>{children}</div>
+    </motion.div>
+  );
+}
+
+/* ─── Animated metric ─── */
+function Metric({ before, after, label }: { before: string; after: string; label: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref as React.RefObject<Element>, { once: true });
-  const [val, setVal] = useState(0);
-  const R = 60, CX = 80, CY = 80, C = 2 * Math.PI * R, arc = C * 0.75;
-
+  const num = parseFloat(after.replace(/[^0-9.]/g, '')) || 0;
+  const suf = after.replace(/[\d.]/g, '').replace(/^[+\-]/, '');
+  const pre = /^\+/.test(after) ? '+' : /^-/.test(after) ? '-' : '';
+  const mv = useMotionValue(0);
+  const [d, setD] = useState('0');
   useEffect(() => {
     if (!inView) return;
-    const target = 96, dur = 1600, start = Date.now();
-    const t = setInterval(() => {
-      const p = Math.min((Date.now() - start) / dur, 1);
-      setVal(Math.round(target * (1 - Math.pow(1 - p, 3))));
-      if (p >= 1) clearInterval(t);
-    }, 16);
-    return () => clearInterval(t);
-  }, [inView]);
-
+    const c = animate(mv, num, { duration: 1.8, ease });
+    const u = mv.on('change', (v: number) => setD(num < 10 ? v.toFixed(1) : Math.round(v).toString()));
+    return () => { c.stop(); u(); };
+  }, [inView, num, mv]);
   return (
-    <div ref={ref}>
-      <Label text="SLA выполнение" />
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-        <svg viewBox="0 0 160 160" style={{ width: 160, height: 160 }}>
-          <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="14"
-            strokeDasharray={`${arc} ${C - arc}`} strokeLinecap="round" transform={`rotate(135 ${CX} ${CY})`} />
-          <motion.circle cx={CX} cy={CY} r={R} fill="none" stroke={ACCENT} strokeWidth="14" strokeLinecap="round"
-            strokeDasharray={`${arc} ${C - arc}`}
-            initial={{ strokeDashoffset: arc }}
-            animate={inView ? { strokeDashoffset: arc * (1 - val / 100) } : { strokeDashoffset: arc }}
-            transition={{ duration: 1.6, ease: [0.33, 1, 0.68, 1] }}
-            transform={`rotate(135 ${CX} ${CY})`}
-            style={{ filter: `drop-shadow(0 0 8px ${ACCENT}88)` }} />
-          <text x={CX} y={CY - 4} textAnchor="middle" fontSize="26" fontWeight="800" fill="#fff">{val}%</text>
-          <text x={CX} y={CY + 16} textAnchor="middle" fontSize="11" fill="rgba(255,255,255,0.35)">в SLA</text>
-        </svg>
-        <div style={{ display: 'flex', gap: 20 }}>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: 0 }}>Просрочки до</p>
-            <p style={{ fontSize: 16, fontWeight: 600, color: '#F87171', margin: '2px 0 0' }}>31%</p>
-          </div>
-          <div style={{ width: 1, background: 'rgba(255,255,255,0.1)' }} />
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', margin: 0 }}>Просрочки после</p>
-            <p style={{ fontSize: 16, fontWeight: 600, color: ACCENT, margin: '2px 0 0' }}>4%</p>
-          </div>
-        </div>
+    <div ref={ref} style={{ borderRadius: 20, border: '1px solid rgba(255,255,255,0.12)', background: 'linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))', padding: '16px 20px', flex: 1, minWidth: 150 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <span style={{ fontSize: 22, color: 'rgba(255,255,255,0.3)' }}>{before}</span>
+        <svg width="18" height="10" viewBox="0 0 18 10" fill="none"><path d="M1 5h16M12 1l5 4-5 4" stroke={A} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <span style={{ fontSize: 26, fontWeight: 700 }}>{pre}{d}{suf}</span>
       </div>
+      <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: 0 }}>{label}</p>
     </div>
   );
 }
 
-/* ─── 3. Таймер заказа (1 col) ─── */
-function OrderTimerCard() {
-  const [seconds, setSeconds] = useState(45);
+/* ─── Result card ─── */
+function Stat({ stat, label, desc, i }: { stat: string; label: string; desc: string; i: number }) {
+  return (
+    <motion.div variants={fUp} custom={i} whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      style={{ borderRadius: 20, padding: 24, display: 'flex', flexDirection: 'column', gap: 16, minHeight: 220,
+        background: 'linear-gradient(#141415,#141415) padding-box,linear-gradient(135deg,rgba(255,255,255,0.2),rgba(255,255,255,0.04)) border-box',
+        border: '1px solid transparent' }}>
+      <span style={{ fontSize: 48, fontWeight: 700, color: A, lineHeight: 1 }}>{stat}</span>
+      <div>
+        <p style={{ fontSize: 18, fontWeight: 600, margin: '0 0 4px', color: '#fff' }}>{label}</p>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: 0 }}>{desc}</p>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Screen 1: Kanban ─── */
+type Order = { id: string; num: string; initials: string; items: number; secs: number };
+
+let _orderCounter = 1030;
+function makeOrder(): Order {
+  _orderCounter += 1;
+  const initials = ['АК', 'МП', 'ОС', 'ДН', 'ЕВ', 'РТ'];
+  return {
+    id: `o${_orderCounter}-${Math.random()}`,
+    num: `#${_orderCounter}`,
+    initials: initials[Math.floor(Math.random() * initials.length)],
+    items: Math.floor(Math.random() * 8) + 2,
+    secs: Math.floor(Math.random() * 420) + 60,
+  };
+}
+
+function fmt(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, '0')}`;
+}
+
+function OrderCard({ order, inAssembly }: { order: Order; inAssembly: boolean }) {
+  const urgent = inAssembly && order.secs < 180;
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.88, y: 12 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.88, y: -12 }}
+      transition={{ type: 'spring', stiffness: 340, damping: 26 }}
+      style={{
+        borderRadius: 12,
+        padding: '10px 12px',
+        background: urgent ? `${A}18` : 'rgba(255,255,255,0.05)',
+        border: `1px solid ${urgent ? A + '55' : 'rgba(255,255,255,0.08)'}`,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{order.num}</span>
+        <div style={{ width: 28, height: 28, borderRadius: '50%', background: urgent ? A : 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: '#fff', flexShrink: 0 }}>
+          {order.initials}
+        </div>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>{order.items} поз.</span>
+        {inAssembly && (
+          <span style={{ fontSize: 11, fontWeight: 700, color: urgent ? A : 'rgba(255,255,255,0.6)', fontFamily: 'monospace' }}>
+            {fmt(order.secs)}
+          </span>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+function KanbanScreen() {
+  const [newOrders, setNewOrders] = useState<Order[]>([
+    { id: 'o1', num: '#1024', initials: 'АК', items: 5, secs: 300 },
+    { id: 'o2', num: '#1025', initials: 'МП', items: 3, secs: 240 },
+    { id: 'o3', num: '#1026', initials: 'ОС', items: 7, secs: 420 },
+  ]);
+  const [assembly, setAssembly] = useState<Order[]>([
+    { id: 'o4', num: '#1022', initials: 'ДН', items: 4, secs: 155 },
+    { id: 'o5', num: '#1023', initials: 'ЕВ', items: 6, secs: 280 },
+  ]);
+  const [done, setDone] = useState<Order[]>([
+    { id: 'o6', num: '#1020', initials: 'РТ', items: 2, secs: 0 },
+  ]);
+
+  // Tick timers in assembly
   useEffect(() => {
-    const t = setInterval(() => setSeconds(s => s > 0 ? s - 1 : 45), 1000);
+    const t = setInterval(() => {
+      setAssembly(prev => prev.map(o => ({ ...o, secs: Math.max(0, o.secs - 2) })));
+    }, 2000);
     return () => clearInterval(t);
   }, []);
-  const urgent = seconds < 15;
-  const pct = seconds / 45;
+
+  // Move Новые → Сборка every 2s
+  useEffect(() => {
+    const t = setInterval(() => {
+      setNewOrders(prev => {
+        if (prev.length === 0) return prev;
+        const [first, ...rest] = prev;
+        setAssembly(a => [...a, first]);
+        return rest;
+      });
+    }, 2000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Move Сборка → Готово every 2s (offset 1s)
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        setAssembly(prev => {
+          if (prev.length === 0) return prev;
+          const [first, ...rest] = prev;
+          setDone(d => [first, ...d.slice(0, 3)]);
+          return rest;
+        });
+      }, 2000);
+      return () => clearInterval(interval);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  // Add new order every 4s
+  useEffect(() => {
+    const t = setInterval(() => {
+      setNewOrders(prev => [...prev, makeOrder()]);
+    }, 4000);
+    return () => clearInterval(t);
+  }, []);
 
   return (
-    <div>
-      <Label text="Таймер заказа" />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Timer display */}
-        <div style={{ padding: '20px', borderRadius: 16, background: urgent ? 'rgba(239,68,68,0.1)' : 'rgba(255,255,255,0.04)',
-          border: `1px solid ${urgent ? ACCENT + '40' : 'rgba(255,255,255,0.07)'}`, textAlign: 'center', transition: 'all 0.3s' }}>
-          <motion.p
-            animate={urgent ? { scale: [1, 1.05, 1] } : { scale: 1 }}
-            transition={{ repeat: urgent ? Infinity : 0, duration: 0.8 }}
-            style={{ fontSize: 56, fontWeight: 800, margin: 0, color: urgent ? ACCENT : '#fff', letterSpacing: '-0.04em', fontFamily: 'monospace' }}>
-            00:{String(seconds).padStart(2, '0')}
-          </motion.p>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '4px 0 0' }}>Время на сборку заказа</p>
+    <div style={{ padding: '28px 32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <span style={{ fontSize: 18, fontWeight: 600 }}>Kanban — Сборка заказов</span>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10B981', display: 'inline-block' }} />
+          Смена активна
+        </span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+        {/* Новые */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Новые</span>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 8, background: 'rgba(255,255,255,0.15)', color: '#fff' }}>{newOrders.length}</span>
+          </div>
+          <AnimatePresence>
+            {newOrders.map(o => <OrderCard key={o.id} order={o} inAssembly={false} />)}
+          </AnimatePresence>
         </div>
-        {/* Progress bar */}
-        <div style={{ position: 'relative', height: 6, background: 'rgba(255,255,255,0.07)', borderRadius: 3 }}>
-          <motion.div animate={{ width: `${pct * 100}%`, background: urgent ? ACCENT : '#34D399' }} transition={{ duration: 0.9 }}
-            style={{ height: '100%', borderRadius: 3 }} />
+        {/* Сборка */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', borderRadius: 10, border: `1px solid ${A}66`, background: `${A}12`, marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: A }}>Сборка</span>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 8, background: A, color: '#fff' }}>{assembly.length}</span>
+          </div>
+          <AnimatePresence>
+            {assembly.map(o => <OrderCard key={o.id} order={o} inAssembly={true} />)}
+          </AnimatePresence>
         </div>
-        {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {[{ label: 'Среднее время', val: '42 сек', ok: true }, { label: 'Цель SLA', val: '< 60 сек', ok: true }].map(s => (
-            <div key={s.label} style={{ padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '0 0 3px' }}>{s.label}</p>
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#34D399', margin: 0 }}>{s.val}</p>
-            </div>
-          ))}
+        {/* Готово */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Готово</span>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 8, background: '#10B981', color: '#fff' }}>{done.length}</span>
+          </div>
+          <AnimatePresence>
+            {done.map(o => (
+              <motion.div
+                key={o.id}
+                layout
+                initial={{ opacity: 0, scale: 0.88, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.88 }}
+                transition={{ type: 'spring', stiffness: 340, damping: 26 }}
+                style={{ borderRadius: 12, padding: '10px 12px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{o.num}</span>
+                <span style={{ fontSize: 18, color: '#10B981' }}>✓</span>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       </div>
     </div>
   );
 }
 
-/* ─── 4. Тепловая карта (3 cols) ─── */
-function HeatmapCard() {
-  const rows = 5, cols = 12;
-  const data = Array.from({ length: rows }, (_, r) =>
-    Array.from({ length: cols }, (_, c) => Math.random() * 0.8 + (r === 2 && c > 4 && c < 9 ? 0.6 : 0.1))
-  );
-  const colors = (v: number) => {
-    if (v > 0.85) return '#EF4444';
-    if (v > 0.65) return '#F97316';
-    if (v > 0.45) return '#F59E0B';
-    if (v > 0.25) return '#84CC16';
-    return '#166534';
-  };
-  const hours = ['8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'];
-  const sections = ['А1', 'А2', 'Б1', 'Б2', 'В1'];
-
-  return (
-    <div>
-      <Label text="Тепловая карта загрузки секций склада" />
-      <div style={{ display: 'flex', gap: 12 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: 24 }}>
-          {sections.map(s => <span key={s} style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', width: 22 }}>{s}</span>)}
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 4, marginBottom: 6 }}>
-            {data.map((row, ri) =>
-              row.map((val, ci) => (
-                <motion.div key={`${ri}-${ci}`}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.02 * (ri * cols + ci), duration: 0.3, ease: 'easeOut' }}
-                  whileHover={{ scale: 1.3, zIndex: 10 }}
-                  style={{ aspectRatio: '1', borderRadius: 4, background: colors(val), cursor: 'pointer' }} />
-              ))
-            )}
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 4 }}>
-            {hours.map(h => <span key={h} style={{ fontSize: 9, color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>{h}:00</span>)}
-          </div>
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: 16, marginTop: 14, justifyContent: 'flex-end' }}>
-        {[['#166534', 'Свободно'], ['#84CC16', 'Средне'], ['#F59E0B', 'Загружено'], ['#EF4444', 'Критично']].map(([color, label]) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{ width: 10, height: 10, borderRadius: 3, background: color }} />
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{label}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── 5. Маршрут — SVG рисует себя (1 col) ─── */
-function RouteCard() {
+/* ─── Screen 2: Route ─── */
+function RouteScreen() {
   const stops = [
-    { x: 30, y: 20, label: 'A1' }, { x: 70, y: 20, label: 'A3' },
-    { x: 70, y: 50, label: 'B3' }, { x: 30, y: 50, label: 'B1' },
-    { x: 30, y: 80, label: 'C1' }, { x: 70, y: 80, label: 'C3' },
+    { x: 20, y: 80, label: '1', name: 'Склад' },
+    { x: 35, y: 52, label: '2', name: 'ул. Ленина 4' },
+    { x: 58, y: 38, label: '3', name: 'пр. Мира 11' },
+    { x: 72, y: 60, label: '4', name: 'ул. Садовая 7' },
+    { x: 88, y: 30, label: '5', name: 'Финиш' },
   ];
-  const d = stops.map((s, i) => `${i === 0 ? 'M' : 'L'} ${s.x} ${s.y}`).join(' ');
+  const pathD = stops.map((s, i) => `${i === 0 ? 'M' : 'L'} ${s.x} ${s.y}`).join(' ');
 
   return (
-    <div>
-      <Label text="Маршрут сборщика" />
-      <div style={{ position: 'relative', height: 220, background: '#080404', borderRadius: 14, padding: '16px', border: '1px solid rgba(255,255,255,0.07)' }}>
-        <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%' }} preserveAspectRatio="xMidYMid meet">
-          {/* Grid */}
-          {[0, 25, 50, 75, 100].map(y => <line key={`h${y}`} x1="0" y1={y} x2="100" y2={y} stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />)}
-          {[0, 25, 50, 75, 100].map(x => <line key={`v${x}`} x1={x} y1="0" x2={x} y2="100" stroke="rgba(255,255,255,0.05)" strokeWidth="0.5" />)}
-          {/* Route path */}
-          <motion.path d={d} stroke={ACCENT} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"
-            initial={{ pathLength: 0, opacity: 0 }} whileInView={{ pathLength: 1, opacity: 1 }} viewport={{ once: true }}
-            transition={{ duration: 2, ease: 'easeOut', delay: 0.3 }}
-            style={{ filter: `drop-shadow(0 0 3px ${ACCENT}88)` }} />
-          {/* Stops */}
+    <div style={{ padding: '28px 32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <span style={{ fontSize: 16, fontWeight: 600 }}>Маршрут доставки</span>
+        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Сегодня · 14:30</span>
+      </div>
+      <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', background: '#0A0A14', border: '1px solid rgba(255,255,255,0.07)', padding: 8 }}>
+        <svg viewBox="0 0 100 100" style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
+          <defs>
+            <linearGradient id="sc-route-grad" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor={A} stopOpacity="0.3" />
+              <stop offset="100%" stopColor={A} />
+            </linearGradient>
+          </defs>
+          {[...Array(10)].map((_, i) => (
+            <line key={`h${i}`} x1="0" y1={i * 11.1} x2="100" y2={i * 11.1} stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
+          ))}
+          {[...Array(10)].map((_, i) => (
+            <line key={`v${i}`} x1={i * 11.1} y1="0" x2={i * 11.1} y2="100" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
+          ))}
+          <motion.path
+            d={pathD}
+            stroke="url(#sc-route-grad)"
+            strokeWidth="1.8"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 2.2, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1.5 }}
+          />
           {stops.map((s, i) => (
-            <motion.g key={s.label} initial={{ scale: 0, opacity: 0 }} whileInView={{ scale: 1, opacity: 1 }} viewport={{ once: true }}
-              transition={{ delay: 0.3 + (i / stops.length) * 2 + 0.1, type: 'spring', stiffness: 400 }}>
-              <circle cx={s.x} cy={s.y} r="4" fill={i === 0 ? '#34D399' : i === stops.length - 1 ? ACCENT : '#fff'} />
-              <text x={s.x + 5} y={s.y - 4} fontSize="5" fill="rgba(255,255,255,0.5)">{s.label}</text>
+            <motion.g key={s.label}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3 + i * 0.18, type: 'spring', stiffness: 320, damping: 22 }}
+              style={{ transformOrigin: `${s.x}px ${s.y}px` }}
+            >
+              {i === 0 && (
+                <motion.circle
+                  cx={s.x} cy={s.y} r="5"
+                  fill="none" stroke={A} strokeWidth="0.8"
+                  animate={{ r: [5, 8, 5], opacity: [0.6, 0, 0.6] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
+                />
+              )}
+              <circle cx={s.x} cy={s.y} r={i === 0 ? 3.5 : 2.8}
+                fill={i === 0 ? A : i === stops.length - 1 ? '#10B981' : '#1A1A2E'}
+                stroke={i === 0 ? A : i === stops.length - 1 ? '#10B981' : 'rgba(255,255,255,0.35)'}
+                strokeWidth="0.8"
+              />
+              <text x={s.x} y={s.y + 0.8} textAnchor="middle" dominantBaseline="middle"
+                fill="#fff" fontSize="2.2" fontWeight="700">
+                {s.label}
+              </text>
             </motion.g>
           ))}
         </svg>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
-        {[{ label: 'Секций', val: '6' }, { label: 'Позиций', val: '14' }, { label: 'Расстояние', val: '82 м' }].map(s => (
-          <div key={s.label} style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: 0 }}>{s.val}</p>
-            <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', margin: '2px 0 0' }}>{s.label}</p>
-          </div>
-        ))}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
+        <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)' }}>Маршрут: 4.2 км · 18 мин</span>
+        <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 8, background: `${A}22`, color: A, fontWeight: 600, border: `1px solid ${A}44` }}>5 точек</span>
       </div>
     </div>
   );
 }
 
-/* ─── 6. До/После ошибок (1 col) ─── */
-function ErrorBreakdownCard() {
-  const items = [
-    { label: 'Время обработки', bl: '4 мин', al: '45 сек', bv: 100, av: 19 },
-    { label: 'Ошибки комплектации', bl: '8%', al: '1.2%', bv: 100, av: 15 },
-    { label: 'Просрочки SLA', bl: '31%', al: '4%', bv: 100, av: 13 },
-  ];
+/* ─── Screen 3: Timer / SLA ─── */
+function TimerScreen() {
+  const TOTAL = 45 * 60;
+  const [remaining, setRemaining] = useState(8 * 60 + 32);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setRemaining(prev => (prev <= 0 ? TOTAL : prev - 1));
+    }, 500);
+    return () => clearInterval(t);
+  }, []);
+
+  const ratio = remaining / TOTAL;
+  const urgent = remaining < 5 * 60;
+  const amber = remaining < 15 * 60 && remaining >= 5 * 60;
+  const timerColor = urgent ? A : amber ? '#F59E0B' : '#10B981';
+
+  const mins = Math.floor(remaining / 60);
+  const secsPart = remaining % 60;
+  const timeStr = `${mins.toString().padStart(2, '0')}:${secsPart.toString().padStart(2, '0')}`;
+
+  const R = 44;
+  const circ = 2 * Math.PI * R;
+  const dashOffset = circ * (1 - ratio);
+
   return (
-    <div>
-      <Label text="До / После редизайна" />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-        {items.map((m, i) => (
-          <motion.div key={m.label} initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.1 + i * 0.15 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>{m.label}</span>
-              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.28)' }}>{m.bl}</span>
-                <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>→</span>
-                <span style={{ fontSize: 13, color: ACCENT, fontWeight: 600 }}>{m.al}</span>
-              </div>
-            </div>
-            <div style={{ position: 'relative', height: 5, background: 'rgba(255,255,255,0.07)', borderRadius: 3, marginBottom: 4 }}>
-              <motion.div initial={{ width: 0 }} whileInView={{ width: `${m.bv}%` }} viewport={{ once: true }}
-                transition={{ delay: 0.2 + i * 0.15, duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
-                style={{ height: '100%', borderRadius: 3, background: 'rgba(255,255,255,0.18)' }} />
-            </div>
-            <div style={{ position: 'relative', height: 5, background: 'rgba(255,255,255,0.07)', borderRadius: 3 }}>
-              <motion.div initial={{ width: 0 }} whileInView={{ width: `${m.av}%` }} viewport={{ once: true }}
-                transition={{ delay: 0.4 + i * 0.15, duration: 0.7, ease: [0.33, 1, 0.68, 1] }}
-                style={{ height: '100%', borderRadius: 3, background: ACCENT, boxShadow: `0 0 6px ${ACCENT}66` }} />
-            </div>
-          </motion.div>
+    <div style={{ padding: '28px 32px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+        <span style={{ fontSize: 16, fontWeight: 600 }}>SLA Таймер</span>
+        <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 8, background: timerColor + '22', color: timerColor, border: `1px solid ${timerColor}44`, fontWeight: 600 }}>
+          {urgent ? 'ГОРИТ' : amber ? 'Скоро' : 'В норме'}
+        </span>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+        <div style={{ position: 'relative', width: 140, height: 140 }}>
+          <svg width="140" height="140" viewBox="0 0 110 110" style={{ position: 'absolute', inset: 0 }}>
+            <defs>
+              <linearGradient id="sc-ring-grad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor={timerColor} stopOpacity="0.3" />
+                <stop offset="100%" stopColor={timerColor} />
+              </linearGradient>
+            </defs>
+            <circle cx="55" cy="55" r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="7" />
+            <motion.circle
+              cx="55" cy="55" r={R}
+              fill="none"
+              stroke="url(#sc-ring-grad)"
+              strokeWidth="7"
+              strokeLinecap="round"
+              strokeDasharray={circ}
+              animate={{ strokeDashoffset: dashOffset }}
+              transition={{ duration: 0.4, ease: 'linear' }}
+              style={{ transform: 'rotate(-90deg)', transformOrigin: '55px 55px' }}
+            />
+          </svg>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <motion.span
+              animate={urgent ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+              transition={urgent ? { repeat: Infinity, duration: 0.6 } : {}}
+              style={{ fontSize: 26, fontWeight: 700, color: timerColor, fontFamily: 'monospace', lineHeight: 1 }}
+            >
+              {timeStr}
+            </motion.span>
+            <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>осталось</span>
+          </div>
+        </div>
+      </div>
+      <div style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', marginBottom: 14, textAlign: 'center' }}>
+        <p style={{ fontSize: 14, fontWeight: 600, margin: '0 0 2px', color: '#fff' }}>Заказ #1021</p>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', margin: 0 }}>6 позиций · стеллаж A3, B1, C7</p>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+        {[
+          { label: 'В сборке', val: '2' },
+          { label: 'Готово', val: '7' },
+          { label: 'Опоздания', val: '0' },
+        ].map(s => (
+          <div key={s.label} style={{ borderRadius: 10, padding: '8px 10px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+            <p style={{ fontSize: 18, fontWeight: 700, margin: '0 0 2px', color: s.label === 'Опоздания' && s.val === '0' ? '#10B981' : '#fff' }}>{s.val}</p>
+            <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', margin: 0 }}>{s.label}</p>
+          </div>
         ))}
       </div>
     </div>
@@ -345,79 +429,96 @@ function ErrorBreakdownCard() {
 
 /* ─── Page ─── */
 export default function SamocatPage() {
-  const metrics = [
-    { before: '4 мин', after: '45 сек', label: 'Время обработки одного заказа' },
-    { before: '8%', after: '1.2%', label: 'Ошибки комплектации' },
-    { before: '31%', after: '4%', label: 'Просрочки SLA по заказам' },
-  ];
-
   return (
     <div style={{ background: BG, color: '#fff', fontFamily: 'var(--font-manrope, Manrope, sans-serif)', minHeight: '100vh' }}>
       <CaseTabs />
 
-      <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-8">
-        <motion.div initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-          style={{ display: 'flex', flexDirection: 'column', gap: 14, maxWidth: 700 }}>
-          <motion.div variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {['RetailTech', 'mobile', '2024'].map(t => (
-                <span key={t} style={{ fontSize: 13, padding: '4px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.45)' }}>{t}</span>
-              ))}
-            </div>
+      {/* HERO */}
+      <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-[72px]" style={{ display: 'grid', gridTemplateColumns: '361px 1fr', gap: 148 }}>
+        <motion.div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
+          <motion.h1 variants={fUp} style={{ fontSize: 48, fontWeight: 400, lineHeight: 1.2, opacity: 0.5, margin: 0 }}>RetailOps</motion.h1>
+          <motion.div variants={fUp} style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {['UX Research', 'Internal Tool', 'Logistics', 'Mobile', '2023'].map(t => (
+              <span key={t} style={{ height: 44, padding: '0 16px', borderRadius: 12, display: 'flex', alignItems: 'center', fontSize: 18, fontWeight: 500, border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>{t}</span>
+            ))}
           </motion.div>
-          <motion.h1 variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
-            style={{ fontSize: 52, fontWeight: 400, lineHeight: 1.1, margin: 0 }}>
-            Операционный центр даркстора
-          </motion.h1>
-          <motion.p variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }}
-            style={{ fontSize: 17, color: 'rgba(255,255,255,0.55)', lineHeight: 1.65, margin: 0 }}>
-            Цифровая очередь и навигация по полкам — время обработки с 4 мин до 45 сек, просрочки SLA с 31% до 4%
+        </motion.div>
+        <motion.div style={{ display: 'flex', flexDirection: 'column', gap: 32 }} initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
+          <motion.h2 variants={fUp} style={{ fontSize: 64, fontWeight: 400, lineHeight: 1.15, margin: 0 }}>
+            Система управления сборкой заказов для экспресс-доставки
+          </motion.h2>
+          <motion.p variants={fUp} style={{ fontSize: 22, fontWeight: 400, color: 'rgba(255,255,255,0.65)', maxWidth: 720, lineHeight: 1.6, margin: 0 }}>
+            Спроектировали внутренний инструмент для сборщиков и операторов склада. Заменили бумажные листы сборки на мобильный Kanban с приоритизацией по SLA. Процент заказов в срок вырос с 31% до 96%.
           </motion.p>
         </motion.div>
       </section>
 
-      <section className="mx-auto max-w-[1512px] px-11 pb-12">
-        <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}
-          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-          style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          <motion.div variants={cardReveal} style={{ gridColumn: 'span 2', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
-            <KanbanCard />
+      {/* KEY VISUAL */}
+      <motion.section className="mx-auto max-w-[1512px] px-11 pb-[72px]"
+        initial={{ opacity: 0, y: 48 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}>
+        <Mac url="ops.retail/kanban">
+          <KanbanScreen />
+        </Mac>
+      </motion.section>
+
+      {/* RESEARCH */}
+      <section className="mx-auto max-w-[1512px] px-11 pb-[72px]" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+        <Row label="Гипотеза" i={0}>
+          <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.7)', maxWidth: 500, margin: 0, lineHeight: 1.65 }}>
+            Визуальный Kanban с автоматической приоритизацией по дедлайну позволит сборщикам фокусироваться на горящих заказах и сократить опоздания
+          </p>
+        </Row>
+        <Row label="Пользователи" i={1}>
+          <motion.div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
+            {['Сборщики заказов', 'Операторы смены', 'Курьеры'].map((u, i) => (
+              <motion.div key={u} variants={fUp} custom={i}
+                style={{ height: 56, padding: '0 20px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.12)', fontSize: 18, fontWeight: 500, display: 'flex', alignItems: 'center' }}>{u}</motion.div>
+            ))}
           </motion.div>
-          <motion.div variants={cardReveal} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
-            <SlaGaugeCard />
+        </Row>
+        <Row label="Метрики" i={2}>
+          <div style={{ display: 'flex', gap: 14 }}>
+            <Metric before="31%" after="96%" label="Заказов выполнено в SLA" />
+            <Metric before="18 мин" after="8 мин" label="Среднее время сборки" />
+            <Metric before="14%" after="2%" label="Ошибки комплектации" />
+          </div>
+        </Row>
+        <Row label="Что сделал" i={3}>
+          <motion.div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end' }}
+            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ visible: { transition: { staggerChildren: 0.07 } } }}>
+            {['Полевые наблюдения', 'CJM сборщика', 'Kanban-система', 'SLA-таймер', 'Прототип', 'Pilot-запуск'].map((t, i) => (
+              <motion.span key={t} variants={fUp} custom={i}
+                style={{ height: 44, padding: '0 16px', borderRadius: 12, display: 'flex', alignItems: 'center', fontSize: 16, fontWeight: 500, border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.1)' }}>{t}</motion.span>
+            ))}
           </motion.div>
-          <motion.div variants={cardReveal} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
-            <RouteCard />
-          </motion.div>
-          <motion.div variants={cardReveal} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
-            <OrderTimerCard />
-          </motion.div>
-          <motion.div variants={cardReveal} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
-            <ErrorBreakdownCard />
-          </motion.div>
-          <motion.div variants={cardReveal} style={{ gridColumn: 'span 3', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 20, padding: 24 }}>
-            <HeatmapCard />
-          </motion.div>
+        </Row>
+      </section>
+
+      {/* SOLUTION SCREENS */}
+      <section className="mx-auto max-w-[1512px] px-11 pb-10" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <motion.div initial={{ opacity: 0, x: -32 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease }}>
+          <Mac url="ops.retail/route"><RouteScreen /></Mac>
+        </motion.div>
+        <motion.div initial={{ opacity: 0, x: 32 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease }}>
+          <Mac url="ops.retail/analytics"><TimerScreen /></Mac>
         </motion.div>
       </section>
 
-      <section className="mx-auto max-w-[1512px] px-11 pb-16">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-          {metrics.map((m, i) => (
-            <motion.div key={i} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16, padding: '20px 24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                <span style={{ fontSize: 22, color: 'rgba(255,255,255,0.3)' }}>{m.before}</span>
-                <svg width="18" height="10" viewBox="0 0 20 12" fill="none"><path d="M1 6h18M13 1l6 5-6 5" stroke={ACCENT} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                <span style={{ fontSize: 24, fontWeight: 700, color: '#fff' }}>{m.after}</span>
-              </div>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>{m.label}</p>
-            </motion.div>
-          ))}
-        </div>
+      {/* RESULTS */}
+      <section className="mx-auto max-w-[1512px] px-11 pb-[88px]" style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 48 }}>
+        <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          style={{ fontSize: 18, background: 'linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.5) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
+          Метрики после пилотного запуска на 2 складах
+        </motion.p>
+        <motion.div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}
+          variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
+          <Stat stat="+210%" label="В срок по SLA" desc="С 31% до 96% за квартал" i={0} />
+          <Stat stat="−56%" label="Время сборки" desc="С 18 мин до 8 мин" i={1} />
+          <Stat stat="−86%" label="Ошибки заказов" desc="С 14% до 2% по вине интерфейса" i={2} />
+          <Stat stat="×3" label="Заказов за смену" desc="На одного сборщика" i={3} />
+        </motion.div>
       </section>
-
-      <BackLink href="/#section-8" />
     </div>
   );
 }
