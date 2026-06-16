@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@source not "../../VSCOProfileFilter";
+@source not "../../igrow";
 
 :root {
   --c-bg: #070709;
@@ -40,4 +42,219 @@ html, body {
   scroll-snap-align: start;
   scroll-snap-stop: always;
   overflow: hidden;
+}
+
+/* Hidden on desktop, shown on mobile */
+.exp-year-mobile { display: none; }
+
+/* ═══ Mobile ≤ 767px ═══ */
+@media (max-width: 767px) {
+
+  /* ── Header ── */
+  header {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+  .site-header-tagline { display: none !important; }
+
+  /* Disable snap-scroll, enable normal scroll */
+  .snap-container {
+    scroll-snap-type: none;
+    height: auto;
+    overflow-y: auto;
+  }
+  .snap-section {
+    height: auto;
+    min-height: 100dvh;
+    scroll-snap-align: none;
+    scroll-snap-stop: unset;
+    overflow: hidden;
+  }
+
+  /* ── Hero ── */
+  .hero-inner { height: auto !important; }
+  .hero-center {
+    flex: none !important;
+    padding: 32px 0 !important;
+  }
+  .hero-features-grid {
+    flex-direction: column;
+    gap: 20px !important;
+    padding: 0 20px !important;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-feature-item {
+    flex-direction: row !important;
+    gap: 16px !important;
+    align-items: center;
+    width: 100%;
+    max-width: 280px;
+  }
+  .hero-feature-item > div:first-child {
+    width: 64px !important;
+    height: 64px !important;
+    flex-shrink: 0;
+  }
+  .hero-bottom {
+    padding: 0 20px 32px !important;
+  }
+  .hero-name {
+    font-size: 16.5vw !important;
+  }
+
+  /* ── Case sections common ── */
+  .case-content {
+    padding: 20px !important;
+    min-height: 100dvh !important;
+  }
+  .case-title-area {
+    flex: none !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap;
+  }
+  .case-title {
+    font-size: 40px !important;
+  }
+  .case-desc {
+    display: none !important;
+  }
+  .case-features-row {
+    flex: 1 !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    margin-top: 0 !important;
+    padding-bottom: 80px !important;
+  }
+  .case-feature-item {
+    flex: none !important;
+    width: 100% !important;
+    height: 56px !important;
+    border-radius: 16px !important;
+  }
+  /* RSB / Eurochem: кнопка прибита к низу */
+  .case-features-row .case-cta-wrap {
+    position: absolute !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    right: 20px !important;
+    width: auto !important;
+    margin-top: 0 !important;
+  }
+  .case-cta-wrap a {
+    width: 100% !important;
+    border-radius: 16px !important;
+  }
+
+  /* Background images on mobile */
+  .case-bg-img {
+    left: 0 !important;
+    top: 50% !important;
+    width: 100% !important;
+    height: 50% !important;
+    overflow: hidden;
+  }
+
+  /* HR-CRM specifics */
+  .hrcrm-features-wrap {
+    flex: 1 !important;
+    justify-content: center !important;
+    margin-top: 0 !important;
+    padding-bottom: 80px !important;
+  }
+  .hrcrm-features-col {
+    width: 100% !important;
+    gap: 8px !important;
+  }
+  /* HR-CRM: кнопка прибита к низу */
+  .case-bottom-bar {
+    position: absolute !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    right: 20px !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  /* ── Process ── */
+  .process-step-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+  .process-steps-group {
+    width: 100% !important;
+  }
+  .process-layout {
+    flex-direction: column !important;
+    gap: 24px;
+    height: auto !important;
+    overflow-y: auto;
+  }
+  .process-left {
+    flex: none !important;
+  }
+  .process-title {
+    font-size: 36px !important;
+  }
+  .process-steps-wrap {
+    width: 100% !important;
+    flex-direction: column !important;
+    gap: 24px;
+  }
+  .process-indicators {
+    display: none !important;
+  }
+
+  /* ── Experience ── */
+  .exp-title { font-size: 44px !important; }
+  .exp-bottom-bar {
+    height: auto !important;
+    padding: 24px 0 !important;
+  }
+  .exp-bottom-inner {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 12px !important;
+  }
+  .exp-years {
+    display: none !important;
+  }
+  .exp-rows {
+    overflow: visible !important;
+  }
+  .exp-entry {
+    height: auto !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 20px !important;
+    border-radius: 20px !important;
+    gap: 8px;
+  }
+  .exp-year-mobile {
+    display: block;
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 4px;
+  }
+  .exp-project-col {
+    width: 100% !important;
+  }
+  .exp-entry > div[style*="flex: 1"] {
+    display: none;
+  }
+  .exp-text {
+    max-width: 100% !important;
+  }
+}
+
+.hero-screen {
+  container-type: inline-size;
 }

@@ -51,7 +51,7 @@ export default function SiteHeader({ theme = 'dark' }: { theme?: 'dark' | 'light
             height={62}
             priority
           />
-          <span className={`text-base font-normal leading-tight max-w-[142px] ${textMuted}`}>
+          <span className={`site-header-tagline text-base font-normal leading-tight max-w-[142px] ${textMuted}`}>
             Создаю дизайн который не только вдохновляет
           </span>
         </Link>
