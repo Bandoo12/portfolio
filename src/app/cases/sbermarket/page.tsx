@@ -2,7 +2,6 @@
 
 import { motion, useInView, useMotionValue, animate } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
-import { CaseTabs } from '@/components/case/CaseTabs';
 
 const A = '#10B981';
 const BG = '#030F0A';
@@ -304,7 +303,6 @@ function RevenueScreen() {
 export default function SbermarketPage() {
   return (
     <div style={{ background: BG, color: '#fff', fontFamily: 'var(--font-manrope, Manrope, sans-serif)', minHeight: '100vh' }}>
-      <CaseTabs />
 
       {/* HERO */}
       <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-[72px]" style={{ display: 'grid', gridTemplateColumns: '361px 1fr', gap: 148 }}>

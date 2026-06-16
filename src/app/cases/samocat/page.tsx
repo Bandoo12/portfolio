@@ -2,7 +2,6 @@
 
 import { motion, AnimatePresence, useInView, useMotionValue, animate } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
-import { CaseTabs } from '@/components/case/CaseTabs';
 
 const A = '#EF4444';
 const BG = '#0C0404';
@@ -275,7 +274,6 @@ function TimerAlertScreen() {
 export default function SamocatPage() {
   return (
     <div style={{ background: BG, color: '#fff', fontFamily: 'var(--font-manrope, Manrope, sans-serif)', minHeight: '100vh' }}>
-      <CaseTabs />
       <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-[72px]" style={{ display: 'grid', gridTemplateColumns: '361px 1fr', gap: 148 }}>
         <motion.div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
           <motion.h1 variants={fUp} style={{ fontSize: 48, fontWeight: 400, lineHeight: 1.2, opacity: 0.5, margin: 0 }}>Q-commerce</motion.h1>

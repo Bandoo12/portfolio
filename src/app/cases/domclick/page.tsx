@@ -2,7 +2,6 @@
 
 import { motion, useInView, useMotionValue, animate, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
-import { CaseTabs } from '@/components/case/CaseTabs';
 
 const A = '#B5EE50';        // lime green accent
 const AD = '#1A1A1A';       // dark text on lime
@@ -576,7 +575,6 @@ function ParallaxHero() {
 export default function DomclickPage() {
   return (
     <div style={{ background: BG, color: '#fff', fontFamily: 'var(--font-manrope, Manrope, sans-serif)', minHeight: '100vh' }}>
-      <CaseTabs />
 
       <ParallaxHero />
 
