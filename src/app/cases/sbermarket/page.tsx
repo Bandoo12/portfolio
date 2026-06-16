@@ -7,25 +7,26 @@ import { CaseTabs } from '@/components/case/CaseTabs';
 const A = '#10B981';
 const BG = '#030F0A';
 const ease: [number, number, number, number] = [0.33, 1, 0.68, 1];
+
 const fUp = {
   hidden: { opacity: 0, y: 32 },
   visible: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.65, delay: i * 0.1, ease } }),
 };
 
-/* ─── Browser mockup ─── */
+/* ─── Mac browser mockup ─── */
 function Mac({ url, children }: { url: string; children: React.ReactNode }) {
   return (
     <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.09)', boxShadow: '0 48px 120px rgba(0,0,0,0.7)' }}>
-      <div style={{ height: 44, background: '#0B1020', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 8 }}>
+      <div style={{ height: 44, background: '#1C1F2E', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', padding: '0 16px', gap: 8 }}>
         <div style={{ display: 'flex', gap: 6 }}>
           {['#FF5F57', '#FEBC2E', '#28C840'].map(c => <div key={c} style={{ width: 12, height: 12, borderRadius: '50%', background: c }} />)}
         </div>
         <div style={{ flex: 1, margin: '0 16px', height: 26, background: 'rgba(255,255,255,0.05)', borderRadius: 6, display: 'flex', alignItems: 'center', padding: '0 10px', gap: 6 }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" /><path d="M2 12h20M12 2c-3 3-4 6-4 10s1 7 4 10M12 2c3 3 4 6 4 10s-1 7-4 10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" /></svg>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', fontFamily: 'monospace' }}>{url}</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"/><path d="M2 12h20M12 2c-3 3-4 6-4 10s1 7 4 10M12 2c3 3 4 6 4 10s-1 7-4 10" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5"/></svg>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontFamily: 'monospace' }}>{url}</span>
         </div>
       </div>
-      <div style={{ background: BG }}>{children}</div>
+      <div>{children}</div>
     </div>
   );
 }
@@ -62,7 +63,7 @@ function Metric({ before, after, label }: { before: string; after: string; label
     <div ref={ref} style={{ borderRadius: 20, border: '1px solid rgba(255,255,255,0.12)', background: 'linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02))', padding: '16px 20px', flex: 1, minWidth: 150 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <span style={{ fontSize: 22, color: 'rgba(255,255,255,0.3)' }}>{before}</span>
-        <svg width="18" height="10" viewBox="0 0 18 10" fill="none"><path d="M1 5h16M12 1l5 4-5 4" stroke={A} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        <svg width="18" height="10" viewBox="0 0 18 10" fill="none"><path d="M1 5h16M12 1l5 4-5 4" stroke={A} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
         <span style={{ fontSize: 26, fontWeight: 700 }}>{pre}{d}{suf}</span>
       </div>
       <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', margin: 0 }}>{label}</p>
@@ -86,248 +87,215 @@ function Stat({ stat, label, desc, i }: { stat: string; label: string; desc: str
   );
 }
 
-/* ─── Screen 1: Checkout ─── */
+/* ─── Screen 1: Checkout (LIGHT) ─── */
 function CheckoutScreen() {
-  const steps = [
-    { n: 1, label: 'Корзина', done: true, active: false },
-    { n: 2, label: 'Доставка', done: true, active: false },
-    { n: 3, label: 'Оплата', done: false, active: true },
-  ];
-  const items = [
-    { name: 'Молоко 3,2% 1л', qty: '×2', price: '148 ₽' },
-    { name: 'Хлеб ржаной', qty: '×1', price: '69 ₽' },
-    { name: 'Яблоки Голден 1кг', qty: '×3', price: '267 ₽' },
-  ];
-  const payments = ['Visa •••• 4231', 'SberPay', 'Наличные'];
-  const [selPay, setSelPay] = useState(0);
+  const barHeights = [38, 52, 45, 68, 74, 55, 82, 60, 78, 91, 65, 95];
 
   return (
-    <div style={{ padding: '28px 32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-      {/* Left: steps + payment */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {/* Step indicators */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {steps.map((s, idx) => (
-            <div key={s.n} style={{ display: 'flex', alignItems: 'center', flex: idx < steps.length - 1 ? 1 : 'none' }}>
-              <motion.div
-                initial={{ opacity: 0, x: -16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.15 + idx * 0.15, ease }}
-                style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{
-                  width: 28, height: 28, borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: s.done ? A : s.active ? `${A}33` : 'rgba(255,255,255,0.08)',
-                  border: s.active ? `2px solid ${A}` : 'none',
-                  fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0,
-                }}>
-                  {s.done ? '✓' : s.n}
-                </div>
-                <span style={{ fontSize: 12, fontWeight: s.active ? 600 : 400, whiteSpace: 'nowrap',
-                  color: s.active ? '#fff' : s.done ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.3)' }}>
-                  {s.label}
-                </span>
-              </motion.div>
-              {idx < steps.length - 1 && (
-                <div style={{ flex: 1, height: 1, margin: '0 8px',
-                  background: s.done ? `${A}60` : 'rgba(255,255,255,0.1)' }} />
-              )}
+    <div style={{ background: '#F8FAFB', display: 'grid', gridTemplateColumns: '55% 45%', minHeight: 440 }}>
+      {/* LEFT: checkout form */}
+      <div style={{ borderRight: '1px solid #E5E7EB', display: 'flex', flexDirection: 'column' }}>
+        {/* Nav */}
+        <div style={{ height: 48, background: '#fff', borderBottom: '1px solid #F0F2F4', display: 'flex', alignItems: 'center', padding: '0 20px', gap: 10 }}>
+          <span style={{ fontSize: 20, fontWeight: 800, color: '#111827' }}>М.</span>
+          <span style={{ fontSize: 12, color: '#9CA3AF' }}>/</span>
+          <span style={{ fontSize: 13, color: '#6B7280' }}>Корзина</span>
+        </div>
+
+        <div style={{ padding: '20px 24px', flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* Items */}
+          {[
+            { color: '#10B981', label: 'Молоко 1л', price: '89₽' },
+            { color: '#3B82F6', label: 'Хлеб бородинский', price: '67₽' },
+          ].map((item, idx) => (
+            <motion.div key={item.label}
+              initial={{ opacity: 0, x: -12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.15 + idx * 0.1, ease }}
+              style={{ background: '#fff', borderRadius: 12, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #F0F2F4' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: item.color + '22', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: 16, height: 16, borderRadius: 4, background: item.color }} />
+              </div>
+              <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: '#111827' }}>{item.label}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>{item.price}</span>
+            </motion.div>
+          ))}
+
+          {/* Summary */}
+          <div style={{ background: '#fff', borderRadius: 12, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8,
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)', border: '1px solid #F0F2F4' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, color: '#6B7280' }}>Подытог</span>
+              <span style={{ fontSize: 13, color: '#374151' }}>156₽</span>
             </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, color: '#6B7280' }}>Доставка</span>
+              <span style={{ fontSize: 13, color: '#374151' }}>99₽</span>
+            </div>
+            <div style={{ height: 1, background: '#F0F2F4' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>Итого</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: '#111827' }}>255₽</span>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <motion.button
+            animate={{ boxShadow: ['0 0 0 0px #10B98140', '0 0 0 8px #10B98100'] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            style={{ padding: '14px 0', borderRadius: 14, background: A, border: 'none',
+              color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', width: '100%' }}>
+            Оформить заказ
+          </motion.button>
+        </div>
+      </div>
+
+      {/* RIGHT: live analytics */}
+      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* Live badge */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#ECFDF5', borderRadius: 20, padding: '4px 10px', border: '1px solid #A7F3D0' }}>
+            <motion.div
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ repeat: Infinity, duration: 1.4 }}
+              style={{ width: 6, height: 6, borderRadius: '50%', background: A }} />
+            <span style={{ fontSize: 11, fontWeight: 600, color: A }}>Live</span>
+          </div>
+        </div>
+
+        <p style={{ fontSize: 13, fontWeight: 600, color: '#374151', margin: 0 }}>Выручка в реальном времени</p>
+
+        {/* Bar chart */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 100, marginTop: 4 }}>
+          {barHeights.map((h, i) => (
+            <motion.div key={i}
+              initial={{ height: 0 }}
+              whileInView={{ height: h }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.05 + i * 0.05, ease }}
+              style={{ flex: 1, borderRadius: '3px 3px 0 0', background: i === barHeights.length - 1 ? A : A + '50' }} />
           ))}
         </div>
 
-        {/* Payment method */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.35)', margin: '0 0 10px', textTransform: 'uppercase' }}>
-            Способ оплаты
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {payments.map((p, i) => (
-              <motion.div key={p}
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 + i * 0.1, ease }}
-                onClick={() => setSelPay(i)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 12, cursor: 'pointer',
-                  background: selPay === i ? `${A}18` : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${selPay === i ? A : 'rgba(255,255,255,0.08)'}` }}>
-                <div style={{ width: 16, height: 16, borderRadius: '50%', flexShrink: 0,
-                  border: `2px solid ${selPay === i ? A : 'rgba(255,255,255,0.3)'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {selPay === i && <div style={{ width: 8, height: 8, borderRadius: '50%', background: A }} />}
-                </div>
-                <span style={{ fontSize: 13, color: selPay === i ? '#fff' : 'rgba(255,255,255,0.6)' }}>{p}</span>
-              </motion.div>
-            ))}
+        {/* GMV */}
+        <div style={{ marginTop: 4 }}>
+          <p style={{ fontSize: 11, color: '#9CA3AF', margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>GMV за сегодня</p>
+          <p style={{ fontSize: 22, fontWeight: 800, color: '#111827', margin: '0 0 4px', lineHeight: 1 }}>₽ 2 847 230</p>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: '#ECFDF5', borderRadius: 8, padding: '3px 8px', border: '1px solid #A7F3D0' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: A }}>↑ +24%</span>
+            <span style={{ fontSize: 11, color: '#6B7280' }}>к вчера</span>
           </div>
-        </motion.div>
-
-        {/* Confirm button */}
-        <motion.button
-          animate={{ scale: [1, 1.02, 1] }}
-          transition={{ repeat: Infinity, duration: 2 }}
-          style={{ marginTop: 8, padding: '14px 0', borderRadius: 14, background: A, border: 'none',
-            color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', width: '100%',
-            boxShadow: `0 8px 32px ${A}44` }}>
-          Оформить заказ
-        </motion.button>
+        </div>
       </div>
-
-      {/* Right: order summary */}
-      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3, ease }}
-        style={{ borderRadius: 16, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-          padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <p style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>Ваш заказ</p>
-        {items.map((item, i) => (
-          <motion.div key={item.name}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.45 + i * 0.1 }}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <p style={{ fontSize: 12, margin: '0 0 2px', color: 'rgba(255,255,255,0.85)' }}>{item.name}</p>
-              <p style={{ fontSize: 11, margin: 0, color: 'rgba(255,255,255,0.35)' }}>{item.qty}</p>
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 600 }}>{item.price}</span>
-          </motion.div>
-        ))}
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '4px 0' }} />
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>Доставка</span>
-          <span style={{ fontSize: 12, color: A }}>Бесплатно</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: 14, fontWeight: 600 }}>Итого</span>
-          <span style={{ fontSize: 18, fontWeight: 700, color: A }}>484 ₽</span>
-        </div>
-        <div style={{ marginTop: 4, padding: '8px 12px', borderRadius: 10, background: `${A}12`, border: `1px solid ${A}30` }}>
-          <p style={{ fontSize: 11, color: A, margin: 0 }}>Доставка через 45–60 мин</p>
-        </div>
-      </motion.div>
     </div>
   );
 }
 
-/* ─── Screen 2: Order Status ─── */
+/* ─── Screen 2: Order Status (LIGHT) ─── */
 function OrderStatusScreen() {
-  const stages = ['Принят', 'Сборка', 'В пути', 'Доставлен'];
-  const [active, setActive] = useState(2);
-
-  useEffect(() => {
-    const iv = setInterval(() => setActive(prev => (prev + 1) % stages.length), 1800);
-    return () => clearInterval(iv);
-  }, []);
-
-  const orders = [
-    { num: '#4821', status: 'В пути', stage: 2 },
-    { num: '#4820', status: 'Доставлен', stage: 3 },
-    { num: '#4819', status: 'Сборка', stage: 1 },
+  const rows: { icon: string; label: string; pct: number; count: string; color: string }[] = [
+    { icon: '📦', label: 'Принято',     pct: 95, count: '1240', color: A },
+    { icon: '🔄', label: 'В сборке',    pct: 60, count: '312',  color: '#F59E0B' },
+    { icon: '🚴', label: 'В доставке',  pct: 40, count: '189',  color: '#3B82F6' },
+    { icon: '✅', label: 'Доставлено',  pct: 28, count: '71',   color: A },
   ];
 
   return (
-    <div style={{ padding: '28px 32px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <span style={{ fontSize: 18, fontWeight: 600 }}>Статус заказов</span>
-        <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', gap: 5 }}>
-          <motion.span
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ repeat: Infinity, duration: 1.5 }}
-            style={{ width: 7, height: 7, borderRadius: '50%', background: A, display: 'inline-block' }} />
-          Live
-        </span>
+    <div style={{ background: '#fff', padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Dark hero card */}
+      <div style={{ background: '#111827', borderRadius: 16, padding: '20px 20px 16px' }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)', margin: '0 0 8px', textTransform: 'uppercase' }}>
+          СТАТУС ЗАКАЗОВ
+        </p>
+        <p style={{ fontSize: 52, fontWeight: 800, color: A, lineHeight: 1, margin: '0 0 4px' }}>71</p>
+        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', margin: '0 0 12px' }}>доставлено сегодня</p>
+        <div style={{ display: 'inline-flex', alignItems: 'center', background: 'rgba(255,255,255,0.08)', borderRadius: 20, padding: '4px 12px', border: '1px solid rgba(255,255,255,0.12)' }}>
+          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>Last 24 hours</span>
+        </div>
       </div>
 
-      {/* Stage tracker */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
-        {stages.map((s, i) => (
-          <div key={s} style={{ display: 'flex', alignItems: 'center', flex: i < stages.length - 1 ? 1 : 'none' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5 }}>
-              <motion.div
-                animate={{ scale: i === active ? [1, 1.25, 1] : 1 }}
-                transition={{ repeat: i === active ? Infinity : 0, duration: 1.2 }}
-                style={{ width: 12, height: 12, borderRadius: '50%', flexShrink: 0,
-                  background: i < active ? A : i === active ? A : 'rgba(255,255,255,0.15)',
-                  boxShadow: i === active ? `0 0 12px ${A}` : 'none' }} />
-              <span style={{ fontSize: 10, whiteSpace: 'nowrap', fontWeight: i === active ? 600 : 400,
-                color: i <= active ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.25)' }}>
-                {s}
-              </span>
-            </div>
-            {i < stages.length - 1 && (
-              <div style={{ flex: 1, height: 1, margin: '0 6px', marginBottom: 18,
-                background: i < active ? A : 'rgba(255,255,255,0.1)' }} />
-            )}
+      {/* Stats rows */}
+      {rows.map((row, idx) => (
+        <motion.div key={row.label}
+          initial={{ opacity: 0, x: -10 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, delay: 0.1 + idx * 0.08, ease }}
+          style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 16, flexShrink: 0, width: 22 }}>{row.icon}</span>
+          <span style={{ fontSize: 13, color: '#374151', fontWeight: 500, minWidth: 90 }}>{row.label}</span>
+          <div style={{ flex: 1, height: 6, borderRadius: 3, background: '#F3F4F6', overflow: 'hidden' }}>
+            <motion.div
+              initial={{ width: 0 }}
+              whileInView={{ width: `${row.pct}%` }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.2 + idx * 0.08, ease }}
+              style={{ height: '100%', borderRadius: 3, background: row.color }} />
           </div>
-        ))}
-      </div>
-
-      {/* Order rows */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {orders.map((o, i) => (
-          <motion.div key={o.num}
-            initial={{ opacity: 0, x: -14 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 + i * 0.12, ease }}
-            style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: 13, fontWeight: 600 }}>{o.num}</span>
-              <span style={{ fontSize: 12, color: o.stage === 3 ? A : 'rgba(255,255,255,0.5)' }}>{o.status}</span>
-            </div>
-            <div style={{ height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${((o.stage + 1) / stages.length) * 100}%` }}
-                transition={{ duration: 0.8, delay: 0.3 + i * 0.12, ease }}
-                style={{ height: '100%', borderRadius: 2, background: A }} />
-            </div>
-          </motion.div>
-        ))}
-      </div>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#111827', minWidth: 36, textAlign: 'right' }}>{row.count}</span>
+        </motion.div>
+      ))}
     </div>
   );
 }
 
-/* ─── Screen 3: Revenue GMV ─── */
+/* ─── Screen 3: Revenue (LIGHT) ─── */
 function RevenueScreen() {
-  const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг'];
-  const values = [42, 55, 48, 61, 72, 85, 91, 98];
-  const maxVal = Math.max(...values);
-  const maxH = 160;
+  const dataRows: { sign: string; signColor: string; pct: string; label: string }[] = [
+    { sign: '+', signColor: A,         pct: '109%', label: 'Конверсия чекаута' },
+    { sign: '+', signColor: A,         pct: '63%',  label: 'GMV за квартал' },
+    { sign: '−', signColor: '#EF4444', pct: '31%',  label: 'Брошенные корзины' },
+  ];
+
+  /* SVG line chart path — simple polyline normalised to 60×40 viewbox */
+  const pts = [[0,38],[10,32],[20,28],[30,18],[40,12],[50,8],[60,4]];
+  const d = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0]} ${p[1]}`).join(' ');
 
   return (
-    <div style={{ padding: '28px 32px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
-        <div>
-          <p style={{ fontSize: 18, fontWeight: 600, margin: '0 0 4px' }}>GMV по месяцам</p>
-          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', margin: 0 }}>млн ₽ · 2023</p>
-        </div>
-        <div style={{ textAlign: 'right' }}>
-          <p style={{ fontSize: 32, fontWeight: 700, color: A, margin: '0 0 2px', lineHeight: 1 }}>+134%</p>
-          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>GMV за год</p>
-        </div>
-      </div>
-
-      {/* Bar chart */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: maxH + 32 }}>
-        {values.map((v, i) => {
-          const h = Math.round((v / maxVal) * maxH);
-          const isLast = i === values.length - 1;
-          return (
-            <div key={months[i]} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, height: '100%', justifyContent: 'flex-end' }}>
-              <span style={{ fontSize: 10, color: isLast ? A : 'rgba(255,255,255,0.4)', fontWeight: isLast ? 700 : 400 }}>{v}</span>
-              <motion.div
-                initial={{ height: 0 }}
-                whileInView={{ height: h }}
+    <div style={{ background: '#F8FAFB', padding: '22px 24px', display: 'flex', flexDirection: 'column', gap: 0, minHeight: 280 }}>
+      {dataRows.map((row, idx) => (
+        <motion.div key={row.label}
+          initial={{ opacity: 0, x: 16 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 + idx * 0.1, ease }}
+          style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 0',
+            borderBottom: idx < dataRows.length - 1 ? '1px solid #E5E7EB' : 'none',
+            borderLeft: `4px solid ${row.signColor}`, paddingLeft: 14 }}>
+          {/* Sign + pct */}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
+            <span style={{ fontSize: 48, fontWeight: 900, color: row.signColor, lineHeight: 1 }}>{row.sign}</span>
+            <span style={{ fontSize: 48, fontWeight: 900, color: '#111827', lineHeight: 1 }}>{row.pct}</span>
+          </div>
+          {/* Label */}
+          <span style={{ fontSize: 13, color: '#6B7280', fontWeight: 500 }}>{row.label}</span>
+          {/* Spacer + mini SVG chart on last position */}
+          <div style={{ flex: 1 }} />
+          {idx === 0 && (
+            <svg width="60" height="40" viewBox="0 0 60 40" fill="none" style={{ flexShrink: 0 }}>
+              <defs>
+                <linearGradient id="sm-rev-grad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={A} stopOpacity="0.2" />
+                  <stop offset="100%" stopColor={A} stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              <motion.path
+                d={d}
+                fill="none"
+                stroke={A}
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                initial={{ pathLength: 0 }}
+                whileInView={{ pathLength: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.1 + i * 0.07, ease }}
-                style={{ width: '100%', borderRadius: '4px 4px 0 0',
-                  background: isLast ? A : `${A}50`,
-                  boxShadow: isLast ? `0 0 20px ${A}55` : 'none' }} />
-              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>{months[i]}</span>
-            </div>
-          );
-        })}
-      </div>
+                transition={{ duration: 1.6, ease: 'easeOut' }}
+              />
+            </svg>
+          )}
+        </motion.div>
+      ))}
     </div>
   );
 }
@@ -340,28 +308,33 @@ export default function SbermarketPage() {
 
       {/* HERO */}
       <section className="mx-auto max-w-[1512px] px-11 pt-10 pb-[72px]" style={{ display: 'grid', gridTemplateColumns: '361px 1fr', gap: 148 }}>
-        <motion.div style={{ display: 'flex', flexDirection: 'column', gap: 20 }} initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
-          <motion.h1 variants={fUp} style={{ fontSize: 48, fontWeight: 400, lineHeight: 1.2, opacity: 0.5, margin: 0 }}>Маркетплейс</motion.h1>
+        <motion.div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}
+          initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.12 } } }}>
+          <motion.h1 variants={fUp} style={{ fontSize: 48, fontWeight: 400, lineHeight: 1.2, opacity: 0.5, margin: 0 }}>
+            Маркетплейс
+          </motion.h1>
           <motion.div variants={fUp} style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            {['UX Research', 'Checkout', 'Growth', 'Mobile', '2022–2023'].map(t => (
+            {['UX/CX Research', 'Checkout', 'Analytics', 'B2C', '2022–2023'].map(t => (
               <span key={t} style={{ height: 44, padding: '0 16px', borderRadius: 12, display: 'flex', alignItems: 'center', fontSize: 18, fontWeight: 500, border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)' }}>{t}</span>
             ))}
           </motion.div>
         </motion.div>
-        <motion.div style={{ display: 'flex', flexDirection: 'column', gap: 32 }} initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
+        <motion.div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}
+          initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
           <motion.h2 variants={fUp} style={{ fontSize: 64, fontWeight: 400, lineHeight: 1.15, margin: 0 }}>
             Редизайн чекаута и системы отслеживания заказов
           </motion.h2>
           <motion.p variants={fUp} style={{ fontSize: 22, fontWeight: 400, color: 'rgba(255,255,255,0.65)', maxWidth: 720, lineHeight: 1.6, margin: 0 }}>
-            Переработали воронку оформления заказа для крупного продуктового маркетплейса. Сократили количество шагов до оплаты с 7 до 3, внедрили систему умных замен. Конверсия чекаута выросла с 34% до 71%.
+            Сократили путь от корзины до оплаты с 7 шагов до 2. Конверсия в оформление выросла с 34% до 71% за первые 3 месяца после запуска.
           </motion.p>
         </motion.div>
       </section>
 
       {/* KEY VISUAL */}
       <motion.section className="mx-auto max-w-[1512px] px-11 pb-[72px]"
-        initial={{ opacity: 0, y: 48 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease }}>
-        <Mac url="marketplace.io/checkout">
+        initial={{ opacity: 0, y: 48 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+        transition={{ duration: 0.8, ease }}>
+        <Mac url="market.io/checkout">
           <CheckoutScreen />
         </Mac>
       </motion.section>
@@ -370,30 +343,37 @@ export default function SbermarketPage() {
       <section className="mx-auto max-w-[1512px] px-11 pb-[72px]" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         <Row label="Гипотеза" i={0}>
           <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.7)', maxWidth: 500, margin: 0, lineHeight: 1.65 }}>
-            Упрощение чекаута до одного экрана и визуализация статусов в реальном времени снизят брошенные корзины и увеличат частоту повторных заказов
+            Устранение трения на этапах корзина→оплата и прозрачность статуса заказа снизят отказы и увеличат повторные покупки
           </p>
         </Row>
         <Row label="Пользователи" i={1}>
-          <motion.div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
-            {['Покупатели продуктов', 'Постоянные клиенты', 'Корпоративные закупщики'].map((u, i) => (
+          <motion.div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}
+            initial="hidden" whileInView="visible" viewport={{ once: true }}
+            variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
+            {['Покупатели', 'Операторы склада', 'Менеджеры роста'].map((u, i) => (
               <motion.div key={u} variants={fUp} custom={i}
-                style={{ height: 56, padding: '0 20px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.12)', fontSize: 18, fontWeight: 500, display: 'flex', alignItems: 'center' }}>{u}</motion.div>
+                style={{ height: 56, padding: '0 20px', borderRadius: 16, border: '1px solid rgba(255,255,255,0.12)', fontSize: 18, fontWeight: 500, display: 'flex', alignItems: 'center' }}>
+                {u}
+              </motion.div>
             ))}
           </motion.div>
         </Row>
         <Row label="Метрики" i={2}>
           <div style={{ display: 'flex', gap: 14 }}>
             <Metric before="34%" after="71%" label="Конверсия чекаута" />
-            <Metric before="3.1" after="5.4" label="Заказов в месяц на пользователя" />
-            <Metric before="31" after="68" label="NPS покупателей" />
+            <Metric before="3.1" after="5.4" label="Заказов в месяц" />
+            <Metric before="31" after="68" label="NPS" />
           </div>
         </Row>
         <Row label="Что сделал" i={3}>
           <motion.div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end' }}
-            initial="hidden" whileInView="visible" viewport={{ once: true }} variants={{ visible: { transition: { staggerChildren: 0.07 } } }}>
-            {['Упрощение чекаута', 'Умные замены', 'Трекинг заказа', 'A/B тесты', 'CJM', 'Прототипирование'].map((t, i) => (
+            initial="hidden" whileInView="visible" viewport={{ once: true }}
+            variants={{ visible: { transition: { staggerChildren: 0.07 } } }}>
+            {['Редизайн чекаута', 'Статус заказа', 'Push-уведомления', 'A/B тесты', 'Аналитика воронки', 'Service Design'].map((t, i) => (
               <motion.span key={t} variants={fUp} custom={i}
-                style={{ height: 44, padding: '0 16px', borderRadius: 12, display: 'flex', alignItems: 'center', fontSize: 16, fontWeight: 500, border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.1)' }}>{t}</motion.span>
+                style={{ height: 44, padding: '0 16px', borderRadius: 12, display: 'flex', alignItems: 'center', fontSize: 16, fontWeight: 500, border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.06)' }}>
+                {t}
+              </motion.span>
             ))}
           </motion.div>
         </Row>
@@ -402,10 +382,14 @@ export default function SbermarketPage() {
       {/* SOLUTION SCREENS */}
       <section className="mx-auto max-w-[1512px] px-11 pb-10" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <motion.div initial={{ opacity: 0, x: -32 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease }}>
-          <Mac url="marketplace.io/orders"><OrderStatusScreen /></Mac>
+          <Mac url="market.io/orders">
+            <OrderStatusScreen />
+          </Mac>
         </motion.div>
         <motion.div initial={{ opacity: 0, x: 32 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease }}>
-          <Mac url="marketplace.io/analytics"><RevenueScreen /></Mac>
+          <Mac url="market.io/revenue">
+            <RevenueScreen />
+          </Mac>
         </motion.div>
       </section>
 
@@ -413,15 +397,15 @@ export default function SbermarketPage() {
       <section className="mx-auto max-w-[1512px] px-11 pb-[88px]" style={{ display: 'flex', flexDirection: 'column', gap: 24, marginTop: 48 }}>
         <motion.p initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           style={{ fontSize: 18, background: 'linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.5) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', margin: 0 }}>
-          Результаты за 6 месяцев после запуска
+          Результаты за 3 месяца после запуска
         </motion.p>
         <motion.div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-60px' }}
           variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
-          <Stat stat="+109%" label="Конверсия чекаута" desc="С 34% до 71% — рост вдвое" i={0} />
-          <Stat stat="−62%" label="Брошенные корзины" desc="За счёт одностраничного чекаута" i={1} />
-          <Stat stat="×1.7" label="Частота заказов" desc="Повторные покупки в месяц" i={2} />
-          <Stat stat="4.7★" label="App Store" desc="После редизайна трекинга" i={3} />
+          <Stat stat="+109%" label="Конверсия чекаута" desc="с 34% до 71%" i={0} />
+          <Stat stat="−62%"  label="Брошенные корзины" desc="за счёт упрощённого чекаута" i={1} />
+          <Stat stat="×1.7"  label="Повторные заказы"  desc="частота покупок в месяц" i={2} />
+          <Stat stat="4.7★"  label="App Store"          desc="после редизайна трекинга" i={3} />
         </motion.div>
       </section>
     </div>
