@@ -524,24 +524,16 @@ function ParallaxHero() {
   return (
     <div style={{ position: 'relative', height: '100vh', minHeight: 700, overflow: 'hidden' }}>
 
-      {/* SKY LAYER — real photo */}
-      <motion.div style={{
-        position: 'absolute', top: '-10%', left: 0, right: 0, bottom: 0,
-        y: skyY,
-      }}>
-        <img src={`${base}/img/domclick-sky.png`} alt=""
-          style={{ width: '100%', height: '115%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }} />
-      </motion.div>
-
-      {/* BUILDING — real render, black bg removed via screen blend */}
-      <motion.div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        mixBlendMode: 'screen',
-        y: bldY,
-      }}>
-        <img src={`${base}/img/domclick-building.png`} alt=""
-          style={{ width: '100%', maxHeight: '82vh', objectFit: 'contain', objectPosition: 'center bottom', display: 'block' }} />
-      </motion.div>
+      {/* SKY + BUILDING in same stacking context so mix-blend-mode works */}
+      <div style={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
+        <motion.img src={`${base}/img/domclick-sky.png`} alt=""
+          style={{ position: 'absolute', top: '-10%', left: 0, width: '100%', height: '115%',
+            objectFit: 'cover', objectPosition: 'center top', display: 'block', y: skyY }} />
+        <motion.img src={`${base}/img/domclick-building.png`} alt=""
+          style={{ position: 'absolute', bottom: 0, left: 0, width: '100%',
+            maxHeight: '82vh', objectFit: 'contain', objectPosition: 'center bottom', display: 'block',
+            mixBlendMode: 'screen', y: bldY }} />
+      </div>
 
       {/* FADE TO DARK */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 260,
