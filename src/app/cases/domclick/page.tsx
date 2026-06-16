@@ -516,7 +516,7 @@ function ParallaxHero() {
   const base = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
   const { scrollY } = useScroll();
   const skyY = useTransform(scrollY, [0, 800], [0, -80]);
-  const bldY = useTransform(scrollY, [0, 800], [480, -60]);
+  const bldY = useTransform(scrollY, [0, 800], [420, -60]);
   const textO = useTransform(scrollY, [0, 280], [1, 0]);
   const textY = useTransform(scrollY, [0, 280], [0, -36]);
 
