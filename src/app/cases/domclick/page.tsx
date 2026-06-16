@@ -516,8 +516,8 @@ function AnalyticsDashboardScreen() {
 function ParallaxHero() {
   const base = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
   const { scrollY } = useScroll();
-  const skyY = useTransform(scrollY, [0, 700], [0, -150]);
-  const bldY = useTransform(scrollY, [0, 700], [0, -55]);
+  const skyY = useTransform(scrollY, [0, 700], [0, -60]);
+  const bldY = useTransform(scrollY, [0, 700], [0, -180]);
   const textO = useTransform(scrollY, [0, 280], [1, 0]);
   const textY = useTransform(scrollY, [0, 280], [0, -36]);
 
@@ -526,13 +526,12 @@ function ParallaxHero() {
 
       {/* SKY + BUILDING in same stacking context so mix-blend-mode works */}
       <div style={{ position: 'absolute', inset: 0, overflow: 'visible' }}>
-        <motion.img src={`${base}/img/domclick-sky.png`} alt=""
+        <motion.img src={`${base}/img/domclick-sky.jpg`} alt=""
           style={{ position: 'absolute', top: '-10%', left: 0, width: '100%', height: '115%',
             objectFit: 'cover', objectPosition: 'center top', display: 'block', y: skyY }} />
         <motion.img src={`${base}/img/domclick-building.png`} alt=""
           style={{ position: 'absolute', bottom: 0, left: 0, width: '100%',
-            maxHeight: '82vh', objectFit: 'contain', objectPosition: 'center bottom', display: 'block',
-            y: bldY }} />
+            height: 'auto', display: 'block', y: bldY }} />
       </div>
 
       {/* FADE TO DARK */}
@@ -542,11 +541,11 @@ function ParallaxHero() {
 
       {/* TEXT */}
       <motion.div style={{
-        position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+        position: 'absolute', inset: 0, display: 'flex', alignItems: 'flex-start',
         zIndex: 10, opacity: textO, y: textY,
       }}>
         <div className="mx-auto max-w-[1512px] px-11 w-full"
-          style={{ display: 'grid', gridTemplateColumns: '361px 1fr', gap: 148, paddingBottom: '18vh' }}>
+          style={{ display: 'grid', gridTemplateColumns: '361px 1fr', gap: 148, paddingTop: '10vh' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <h1 style={{ fontSize: 48, fontWeight: 400, lineHeight: 1.2, color: 'rgba(5,10,28,0.45)', margin: 0 }}>PropTech</h1>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
