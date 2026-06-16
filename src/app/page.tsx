@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import SiteHeader from '@/components/SiteHeader';
 import RevealText from '@/components/RevealText';
+import PasswordGate from '@/components/PasswordGate';
 import CaseButton from '@/components/CaseButton';
 import HeadScrollButton from '@/components/HeadScrollButton';
 import ScrollToSection from '@/components/ScrollToSection';
@@ -83,6 +84,7 @@ function GridIcon({ dark = false }: { dark?: boolean }) {
 
 export default function Home() {
   return (
+    <PasswordGate>
     <main className="snap-container">
       <ScrollToSection />
 
@@ -101,14 +103,14 @@ export default function Home() {
           />
         </div>
 
-        <div className="relative z-10 flex flex-col h-full">
+        <div className="hero-inner relative z-10 flex flex-col h-full">
           <SiteHeader />
 
           {/* Feature List — vertically and horizontally centered */}
-          <div className="flex-1 flex items-center">
-            <div className="mx-auto max-w-[1512px] px-[44px] w-full flex gap-[177px] justify-center">
+          <div className="hero-center flex-1 flex items-center">
+            <div className="hero-features-grid mx-auto max-w-[1512px] px-[44px] w-full flex gap-[177px] justify-center">
               {features.map((f) => (
-                <div key={f.label} className="flex flex-col gap-10 items-center">
+                <div key={f.label} className="hero-feature-item flex flex-col gap-10 items-center">
                   <div
                     className="flex items-center justify-center flex-shrink-0"
                     style={{
@@ -135,9 +137,9 @@ export default function Home() {
           </div>
 
           {/* Hero name + Head Text Button */}
-          <div className="px-[44px] mb-[44px]">
+          <div className="hero-bottom px-[44px] mb-[44px]">
             <h1
-              className="font-normal text-white leading-none tracking-tight"
+              className="hero-name font-normal text-white leading-none tracking-tight"
               style={{ fontSize: 'clamp(32px, 12.5vw, 100vw)' }}
             >
               <RevealText>Kovalchuk Anton</RevealText>
@@ -154,7 +156,7 @@ export default function Home() {
                   <Image src="/img/btn-icon-head.png" alt="" width={36} height={36} />
                 </div>
                 <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', whiteSpace: 'pre-line', maxWidth: '123px' }}>
-                  {'пойдем дальше —\nтам интереснее'}
+                  {'пойдем дальше—\nтам интереснее'}
                 </span>
               </HeadScrollButton>
             </div>
@@ -162,20 +164,16 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Section 1: Eurochem ─────────────────────────── */}
+      {/* ── Section 1: Rosselkhozbank ───────────────────── */}
       <section
         id="section-1"
         className="snap-section relative overflow-hidden flex flex-col"
-        style={{ background: 'radial-gradient(ellipse at 48% 28%, #ffffff 0%, #987f7f 100%)' }}
+        style={{ background: 'linear-gradient(180deg, #070709 0%, #424242 100%)' }}
       >
-        {/* Image 1 — lower portion */}
-        <div
-          className="absolute overflow-hidden"
-          style={{ left: '-15px', top: '27.3%', width: 'calc(100% + 15px)', height: '72.7%' }}
-        >
+        <div className="case-bg-img absolute inset-0" style={{ left: '-102px', top: '4%', width: '113%', height: '96%', maxWidth: 'none' }}>
           <Image
-            src="/img/eurochem-bg.png"
-            alt="Eurochem"
+            src="/img/home-rsb-img.png"
+            alt="Свой Бизнес"
             fill
             style={{ objectFit: 'cover', objectPosition: 'top left' }}
             sizes="110vw"
@@ -183,38 +181,36 @@ export default function Home() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
-          {/* Project Header — items aligned to bottom edge */}
-          <div className="flex items-end w-full">
-            <div style={{ flex: 1 }}>
-              <h2 style={{ fontSize: '68px', fontWeight: 400, color: '#000', lineHeight: 1.06 }}>
-                <RevealText>Еврохим:</RevealText>
-                <br />
-                <span style={{ opacity: 0.5 }}><RevealText delay={0.12}>Цифровой офис</RevealText></span>
-              </h2>
-            </div>
-            <p style={{ fontSize: '18px', fontWeight: 400, color: '#000', opacity: 0.5, maxWidth: '280px', textAlign: 'left' }}>
-              Доступ к библиотеке игр и in-house решениям
+        <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
+          {/* Project Header */}
+          <div className="case-title-area" style={{ flex: 1 }}>
+            <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
+              <span style={{ color: '#fff' }}><RevealText>Россельхозбанк:</RevealText></span>
+              <br />
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Свой Бизнес</RevealText></span>
+            </h2>
+            <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px', textAlign: 'left' }}>
+              Единое рабочее место для расчётов и управленческой аналитики
             </p>
           </div>
 
           {/* Project Button Group — Section 1 */}
-          <div className="mt-auto flex gap-4">
+          <div className="case-features-row flex gap-4">
             {[
-              { icon: 's1-icon-1.png', label: 'Дизайн система' },
-              { icon: 's1-icon-2.png', label: 'Дашборды и виджеты' },
-              { icon: 's1-icon-3.png', label: '3D-схемы' },
+              { icon: 's3-icon-1.png', label: 'ДБО' },
+              { icon: 's3-icon-2.png', label: 'Банковская аналитика' },
+              { icon: 's3-icon-3.png', label: 'Вклады' },
             ].map((item) => (
               <div
                 key={item.label}
-                className="flex items-center flex-1"
+                className="case-feature-item flex items-center flex-1"
                 style={{ height: '64px', padding: '0 8px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px' }}
               >
                 <Image src={`/img/${item.icon}`} alt="" width={48} height={48} style={{ borderRadius: '16px', flexShrink: 0 }} />
                 <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{item.label}</span>
               </div>
             ))}
-            <CaseButton href="/cases/eurochem" />
+            <div className="case-cta-wrap"><CaseButton href="/cases/rosselkhozbank" /></div>
           </div>
         </div>
       </section>
@@ -227,7 +223,7 @@ export default function Home() {
       >
         {/* Section Image — right side */}
         <div
-          className="absolute"
+          className="case-bg-img absolute"
           style={{ left: '312px', top: '20%', width: '1288px', height: '80%', maxWidth: 'none' }}
         >
           <Image
@@ -240,11 +236,11 @@ export default function Home() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
+        <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
           {/* Project Header */}
-          <div className="flex items-end w-full">
+          <div className="case-title-area flex items-end w-full">
             <div style={{ flex: 1 }}>
-              <h2 style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
+              <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
                 <span style={{ color: '#fff' }}><RevealText>HR-CRM:</RevealText></span>
                 <br />
                 <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Подбор персонала</RevealText></span>
@@ -253,8 +249,8 @@ export default function Home() {
           </div>
 
           {/* Feature List — Section 2 */}
-          <div className="flex-1 flex items-center">
-            <div className="flex flex-col gap-6">
+          <div className="hrcrm-features-wrap flex-1 flex items-center">
+            <div className="hrcrm-features-col flex flex-col gap-6">
               {[
                 { icon: 's2-icon-1.png', label: 'Исследование' },
                 { icon: 's2-icon-2.png', label: 'Проектирование' },
@@ -262,7 +258,7 @@ export default function Home() {
               ].map((item) => (
                 <div
                   key={item.label}
-                  className="flex items-center"
+                  className="case-feature-item flex items-center"
                   style={{
                     width: '350px', height: '64px', padding: '0 8px',
                     border: '1px solid rgba(255,255,255,0.1)',
@@ -280,26 +276,30 @@ export default function Home() {
           </div>
 
           {/* Button Group — full width, auto gap */}
-          <div className="flex items-center w-full">
-            <p style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', maxWidth: '363px', whiteSpace: 'pre-line' }}>
+          <div className="case-bottom-bar flex items-center w-full">
+            <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', maxWidth: '363px', whiteSpace: 'pre-line' }}>
               {'Единая воронка + быстрые\nсогласования + прозрачные статусы'}
             </p>
             <div style={{ flex: 1 }} />
-            <CaseButton href="/cases/hr-crm" />
+            <div className="case-cta-wrap"><CaseButton href="/cases/hr-crm" /></div>
           </div>
         </div>
       </section>
 
-      {/* ── Section 3: Rosselkhozbank ───────────────────── */}
+      {/* ── Section 3: Eurochem ─────────────────────────── */}
       <section
         id="section-3"
         className="snap-section relative overflow-hidden flex flex-col"
-        style={{ background: 'linear-gradient(180deg, #070709 0%, #424242 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at 48% 28%, #ffffff 0%, #987f7f 100%)' }}
       >
-        <div className="absolute inset-0" style={{ left: '-102px', top: '4%', width: '113%', height: '96%', maxWidth: 'none' }}>
+        {/* Image — lower portion */}
+        <div
+          className="case-bg-img absolute overflow-hidden"
+          style={{ left: '-15px', top: '27.3%', width: 'calc(100% + 15px)', height: '72.7%' }}
+        >
           <Image
-            src="/img/home-rsb-img.png"
-            alt="Свой Бизнес"
+            src="/img/eurochem-bg.png"
+            alt="Eurochem"
             fill
             style={{ objectFit: 'cover', objectPosition: 'top left' }}
             sizes="110vw"
@@ -307,41 +307,281 @@ export default function Home() {
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
-          {/* Project Header */}
-          <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
-              <span style={{ color: '#fff' }}><RevealText>Россельхозбанк:</RevealText></span>
-              <br />
-              <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Свой Бизнес</RevealText></span>
-            </h2>
-            <p style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px', textAlign: 'left' }}>
-              Единое рабочее место для расчётов и управленческой аналитики
+        <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
+          {/* Project Header — items aligned to bottom edge */}
+          <div className="case-title-area flex items-end w-full">
+            <div style={{ flex: 1 }}>
+              <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, color: '#000', lineHeight: 1.06 }}>
+                <RevealText>Еврохим:</RevealText>
+                <br />
+                <span style={{ opacity: 0.5 }}><RevealText delay={0.12}>Цифровой офис</RevealText></span>
+              </h2>
+            </div>
+            <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: '#000', opacity: 0.5, maxWidth: '280px', textAlign: 'left' }}>
+              Доступ к библиотеке игр и in-house решениям
             </p>
           </div>
 
           {/* Project Button Group — Section 3 */}
-          <div className="flex gap-4">
+          <div className="case-features-row mt-auto flex gap-4">
             {[
-              { icon: 's3-icon-1.png', label: 'ДБО' },
-              { icon: 's3-icon-2.png', label: 'Банковская аналитика' },
-              { icon: 's3-icon-3.png', label: 'Вклады' },
+              { icon: 's1-icon-1.png', label: 'Дизайн система' },
+              { icon: 's1-icon-2.png', label: 'Дашборды и виджеты' },
+              { icon: 's1-icon-3.png', label: '3D-схемы' },
             ].map((item) => (
               <div
                 key={item.label}
-                className="flex items-center flex-1"
+                className="case-feature-item flex items-center flex-1"
                 style={{ height: '64px', padding: '0 8px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px' }}
               >
                 <Image src={`/img/${item.icon}`} alt="" width={48} height={48} style={{ borderRadius: '16px', flexShrink: 0 }} />
                 <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{item.label}</span>
               </div>
             ))}
-            <CaseButton href="/cases/rosselkhozbank" />
+            <div className="case-cta-wrap"><CaseButton href="/cases/eurochem" /></div>
           </div>
         </div>
       </section>
 
-      {/* ── Section 4: Process ──────────────────────────── */}
+      {/* ── Section 4: Домклик ─────────────────────────── */}
+      <section
+        id="section-4"
+        className="snap-section relative overflow-hidden flex flex-col"
+        style={{ background: 'linear-gradient(180deg, #020818 0%, #071540 60%, #040A28 100%)' }}
+      >
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg style={{ position: 'absolute', right: '-40px', top: '8%', width: '62%', height: '88%', opacity: 0.9 }} viewBox="0 0 700 600" fill="none">
+            {[...Array(10)].map((_, i) => <line key={`h${i}`} x1="0" y1={i * 60 + 20} x2="700" y2={i * 60 + 20} stroke="rgba(67,97,238,0.12)" strokeWidth="1" />)}
+            {[...Array(12)].map((_, i) => <line key={`v${i}`} x1={i * 60 + 20} y1="0" x2={i * 60 + 20} y2="600" stroke="rgba(67,97,238,0.12)" strokeWidth="1" />)}
+            <circle cx="220" cy="180" r="80" fill="rgba(67,97,238,0.08)" />
+            <rect x="196" y="160" width="75" height="28" rx="8" fill="#4361EE" />
+            <text x="233" y="179" textAnchor="middle" fontSize="11" fill="white" fontWeight="700">12.4 млн</text>
+            <circle cx="220" cy="192" r="7" fill="#4361EE" />
+            <circle cx="420" cy="120" r="8" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+            <circle cx="560" cy="280" r="8" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+            <circle cx="160" cy="340" r="8" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" />
+            <rect x="300" y="200" width="200" height="100" rx="16" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+            <rect x="316" y="218" width="80" height="10" rx="5" fill="rgba(255,255,255,0.15)" />
+            <rect x="316" y="236" width="50" height="8" rx="4" fill="rgba(67,97,238,0.5)" />
+            <rect x="316" y="256" width="120" height="8" rx="4" fill="rgba(255,255,255,0.07)" />
+            <rect x="80" y="260" width="180" height="85" rx="16" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+            <rect x="96" y="278" width="70" height="10" rx="5" fill="rgba(255,255,255,0.15)" />
+            <rect x="96" y="296" width="100" height="8" rx="4" fill="rgba(255,255,255,0.07)" />
+          </svg>
+        </div>
+        <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
+          <div className="case-title-area" style={{ flex: 1 }}>
+            <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
+              <span style={{ color: '#fff' }}><RevealText>Домклик:</RevealText></span><br />
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Умный поиск жилья</RevealText></span>
+            </h2>
+            <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
+              Персонализированный поиск вместо 40 фильтров — конверсия в звонок ×2.8
+            </p>
+          </div>
+          <div className="case-features-row flex gap-4">
+            {['Персонализация', 'Карта + фильтры', 'PropTech'].map((label) => (
+              <div key={label} className="case-feature-item flex items-center flex-1"
+                style={{ height: '64px', padding: '0 16px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', background: 'rgba(67,97,238,0.08)' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#4361EE', flexShrink: 0, boxShadow: '0 0 8px #4361EE' }} />
+                <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{label}</span>
+              </div>
+            ))}
+            <div className="case-cta-wrap"><CaseButton href="/cases/domclick" /></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 5: СберМаркет ──────────────────────── */}
+      <section
+        id="section-5"
+        className="snap-section relative overflow-hidden flex flex-col"
+        style={{ background: 'linear-gradient(180deg, #021209 0%, #0A2416 50%, #051A0C 100%)' }}
+      >
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg style={{ position: 'absolute', right: '-20px', top: '5%', width: '58%', height: '90%', opacity: 0.95 }} viewBox="0 0 680 620" fill="none">
+            {[42, 55, 61, 48, 72, 85, 91, 98].map((v, i) => (
+              <rect key={i} x={40 + i * 76} y={560 - v * 4.5} width="52" height={v * 4.5} rx="8" fill={i === 7 ? '#00C853' : 'rgba(255,255,255,0.08)'} />
+            ))}
+            <line x1="28" y1="120" x2="28" y2="565" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+            <line x1="28" y1="565" x2="660" y2="565" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+            <rect x="40" y="40" width="280" height="60" rx="14" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+            <rect x="58" y="58" width="100" height="10" rx="5" fill="rgba(255,255,255,0.12)" />
+            <rect x="58" y="76" width="60" height="8" rx="4" fill="rgba(0,200,83,0.4)" />
+            <rect x="340" y="40" width="120" height="36" rx="10" fill="rgba(0,200,83,0.15)" stroke="rgba(0,200,83,0.3)" strokeWidth="1" />
+            <text x="400" y="63" textAnchor="middle" fontSize="13" fill="#00C853" fontWeight="700">▲ 34%</text>
+          </svg>
+        </div>
+        <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
+          <div className="case-title-area" style={{ flex: 1 }}>
+            <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
+              <span style={{ color: '#fff' }}><RevealText>СберМаркет:</RevealText></span><br />
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Кабинет продавца</RevealText></span>
+            </h2>
+            <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
+              Онбординг продавца за 4 часа вместо 3 дней — NPS с 31 до 68
+            </p>
+          </div>
+          <div className="case-features-row flex gap-4">
+            {['Онбординг', 'Аналитика продаж', 'E-commerce'].map((label) => (
+              <div key={label} className="case-feature-item flex items-center flex-1"
+                style={{ height: '64px', padding: '0 16px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', background: 'rgba(0,200,83,0.06)' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#00C853', flexShrink: 0, boxShadow: '0 0 8px #00C853' }} />
+                <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{label}</span>
+              </div>
+            ))}
+            <div className="case-cta-wrap"><CaseButton href="/cases/sbermarket" /></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 6: Газпром ─────────────────────────── */}
+      <section
+        id="section-6"
+        className="snap-section relative overflow-hidden flex flex-col"
+        style={{ background: 'linear-gradient(180deg, #080800 0%, #161200 55%, #0A0900 100%)' }}
+      >
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg style={{ position: 'absolute', right: '2%', top: '5%', width: '55%', height: '90%', opacity: 0.9 }} viewBox="0 0 660 620" fill="none">
+            <circle cx="330" cy="280" r="200" stroke="rgba(245,158,11,0.07)" strokeWidth="40" fill="none" />
+            <circle cx="330" cy="280" r="200" stroke="rgba(245,158,11,0.3)" strokeWidth="40" fill="none"
+              strokeDasharray={`${2 * Math.PI * 200 * 0.94} ${2 * Math.PI * 200}`} strokeLinecap="round"
+              strokeDashoffset={2 * Math.PI * 200 * 0.25} transform="rotate(-90 330 280)" />
+            <text x="330" y="265" textAnchor="middle" fontSize="54" fontWeight="800" fill="#F59E0B">94%</text>
+            <text x="330" y="300" textAnchor="middle" fontSize="13" fill="rgba(255,255,255,0.3)">охват цифрового учёта</text>
+            <circle cx="110" cy="500" r="55" stroke="rgba(255,255,255,0.05)" strokeWidth="10" fill="none" />
+            <circle cx="110" cy="500" r="55" stroke="rgba(52,211,153,0.4)" strokeWidth="10" fill="none"
+              strokeDasharray={`${2 * Math.PI * 55 * 0.83} ${2 * Math.PI * 55}`} strokeLinecap="round"
+              strokeDashoffset={2 * Math.PI * 55 * 0.25} transform="rotate(-90 110 500)" />
+            <text x="110" y="504" textAnchor="middle" fontSize="14" fontWeight="700" fill="#34D399">83%</text>
+            <circle cx="550" cy="500" r="55" stroke="rgba(255,255,255,0.05)" strokeWidth="10" fill="none" />
+            <circle cx="550" cy="500" r="55" stroke="rgba(96,165,250,0.4)" strokeWidth="10" fill="none"
+              strokeDasharray={`${2 * Math.PI * 55 * 0.71} ${2 * Math.PI * 55}`} strokeLinecap="round"
+              strokeDashoffset={2 * Math.PI * 55 * 0.25} transform="rotate(-90 550 500)" />
+            <text x="550" y="504" textAnchor="middle" fontSize="14" fontWeight="700" fill="#60A5FA">71%</text>
+          </svg>
+        </div>
+        <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
+          <div className="case-title-area" style={{ flex: 1 }}>
+            <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
+              <span style={{ color: '#fff' }}><RevealText>Газпром Нефть:</RevealText></span><br />
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Цифровая смена</RevealText></span>
+            </h2>
+            <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
+              Закрытие смены за 20 мин вместо 2 ч — 100% отказ от бумаги
+            </p>
+          </div>
+          <div className="case-features-row flex gap-4">
+            {['Цифровой наряд', 'Офлайн-режим', 'EnergyTech'].map((label) => (
+              <div key={label} className="case-feature-item flex items-center flex-1"
+                style={{ height: '64px', padding: '0 16px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', background: 'rgba(245,158,11,0.06)' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#F59E0B', flexShrink: 0, boxShadow: '0 0 8px #F59E0B' }} />
+                <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{label}</span>
+              </div>
+            ))}
+            <div className="case-cta-wrap"><CaseButton href="/cases/gazprom" /></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 7: ВТБ ─────────────────────────────── */}
+      <section
+        id="section-7"
+        className="snap-section relative overflow-hidden flex flex-col"
+        style={{ background: 'linear-gradient(180deg, #02030F 0%, #050B28 55%, #030718 100%)' }}
+      >
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg style={{ position: 'absolute', right: '0%', top: '8%', width: '60%', height: '84%', opacity: 0.9 }} viewBox="0 0 700 580" fill="none">
+            <rect x="60" y="40" width="340" height="200" rx="24" fill="rgba(59,130,246,0.1)" stroke="rgba(59,130,246,0.22)" strokeWidth="1.5" />
+            <rect x="80" y="70" width="100" height="12" rx="6" fill="rgba(255,255,255,0.12)" />
+            <rect x="80" y="100" width="200" height="32" rx="8" fill="rgba(255,255,255,0.06)" />
+            <rect x="80" y="142" width="60" height="10" rx="5" fill="rgba(59,130,246,0.5)" />
+            {[0, 1, 2, 3].map((i) => (
+              <g key={i}>
+                <rect x="60" y={264 + i * 68} width="540" height="52" rx="14" fill="rgba(255,255,255,0.025)" stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+                <rect x="76" y={278 + i * 68} width="28" height="28" rx="8" fill="rgba(255,255,255,0.06)" />
+                <rect x="114" y={280 + i * 68} width="100" height="9" rx="4" fill="rgba(255,255,255,0.12)" />
+                <rect x="114" y={296 + i * 68} width="70" height="7" rx="4" fill="rgba(255,255,255,0.05)" />
+                <rect x={490} y={283 + i * 68} width="70" height="9" rx="4" fill={i % 2 === 0 ? 'rgba(52,211,153,0.5)' : 'rgba(255,255,255,0.08)'} />
+              </g>
+            ))}
+          </svg>
+        </div>
+        <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
+          <div className="case-title-area" style={{ flex: 1 }}>
+            <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
+              <span style={{ color: '#fff' }}><RevealText>ВТБ Бизнес:</RevealText></span><br />
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Корпоративный кабинет</RevealText></span>
+            </h2>
+            <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
+              Открытие счёта онлайн за 1 день — NPS с −12 до 41
+            </p>
+          </div>
+          <div className="case-features-row flex gap-4">
+            {['Онбординг онлайн', 'Платёжный флоу', 'FinTech МСБ'].map((label) => (
+              <div key={label} className="case-feature-item flex items-center flex-1"
+                style={{ height: '64px', padding: '0 16px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', background: 'rgba(59,130,246,0.06)' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#3B82F6', flexShrink: 0, boxShadow: '0 0 8px #3B82F6' }} />
+                <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{label}</span>
+              </div>
+            ))}
+            <div className="case-cta-wrap"><CaseButton href="/cases/vtb" /></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 8: Самокат ─────────────────────────── */}
+      <section
+        id="section-8"
+        className="snap-section relative overflow-hidden flex flex-col"
+        style={{ background: 'linear-gradient(180deg, #0D0404 0%, #280808 55%, #180505 100%)' }}
+      >
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg style={{ position: 'absolute', right: '1%', top: '4%', width: '58%', height: '92%', opacity: 0.9 }} viewBox="0 0 680 620" fill="none">
+            {[
+              { x: 20, color: 'rgba(255,255,255,0.06)', items: [60, 50] },
+              { x: 240, color: 'rgba(245,158,11,0.12)', items: [55] },
+              { x: 460, color: 'rgba(34,197,94,0.1)', items: [50, 60, 48] },
+            ].map((col, ci) => (
+              <g key={ci}>
+                <rect x={col.x} y="40" width="195" height="520" rx="18" fill="rgba(255,255,255,0.015)" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                <circle cx={col.x + 18} cy="60" r="6" fill={ci === 0 ? 'rgba(255,255,255,0.2)' : ci === 1 ? '#F59E0B' : '#22C55E'} />
+                <rect x={col.x + 34} y="54" width="80" height="9" rx="4" fill="rgba(255,255,255,0.08)" />
+                {col.items.map((h, ii) => (
+                  <g key={ii}>
+                    <rect x={col.x + 12} y={88 + ii * 80} width="171" height={h} rx="12" fill={col.color} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+                    <rect x={col.x + 24} y={102 + ii * 80} width="60" height="8" rx="4" fill="rgba(255,255,255,0.12)" />
+                    <rect x={col.x + 24} y={118 + ii * 80} width="90" height="6" rx="3" fill="rgba(255,255,255,0.05)" />
+                  </g>
+                ))}
+              </g>
+            ))}
+          </svg>
+        </div>
+        <div className="case-content relative z-10 flex flex-col h-full mx-auto max-w-[1512px] w-full px-11 py-11">
+          <div className="case-title-area" style={{ flex: 1 }}>
+            <h2 className="case-title" style={{ fontSize: '68px', fontWeight: 400, lineHeight: 1.06 }}>
+              <span style={{ color: '#fff' }}><RevealText>Самокат:</RevealText></span><br />
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>Операционный центр</RevealText></span>
+            </h2>
+            <p className="case-desc" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', marginTop: '24px', maxWidth: '360px' }}>
+              45 секунд на заказ вместо 4 минут — SLA с 31% до 4% просрочек
+            </p>
+          </div>
+          <div className="case-features-row flex gap-4">
+            {['Очередь сборщика', 'Реальное время', 'RetailTech'].map((label) => (
+              <div key={label} className="case-feature-item flex items-center flex-1"
+                style={{ height: '64px', padding: '0 16px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', background: 'rgba(239,68,68,0.06)' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#EF4444', flexShrink: 0, boxShadow: '0 0 8px #EF4444' }} />
+                <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{label}</span>
+              </div>
+            ))}
+            <div className="case-cta-wrap"><CaseButton href="/cases/samocat" /></div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 9: Process ──────────────────────────── */}
       <section
         className="snap-section relative overflow-hidden flex flex-col"
         style={{ background: 'linear-gradient(to top, #313131 0%, #1a1a1a 100%)' }}
@@ -366,11 +606,11 @@ export default function Home() {
         />
 
         {/* Content */}
-        <div className="relative z-10 flex h-full mx-auto max-w-[1512px] w-full px-11 py-11">
+        <div className="process-layout relative z-10 flex h-full mx-auto max-w-[1512px] w-full px-11 py-11">
 
           {/* Project Details — flex-1 */}
-          <div className="flex flex-col justify-between flex-1">
-            <h2 style={{ fontSize: '61px', fontWeight: 400, lineHeight: 1.06 }}>
+          <div className="process-left flex flex-col justify-between flex-1">
+            <h2 className="process-title" style={{ fontSize: '61px', fontWeight: 400, lineHeight: 1.06 }}>
               <span style={{ color: '#fff' }}><RevealText>{'От постановки задачи к результату.'}</RevealText></span>
               <br />
               <span style={{ color: 'rgba(255,255,255,0.5)' }}><RevealText delay={0.1}>5 этапов, которые экономят время</RevealText></span>
@@ -381,10 +621,10 @@ export default function Home() {
           </div>
 
           {/* Steps Indicator */}
-          <div className="flex" style={{ width: '868px', flexShrink: 0 }}>
+          <div className="process-steps-wrap flex" style={{ width: '868px', flexShrink: 0 }}>
 
             {/* Steps Group */}
-            <div className="flex" style={{ width: '450px' }}>
+            <div className="process-steps-group flex" style={{ width: '450px' }}>
               {/* Step numbers */}
               <div className="flex flex-col justify-between" style={{ width: '32px', flexShrink: 0 }}>
                 {steps.map((s) => (
@@ -398,9 +638,9 @@ export default function Home() {
               {/* Steps Content with PNG ellipses */}
               <div className="flex flex-col justify-between flex-1">
                 {steps.map((s, i) => (
-                  <div key={s.num} className="flex items-center gap-4">
+                  <div key={s.num} className="process-step-item flex items-center gap-4">
                     <Image
-                      src={`/img/step-el-${i}.png`}
+                      src={`/img/step-el-${[1,1,3,3,4][i]}.png`}
                       alt=""
                       width={83}
                       height={83}
@@ -419,7 +659,7 @@ export default function Home() {
             <div style={{ width: 0, borderLeft: '1px dashed rgba(255,255,255,0.2)', alignSelf: 'stretch', flexShrink: 0, margin: '0 57px' }} />
 
             {/* Indicators */}
-            <div className="flex flex-col justify-between" style={{ width: '304px', flexShrink: 0 }}>
+            <div className="process-indicators flex flex-col justify-between" style={{ width: '304px', flexShrink: 0 }}>
               <div className="flex flex-col gap-4">
                 <div>
                   <div className="flex items-center gap-2">
@@ -472,13 +712,13 @@ export default function Home() {
         style={{ background: '#060608' }}
       >
         <div className="mx-auto max-w-[1512px] w-full px-11 pt-11 flex flex-col h-full overflow-hidden">
-          <h2 style={{ fontSize: '68px', fontWeight: 400, color: '#fff', flexShrink: 0 }}>
+          <h2 className="exp-title" style={{ fontSize: '68px', fontWeight: 400, color: '#fff', flexShrink: 0 }}>
             <RevealText>Мой опыт</RevealText>
           </h2>
 
           <div className="flex gap-11 mt-8 overflow-hidden flex-1">
             {/* Years column */}
-            <div className="flex-shrink-0 relative" style={{ width: '57px', height: '100%' }}>
+            <div className="exp-years flex-shrink-0 relative" style={{ width: '57px', height: '100%' }}>
               {experience.map((e, i) => {
                 const cardH = 155, gap = 8;
                 const isBetween = i > 0 && i < 4;
@@ -505,11 +745,11 @@ export default function Home() {
             </div>
 
             {/* Entry rows */}
-            <div className="flex flex-col flex-1 overflow-hidden">
+            <div className="exp-rows flex flex-col flex-1 overflow-hidden">
               {experience.map((e, i) => (
                 <div
                   key={i}
-                  className="flex items-center"
+                  className="exp-entry flex items-center"
                   style={{
                     height: '155px',
                     border: '1px solid rgba(255,255,255,0.1)',
@@ -519,7 +759,8 @@ export default function Home() {
                     flexShrink: 0,
                   }}
                 >
-                  <div style={{ width: '672px', flexShrink: 0 }}>
+                  <span className="exp-year-mobile">{e.year}</span>
+                  <div className="exp-project-col" style={{ width: '672px', flexShrink: 0 }}>
                     {e.project && (
                       <p style={{ fontSize: '18px', fontWeight: 400, color: '#fff', whiteSpace: 'pre-line', lineHeight: 1.3 }}>
                         {e.project}
@@ -527,7 +768,7 @@ export default function Home() {
                     )}
                   </div>
                   <div style={{ flex: 1 }} />
-                  <p style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.5)', maxWidth: '516px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
+                  <p className="exp-text" style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.5)', maxWidth: '516px', lineHeight: 1.5, whiteSpace: 'pre-line' }}>
                     {e.text}
                   </p>
                 </div>
@@ -536,10 +777,10 @@ export default function Home() {
           </div>
 
           <div
-            className="flex-shrink-0 flex items-center justify-center mt-auto"
+            className="exp-bottom-bar flex-shrink-0 flex items-center justify-center mt-auto"
             style={{ height: '96px', borderTop: '1px solid rgba(255,255,255,0.08)' }}
           >
-            <div className="flex items-center gap-4">
+            <div className="exp-bottom-inner flex items-center gap-4">
               <p style={{ fontSize: '18px', fontWeight: 500, color: '#fff' }}>
                 И ещё 15 лет опыта позади в больших продуктах...
               </p>
@@ -556,5 +797,6 @@ export default function Home() {
         </div>
       </section>
     </main>
+    </PasswordGate>
   );
 }
