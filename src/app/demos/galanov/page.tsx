@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef } from 'react';
+import { PulseDashboard } from './PulseDashboard';
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -245,13 +246,10 @@ export default function GalanovPage() {
               </aside>
 
               <div className="g-visuals" data-case-stack>
-                {/* Card 1 — hero video */}
+                {/* Card 1 — dashboard UI */}
                 <figure className="g-card">
-                  <div className="g-visual g-pulse-hero">
-                    <video autoPlay muted loop playsInline preload="none"
-                      poster={`${BASE}/assets/new/pulse-dashboard-video-poster.jpg`}>
-                      <source src={`${BASE}/assets/new/pulse-dashboard-video.mp4`} type="video/mp4" />
-                    </video>
+                  <div className="g-visual g-pulse-hero" style={{overflow:'hidden',borderRadius:16}}>
+                    <PulseDashboard />
                   </div>
                 </figure>
 
