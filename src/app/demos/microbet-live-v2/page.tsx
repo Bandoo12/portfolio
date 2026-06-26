@@ -112,6 +112,14 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
 }) {
   const isActive = i === vIdx;
 
+  const [tabVisible, setTabVisible] = useState(true);
+  useEffect(() => {
+    setTabVisible(!document.hidden);
+    const h = () => setTabVisible(!document.hidden);
+    document.addEventListener('visibilitychange', h);
+    return () => document.removeEventListener('visibilitychange', h);
+  }, []);
+
   const [timeLeft, setTimeLeft] = useState(card.start);
   const [isExiting, setIsExiting] = useState(false);
   const [chipIdx, setChipIdx] = useState<number | null>(null);
@@ -195,11 +203,11 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   }, [betPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!scActive || scBetPlaced || scBetWon !== null) return;
+    if (!scActive || scBetPlaced || scBetWon !== null || !tabVisible) return;
     if (scTimeLeft <= 0) { setIsExiting(true); return; }
     const t = setTimeout(() => setScTimeLeft(t => t - 1), 1000);
     return () => clearTimeout(t);
-  }, [scActive, scTimeLeft, scBetPlaced, scBetWon]);
+  }, [scActive, scTimeLeft, scBetPlaced, scBetWon, tabVisible]);
 
   useEffect(() => {
     if (!scBetPlaced) return;
@@ -212,9 +220,10 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
+    if (!tabVisible) return;
     const id = setInterval(() => setTimeLeft(t => (t <= 0 ? 0 : t - 1)), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [tabVisible]);
 
   const isExpired = timeLeft === 0;
 
