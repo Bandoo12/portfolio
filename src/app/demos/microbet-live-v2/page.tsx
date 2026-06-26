@@ -1107,23 +1107,23 @@ const SCENARIOS = [
 
 // Spotlight positions (% of phone content area height) for each scenario's steps
 const ONBOARD: Array<Array<{ text: string; sub: string; top: number; height: number }>> = [
-  [ // S1 interval yesno
-    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', top: 55, height: 17 },
+  [ // S1 yesno — buttons at y=415-507 of 756px → 54-67%
+    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', top: 53, height: 15 },
   ],
-  [ // S2 team
-    { text: 'Выберите команду', sub: 'Зенит или Спартак — откроется форма ставки', top: 55, height: 17 },
+  [ // S2 team — same layout as yesno
+    { text: 'Выберите команду', sub: 'Зенит или Спартак — откроется форма ставки', top: 53, height: 15 },
   ],
-  [ // S3 2nd chance yesno
-    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', top: 55, height: 17 },
+  [ // S3 yesno2 — same as S1
+    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', top: 53, height: 15 },
   ],
-  [ // S4 penalty series
-    { text: 'Забьёт или нет?', sub: 'Нажмите «Да» или «Нет» — откроется форма ставки', top: 60, height: 18 },
+  [ // S4 penalty — buttons at y=427-507 of 756px → 57-67%
+    { text: 'Забьёт или нет?', sub: 'Нажмите «Да» или «Нет» — откроется форма ставки', top: 56, height: 12 },
   ],
-  [ // S5 lineevent
-    { text: 'Выберите исход события', sub: 'Нажмите на одну из кнопок — откроется форма ставки', top: 51, height: 26 },
+  [ // S5 lineevent — full grid at y=305-507 of 756px → 40-67%
+    { text: 'Выберите исход события', sub: 'Нажмите на одну из кнопок — откроется форма ставки', top: 40, height: 27 },
   ],
-  [ // S6 line
-    { text: 'Выберите исход матча', sub: 'П1, X или П2 — откроется форма ставки', top: 51, height: 26 },
+  [ // S6 line — full grid at y=303-501 of 756px → 40-66%
+    { text: 'Выберите исход матча', sub: 'П1, X или П2 — откроется форма ставки', top: 40, height: 26 },
   ],
 ];
 
@@ -1488,6 +1488,9 @@ export default function MicrobetLiveV2() {
             const steps = ONBOARD[lockedIdx] ?? [];
             const step = steps[onboardStep];
             if (!step) return null;
+            // If spotlight is in upper half, put tooltip below it; else put tooltip at top
+            const tooltipBelow = step.top < 50;
+            const spotlightBottomPct = step.top + step.height;
             return (
               <div style={{ position: 'absolute', inset: 0, zIndex: 200, borderRadius: '32px 32px 0 0', pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()}>
                 {/* SVG mask: dark overlay with transparent cutout for spotlight */}
@@ -1502,10 +1505,20 @@ export default function MicrobetLiveV2() {
                 </svg>
                 {/* Green border around spotlight */}
                 <div style={{ position: 'absolute', top: `${step.top}%`, left: '5%', right: '5%', height: `${step.height}%`, borderRadius: 20, border: '1.5px solid rgba(0,201,88,0.8)', pointerEvents: 'none' }} />
-                {/* Arrow pointing down to spotlight */}
-                <div style={{ position: 'absolute', top: `calc(${step.top}% - 22px)`, left: '50%', transform: 'translateX(-50%)', fontSize: 18, lineHeight: 1, pointerEvents: 'none' }}>↓</div>
-                {/* Tooltip card — always at top, away from spotlight */}
-                <div style={{ position: 'absolute', top: 10, left: 12, right: 12, background: '#191d22', borderRadius: 18, padding: '14px 14px 12px', border: '1px solid rgba(255,255,255,0.12)' }}>
+                {/* Arrow between tooltip and spotlight */}
+                <div style={{
+                  position: 'absolute',
+                  top: tooltipBelow ? `calc(${spotlightBottomPct}% + 6px)` : `calc(${step.top}% - 24px)`,
+                  left: '50%', transform: 'translateX(-50%)', fontSize: 18, lineHeight: 1, pointerEvents: 'none',
+                }}>{tooltipBelow ? '↑' : '↓'}</div>
+                {/* Tooltip card */}
+                <div style={{
+                  position: 'absolute',
+                  ...(tooltipBelow
+                    ? { top: `calc(${spotlightBottomPct}% + 30px)` }
+                    : { top: 10 }),
+                  left: 12, right: 12, background: '#191d22', borderRadius: 18, padding: '14px 14px 12px', border: '1px solid rgba(255,255,255,0.12)',
+                }}>
                   <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: '0 0 4px', lineHeight: '19px' }}>{step.text}</p>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: '0 0 12px', lineHeight: '16px' }}>{step.sub}</p>
                   <div
