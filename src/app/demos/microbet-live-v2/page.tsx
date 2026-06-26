@@ -1250,15 +1250,16 @@ export default function MicrobetLiveV2() {
           </div>
 
           {[
-            { t1: 'Краснодар', t2: 'ЦСКА',    c1: '#EF2B2D', c2: '#003087', s: 'КС', s2: 'Ц',  score: '2:1', min: "61'", micro: true  },
-            { t1: 'Динамо',   t2: 'Локомотив', c1: '#009FD4', c2: '#E8002D', s: 'Д',  s2: 'Л',  score: '0:0', min: "34'", micro: false },
-            { t1: 'Рубин',    t2: 'Ростов',   c1: '#E60026', c2: '#009FD4', s: 'Р',  s2: 'РС', score: '1:2', min: "77'", micro: false },
+            { t1: 'Краснодар', t2: 'ЦСКА',     l1: 'https://r2.thesportsdb.com/images/media/team/badge/srxryu1473452272.png', l2: 'https://r2.thesportsdb.com/images/media/team/badge/1hf19s1681319986.png', score: '2:1', min: "61'", micro: true  },
+            { t1: 'Динамо',    t2: 'Локомотив', l1: 'https://r2.thesportsdb.com/images/media/team/badge/27hsew1615576097.png', l2: 'https://r2.thesportsdb.com/images/media/team/badge/tuyrur1473452310.png', score: '0:0', min: "34'", micro: false },
+            { t1: 'Рубин',     t2: 'Ростов',   l1: 'https://r2.thesportsdb.com/images/media/team/badge/hp9kw81579347672.png', l2: 'https://r2.thesportsdb.com/images/media/team/badge/yysryx1473452299.png', score: '1:2', min: "77'", micro: false },
           ].map((bet, i) => (
             <div key={i} style={{ marginTop: 8, width: 312, flexShrink: 0, height: 56, borderRadius: 24, background: 'linear-gradient(180deg, #252333 0%, #131214 55%)', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
               <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
-                {[{ c: bet.c1, s: bet.s }, { c: bet.c2, s: bet.s2 }].map((club, li) => (
-                  <div key={li} style={{ width: 28, height: 28, minWidth: 28, borderRadius: '50%', background: club.c, overflow: 'hidden', border: '1px solid #434c5b', marginLeft: li ? -8 : 0, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#fff' }}>
-                    {club.s}
+                {[bet.l1, bet.l2].map((src, li) => (
+                  <div key={li} style={{ width: 28, height: 28, minWidth: 28, borderRadius: '50%', background: '#fff', overflow: 'hidden', border: '1px solid #434c5b', marginLeft: li ? -8 : 0, flexShrink: 0 }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   </div>
                 ))}
               </div>

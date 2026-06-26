@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#1B9E3E"/>
+  <circle cx="50" cy="50" r="42" fill="none" stroke="#FFC72C" stroke-width="4"/>
+  <text x="50" y="60" font-family="Arial Black, Arial" font-weight="900" font-size="28" fill="#FFC72C" text-anchor="middle">КС</text>
+</svg>
