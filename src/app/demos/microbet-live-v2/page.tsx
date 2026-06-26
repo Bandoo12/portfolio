@@ -1470,8 +1470,20 @@ export default function MicrobetLiveV2() {
             if (!step) return null;
             const isLast = onboardStep >= steps.length - 1;
             return (
-              <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', zIndex: 200, borderRadius: '32px 32px 0 0', pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()}>
-                <div style={{ position: 'absolute', top: `${step.top}%`, left: '6%', right: '6%', height: `${step.height}%`, borderRadius: 22, boxShadow: '0 0 0 2000px rgba(0,0,0,0.74)', border: '1.5px solid rgba(0,201,88,0.7)' }} />
+              <div style={{ position: 'absolute', inset: 0, zIndex: 200, borderRadius: '32px 32px 0 0', pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()}>
+                {/* SVG mask: dark overlay with transparent cutout for the spotlight */}
+                <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+                  <defs>
+                    <mask id="ob-mask">
+                      <rect width="100%" height="100%" fill="white" />
+                      <rect x="6%" y={`${step.top}%`} width="88%" height={`${step.height}%`} rx="22" ry="22" fill="black" />
+                    </mask>
+                  </defs>
+                  <rect width="100%" height="100%" fill="rgba(0,0,0,0.76)" mask="url(#ob-mask)" />
+                </svg>
+                {/* Green border around spotlight */}
+                <div style={{ position: 'absolute', top: `${step.top}%`, left: '6%', right: '6%', height: `${step.height}%`, borderRadius: 22, border: '1.5px solid rgba(0,201,88,0.75)', pointerEvents: 'none' }} />
+                {/* Tooltip card */}
                 <div style={{ position: 'absolute', bottom: 76, left: 14, right: 14, background: '#191d22', borderRadius: 20, padding: '16px 16px 14px', border: '1px solid rgba(255,255,255,0.1)' }}>
                   <div style={{ fontSize: 10, fontWeight: 700, color: '#00c958', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase' }}>
                     Шаг {onboardStep + 1} из {steps.length}
