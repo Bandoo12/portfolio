@@ -1106,31 +1106,33 @@ const SCENARIOS = [
 ];
 
 // Spotlight positions (% of phone content area height) for each scenario's steps
-// Pixel coordinates in 756px phone content space.
-// br = bottom border-radius. Card bottom = y=515. BetSheet y=515-703.
+// Pixel coordinates in 756px phone content space (card is 328px wide, centered at x=16..344).
+// br = bottom border-radius (card active bottom corners = 24px). Card bottom y=515. BetSheet y=515-703.
+// lx/rx: card left/right x in phone content coords (default 16/344).
+const CARD_LX = 16; const CARD_RX = 344; // (360-328)/2 = 16px margin each side
 const ONBOARD: Array<Array<{ text: string; sub: string; y: number; h: number; br: number }>> = [
-  [ // S1 yesno — buttons y=416-515 (to card bottom), br=32
-    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', y: 416, h: 99, br: 32 },
+  [ // S1 yesno — badge+buttons y=409-515 (to card bottom), br=24
+    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', y: 408, h: 107, br: 24 },
     { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
   [ // S2 team — same layout
-    { text: 'Выберите команду', sub: 'Зенит или Спартак — откроется форма ставки', y: 416, h: 99, br: 32 },
+    { text: 'Выберите команду', sub: 'Зенит или Спартак — откроется форма ставки', y: 408, h: 107, br: 24 },
     { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
   [ // S3 yesno2 — same
-    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', y: 416, h: 99, br: 32 },
+    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', y: 408, h: 107, br: 24 },
     { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
-  [ // S4 penalty — buttons y=427-515 (to card bottom), br=32
-    { text: 'Забьёт или нет?', sub: 'Нажмите «Да» или «Нет» — откроется форма ставки', y: 427, h: 88, br: 32 },
+  [ // S4 penalty — badge+buttons y=419-515 (to card bottom), br=24
+    { text: 'Забьёт или нет?', sub: 'Нажмите «Да» или «Нет» — откроется форма ставки', y: 419, h: 96, br: 24 },
     { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
-  [ // S5 lineevent — full grid y=305-515 (to card bottom), br=32
-    { text: 'Выберите исход события', sub: 'Нажмите на одну из кнопок — откроется форма ставки', y: 305, h: 210, br: 32 },
+  [ // S5 lineevent — full grid y=303-515 (to card bottom), br=24
+    { text: 'Выберите исход события', sub: 'Нажмите на одну из кнопок — откроется форма ставки', y: 303, h: 212, br: 24 },
     { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
-  [ // S6 line — full grid y=303-515 (to card bottom), br=32
-    { text: 'Выберите исход матча', sub: 'П1, X или П2 — откроется форма ставки', y: 303, h: 212, br: 32 },
+  [ // S6 line — full grid y=301-515 (to card bottom), br=24
+    { text: 'Выберите исход матча', sub: 'П1, X или П2 — откроется форма ставки', y: 301, h: 214, br: 24 },
     { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
 ];
@@ -1498,15 +1500,17 @@ export default function MicrobetLiveV2() {
             const steps = ONBOARD[lockedIdx] ?? [];
             const step = steps[onboardStep];
             if (!step) return null;
-            // Spotlight shape: rectangle with br=0 top corners, br=step.br bottom corners
+            // Spotlight shape: card-aligned (328px wide, centered at CARD_LX..CARD_RX)
+            // br=0 top corners, br=step.br bottom corners (matching card active bottom radius=24)
             const spotY = step.y; const spotB = step.y + step.h; const r = step.br;
+            const lx = CARD_LX; const rx = CARD_RX;
             const spotPath = r > 0
-              ? `M 0 ${spotY} L 360 ${spotY} L 360 ${spotB - r} A ${r} ${r} 0 0 1 ${360 - r} ${spotB} L ${r} ${spotB} A ${r} ${r} 0 0 1 0 ${spotB - r} Z`
-              : `M 0 ${spotY} L 360 ${spotY} L 360 ${spotB} L 0 ${spotB} Z`;
+              ? `M ${lx} ${spotY} L ${rx} ${spotY} L ${rx} ${spotB - r} A ${r} ${r} 0 0 1 ${rx - r} ${spotB} L ${lx + r} ${spotB} A ${r} ${r} 0 0 1 ${lx} ${spotB - r} Z`
+              : `M ${lx} ${spotY} L ${rx} ${spotY} L ${rx} ${spotB} L ${lx} ${spotB} Z`;
             const isLastStep = onboardStep >= steps.length - 1;
             return (
               <div style={{ position: 'absolute', inset: 0, zIndex: 200, borderRadius: '32px 32px 0 0', pointerEvents: 'none' }}>
-                {/* SVG dark overlay with viewBox for pixel-precise cutout */}
+                {/* SVG dark overlay with viewBox for pixel-precise card-aligned cutout */}
                 <svg viewBox="0 0 360 756" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
                   <defs>
                     <mask id="ob-mask">
@@ -1516,11 +1520,11 @@ export default function MicrobetLiveV2() {
                   </defs>
                   <rect width="360" height="756" fill="rgba(0,0,0,0.78)" mask="url(#ob-mask)" />
                 </svg>
-                {/* Barriers on dark areas to prevent accidental swipe (spotlight area stays click-through) */}
+                {/* Barriers on dark areas to prevent accidental swipe (spotlight click-through) */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: spotY, pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()} />
                 <div style={{ position: 'absolute', top: spotB, left: 0, right: 0, bottom: 0, pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()} />
-                {/* Green border — card-edge aligned, top sharp / bottom rounded */}
-                <div style={{ position: 'absolute', top: spotY, left: 0, right: 0, height: step.h, borderRadius: `0 0 ${r}px ${r}px`, border: '2px solid rgba(0,201,88,0.85)', pointerEvents: 'none', boxSizing: 'border-box' }} />
+                {/* Green border — card-edge width, top sharp / bottom rounded to match card */}
+                <div style={{ position: 'absolute', top: spotY, left: lx, right: 360 - rx, height: step.h, borderRadius: `0 0 ${r}px ${r}px`, border: '2px solid rgba(0,201,88,0.85)', pointerEvents: 'none', boxSizing: 'border-box' }} />
                 {/* Arrow pointing down from tooltip to spotlight */}
                 <div style={{ position: 'absolute', top: spotY - 26, left: '50%', transform: 'translateX(-50%)', fontSize: 18, lineHeight: 1, pointerEvents: 'none', color: 'rgba(0,201,88,0.9)' }}>↓</div>
                 {/* Tooltip card at top */}
