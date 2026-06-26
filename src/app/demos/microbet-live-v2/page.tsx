@@ -10,9 +10,11 @@ import { motion, useMotionValue, useTransform, animate, MotionValue, AnimatePres
    - market counter "Маркет X из Y" (removes confusion about stack depth)
 */
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 const IMG = {
-  zenit:   '/img/zenit.svg',
-  spartak: '/img/spartak.svg',
+  zenit:   `${BASE}/img/zenit.svg`,
+  spartak: `${BASE}/img/spartak.svg`,
 };
 
 const CARD_W = 314;
@@ -1060,11 +1062,11 @@ export default function MicrobetLiveV2() {
   return (
     <div style={{ minHeight: '100vh', background: '#1c1c1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
       <style>{`@keyframes cursor-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }`}</style>
-      <video ref={sharedVideoRef} src="/img/microbet-match.mp4" autoPlay muted loop playsInline style={{ position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }} />
+      <video ref={sharedVideoRef} src={`${BASE}/img/microbet-match.mp4`} autoPlay muted loop playsInline style={{ position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }} />
 
       <div style={{ width: 360, height: 800, position: 'relative', overflow: 'hidden', borderRadius: 40 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/img/microbet-bg.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+        <img src={`${BASE}/img/microbet-bg.png`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
 
         <div style={{ position: 'absolute', top: 44, left: 0, right: 0, bottom: 0, background: '#0a0c0b', borderRadius: '32px 32px 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
           <div style={{ width: 134, height: 5, background: '#ffffff', borderRadius: 100, marginTop: 13, flexShrink: 0 }} />
