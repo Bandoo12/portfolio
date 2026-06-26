@@ -230,6 +230,8 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   useEffect(() => {
     if (!isExpired || !isActive || isGhost || betPlaced || betResult) return;
     onClearBet();
+    // Penalty stays on "Время вышло" screen until user taps "Следующий маркет"
+    if (card.type === 'penalty') return;
     const t = setTimeout(() => setIsExiting(true), 2000);
     return () => clearTimeout(t);
   }, [isExpired, isActive, betPlaced, betResult]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -241,7 +243,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
 
   const pct = timeLeft / card.timer;
   const [r, g, b] = glowColorAt(pct);
-  const timerColor = timerColorAt(pct);
+  const timerColor = card.type === 'penalty' ? timerColorAt(0) : timerColorAt(pct);
   const pulseDuration = pulseDurationAt(pct);
 
   const progress = useTransform(x, (xVal: number) => {
@@ -707,8 +709,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
 
   // penalty card — серия пенальти
   if (card.type === 'penalty') {
-    const penaltyPct = timeLeft / card.timer;
-    const penaltyColor = timerColorAt(penaltyPct);
+    const penaltyColor = timerColorAt(0); // always red — penalty is always urgent
     return (
       <motion.div
         initial={false}
@@ -821,11 +822,15 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
 
           <div style={{ background: sheetOpen ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: sheetOpen ? 0 : '0 0 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 8px 8px', minHeight: (betPlaced || betResult) ? 268 : sheetOpen ? 260 : 268 }}>
             {(betPlaced || betResult) ? BetResultArea() : isExpired ? (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%', padding: '0 8px' }}>
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M33.998 20.2841V14C33.998 8.486 29.512 4 23.998 4C18.484 4 13.998 8.486 13.998 14V20.2841C10.556 21.1781 7.99805 24.284 7.99805 28V36C7.99805 40.412 11.586 44 15.998 44H31.998C36.41 44 39.998 40.412 39.998 36V28C39.998 24.284 37.44 21.1781 33.998 20.2841ZM17.998 14C17.998 10.692 20.69 8 23.998 8C27.306 8 29.998 10.692 29.998 14V20H17.998V14ZM35.998 36C35.998 38.206 34.204 40 31.998 40H15.998C13.792 40 11.998 38.206 11.998 36V28C11.998 25.794 13.792 24 15.998 24H31.998C34.204 24 35.998 25.794 35.998 28V36ZM22.696 35.938H25.306L26.668 27.938H21.3361L22.696 35.938Z" fill="#EEEFF3" fillOpacity={0.5}/>
                 </svg>
                 <span style={{ fontSize: 16, fontWeight: 400, color: 'rgba(238,239,243,0.5)' }}>Время вышло</span>
+                <div onClick={() => setIsExiting(true)} onPointerDown={e => e.stopPropagation()} style={{ marginTop: 12, height: 48, width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer' }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: '#ffffff' }}>Следующий маркет</span>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </div>
               </div>
             ) : <>
               <p style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', lineHeight: '22px', textAlign: 'center', margin: 0, padding: '0 16px', whiteSpace: 'pre-line' }}>
