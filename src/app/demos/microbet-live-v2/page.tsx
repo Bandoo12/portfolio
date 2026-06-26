@@ -886,6 +886,39 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   );
 }
 
+const SCENARIOS = [
+  {
+    id: 1, label: 'Интервальный маркет', title: 'Будет угловой?', badge: null,
+    steps: ['Нажмите «Да» или «Нет»', 'Выберите сумму ставки из чипов или введите вручную', 'Нажмите «Сделать ставку»', 'Дождитесь результата (~15 сек)', 'Ставка выигрывает ✓'],
+    note: 'Базовый сценарий — да/нет на игровое событие. Оцените: насколько понятен маркет без объяснений?',
+  },
+  {
+    id: 2, label: 'Командный маркет', title: 'Кто владеет мячом?', badge: null,
+    steps: ['Выберите команду — Зенит или Спартак', 'Обратите внимание на % вероятности и хинт под коэфом', 'Введите сумму и нажмите «Сделать ставку»', 'Дождитесь результата'],
+    note: 'Вместо Да/Нет — логотипы команд. Оцените: помогает ли аналитика (% и хинт) принять решение быстрее?',
+  },
+  {
+    id: 3, label: '2-й шанс', title: 'Будет отбор мяча?', badge: '⚡',
+    steps: ['Сделайте ставку как обычно', 'Ставка не заходит — появляется «⚡ 2-й шанс»', 'У вас 10 секунд на новую ставку', 'Нажмите «Да» или «Нет» в блоке 2-го шанса', '2-й шанс выигрывает ✓'],
+    note: 'Механика удержания после проигрыша. Оцените: хочется ли воспользоваться шансом? Не раздражает ли?',
+  },
+  {
+    id: 4, label: 'Серия пенальти', title: 'Забьёт Смолов?', badge: '⚽',
+    steps: ['Только 8 секунд — действуйте быстро!', 'Нажмите «Да» или «Нет»', 'Введите сумму ставки', 'Нажмите «Сделать ставку» — результат придёт за 5 сек'],
+    note: 'Ситуативный маркет на пенальти. Оцените: передаёт ли интерфейс ощущение срочности и напряжения?',
+  },
+  {
+    id: 5, label: 'Ситуативный маркет', title: 'Следующее событие', badge: null,
+    steps: ['Выберите одно из событий: Гол, Угловой, Фол, Аут...', 'Нажмите на исход', 'Введите сумму и подтвердите ставку'],
+    note: 'Мультиисходный маркет. Оцените: понятно ли какой из исходов выбрать? Не слишком ли много вариантов?',
+  },
+  {
+    id: 6, label: 'Обычная линия', title: 'Исход матча', badge: null,
+    steps: ['Выберите исход: П1, X или П2', 'Или комбинированный: 1X, 12, 2X', 'Нажмите «+120 исходов» чтобы увидеть полную роспись', 'Сделайте ставку'],
+    note: 'Стандартная ставка на матч внутри микробета. Оцените: органично ли она вписывается в поток микробетинга?',
+  },
+];
+
 export default function MicrobetLiveV2() {
   const sharedVideoRef = useRef<HTMLVideoElement>(null);
   const canvasEls = useRef<(HTMLCanvasElement | null)[]>([]);
@@ -1058,13 +1091,50 @@ export default function MicrobetLiveV2() {
   };
 
   const realIdx = liveN > 0 ? ((vIdx - 1) % liveN + liveN) % liveN : 0;
+  const currentCard = liveCards[realIdx];
+  const scenarioIndex = currentCard ? currentCard.id - 1 : 0;
+  const scenario = SCENARIOS[Math.min(scenarioIndex, SCENARIOS.length - 1)];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1c1c1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
-      <style>{`@keyframes cursor-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }`}</style>
+    <div style={{ minHeight: '100vh', background: '#111214', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28, padding: '24px 16px', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", boxSizing: 'border-box' }}>
+      <style>{`
+        @keyframes cursor-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+        @media (max-width: 900px) { .sp { display: none !important; } }
+      `}</style>
       <video ref={sharedVideoRef} src={`${BASE}/img/microbet-match.mp4`} autoPlay muted loop playsInline style={{ position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }} />
 
-      <div style={{ width: 360, height: 800, position: 'relative', overflow: 'hidden', borderRadius: 40 }}>
+      {/* Left panel */}
+      <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 20, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.09em', textTransform: 'uppercase' }}>Сценарии</div>
+          </div>
+          {SCENARIOS.map((sc, i) => {
+            const isActive = i === scenarioIndex;
+            return (
+              <div
+                key={sc.id}
+                onClick={() => { if (liveN > 0) snapTo(i + 1); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px', cursor: 'pointer', background: isActive ? 'rgba(255,255,255,0.06)' : 'transparent', borderLeft: `3px solid ${isActive ? '#00c958' : 'transparent'}` }}
+              >
+                <div style={{ width: 24, height: 24, minWidth: 24, borderRadius: 7, background: isActive ? 'rgba(0,201,88,0.2)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: isActive ? '#00c958' : 'rgba(255,255,255,0.35)' }}>
+                  {i + 1}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: isActive ? '#eeeff3' : 'rgba(255,255,255,0.5)', lineHeight: '15px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.title}</div>
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', marginTop: 1 }}>{sc.badge ? `${sc.badge} ` : ''}{sc.label}</div>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', lineHeight: '14px' }}>Свайпайте карточки или нажмите здесь</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Phone mockup */}
+      <div style={{ width: 360, height: 800, position: 'relative', overflow: 'hidden', borderRadius: 40, flexShrink: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`${BASE}/img/microbet-bg.png`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
 
@@ -1151,6 +1221,34 @@ export default function MicrobetLiveV2() {
           ))}
 
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 64, background: 'linear-gradient(180deg, transparent 0%, #0a0c0b 100%)', pointerEvents: 'none' }} />
+        </div>
+      </div>
+
+      {/* Right panel */}
+      <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
+        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 20, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(0,201,88,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#00c958', flexShrink: 0 }}>{scenarioIndex + 1}</div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3', lineHeight: '15px' }}>{scenario.title}</div>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{scenario.label}</div>
+            </div>
+          </div>
+          <div style={{ padding: '8px 18px 4px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Как пройти</div>
+            {scenario.steps.map((step, si) => (
+              <div key={si} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: si < scenario.steps.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
+                <div style={{ width: 20, height: 20, minWidth: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginTop: 1 }}>{si + 1}</div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: '17px' }}>{step}</div>
+              </div>
+            ))}
+          </div>
+          {scenario.note && (
+            <div style={{ margin: '8px 18px 16px', padding: '10px 12px', background: 'rgba(255,200,0,0.07)', border: '1px solid rgba(255,200,0,0.15)', borderRadius: 10 }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,200,0,0.7)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Что оцениваем</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: '15px' }}>{scenario.note}</div>
+            </div>
+          )}
         </div>
       </div>
     </div>
