@@ -13,8 +13,8 @@ import { motion, useMotionValue, useTransform, animate, MotionValue, AnimatePres
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
 const IMG = {
-  zenit:   `${BASE}/img/zenit.svg`,
-  spartak: `${BASE}/img/spartak.svg`,
+  zenit:   `${BASE}/img/zenit_real.png`,
+  spartak: `${BASE}/img/spartak_real.png`,
 };
 
 const CARD_W = 314;
@@ -245,13 +245,13 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
 
   const origin = i < vIdx ? 'right center' : 'left center';
 
-  const initPct = card.start / card.timer;
+  const initPct = card.type === 'penalty' ? 0 : card.start / card.timer;
   const [initR, initG, initB] = glowColorAt(initPct);
   const rMV = useMotionValue(initR);
   const gMV = useMotionValue(initG);
   const bMV = useMotionValue(initB);
   useEffect(() => {
-    if (card.type === 'line') return;
+    if (card.type === 'line' || card.type === 'penalty') return;
     animate(rMV, r, { duration: 0.9, ease: 'easeOut' });
     animate(gMV, g, { duration: 0.9, ease: 'easeOut' });
     animate(bMV, b, { duration: 0.9, ease: 'easeOut' });
@@ -770,7 +770,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                 </div>
               </>}
             </div>
-            <motion.div animate={{ borderRadius: sheetOpen ? '32px 32px 24px 24px' : 32, opacity: (betPlaced || betResult) ? 0 : 1 }} transition={{ duration: 0.25 }} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10, boxShadow: 'inset 0px 0px 18px 1px rgba(255,255,255,0.25), inset 0px 1px 34px 3px rgba(230,50,50,0.55)' }} />
+            <motion.div animate={{ borderRadius: sheetOpen ? '32px 32px 24px 24px' : 32, opacity: (betPlaced || betResult) ? 0 : 1 }} transition={{ duration: 0.25 }} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10, boxShadow: glowBoxShadow }} />
             {(betPlaced || betResult) && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 11, borderRadius: 32, boxShadow: betWon ? 'inset 0px 0px 18px 0px rgba(255,255,255,0.18), inset 0px 8px 30px 2px rgba(7,113,48,0.38)' : 'inset 0px 0px 18px 0px rgba(255,255,255,0.12), inset 0px 8px 30px 2px rgba(200,50,50,0.3)' }} />}
           </div>
         </motion.div>
@@ -1250,9 +1250,9 @@ export default function MicrobetLiveV2() {
           </div>
 
           {[
-            { t1: 'Краснодар', t2: 'ЦСКА',     l1: 'https://r2.thesportsdb.com/images/media/team/badge/srxryu1473452272.png', l2: 'https://r2.thesportsdb.com/images/media/team/badge/1hf19s1681319986.png', score: '2:1', min: "61'", micro: true  },
-            { t1: 'Динамо',    t2: 'Локомотив', l1: 'https://r2.thesportsdb.com/images/media/team/badge/27hsew1615576097.png', l2: 'https://r2.thesportsdb.com/images/media/team/badge/tuyrur1473452310.png', score: '0:0', min: "34'", micro: false },
-            { t1: 'Рубин',     t2: 'Ростов',   l1: 'https://r2.thesportsdb.com/images/media/team/badge/hp9kw81579347672.png', l2: 'https://r2.thesportsdb.com/images/media/team/badge/yysryx1473452299.png', score: '1:2', min: "77'", micro: false },
+            { t1: 'Краснодар', t2: 'ЦСКА',     l1: `${BASE}/img/krasnodar_real.png`, l2: `${BASE}/img/cska_real.png`,      score: '2:1', min: "61'", micro: true },
+            { t1: 'Динамо',    t2: 'Локомотив', l1: `${BASE}/img/dynamo_real.png`,    l2: `${BASE}/img/lokomotiv_real.png`, score: '0:0', min: "34'", micro: true },
+            { t1: 'Рубин',     t2: 'Ростов',   l1: `${BASE}/img/rubin_real.png`,     l2: `${BASE}/img/rostov_real.png`,   score: '1:2', min: "77'", micro: true },
           ].map((bet, i) => (
             <div key={i} style={{ marginTop: 8, width: 312, flexShrink: 0, height: 56, borderRadius: 24, background: 'linear-gradient(180deg, #252333 0%, #131214 55%)', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
               <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
@@ -1312,6 +1312,20 @@ export default function MicrobetLiveV2() {
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(150,150,255,0.8)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Подсказка</div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: '15px' }}>Выберите конкретный сценарий слева — мы проведём через него с пошаговыми инструкциями</div>
               </div>
+              <div style={{ margin: '0 18px 16px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.4)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Индикатор рамки</div>
+                {[
+                  { dot: '#00cc66', text: 'Много времени — спокойный медленный пульс' },
+                  { dot: '#ffcc00', text: 'Мало времени — пульс быстрее, цвет янтарный' },
+                  { dot: '#ff4444', text: 'Критично — красный, быстро мигает' },
+                  { dot: '#ff4444', text: 'Пенальти — всегда красный (экстренный режим)' },
+                ].map((item, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < 3 ? 5 : 0 }}>
+                    <div style={{ width: 8, height: 8, minWidth: 8, borderRadius: '50%', background: item.dot, boxShadow: `0 0 6px ${item.dot}` }} />
+                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', lineHeight: '14px' }}>{item.text}</div>
+                  </div>
+                ))}
+              </div>
             </>
           ) : (
             <>
@@ -1332,11 +1346,22 @@ export default function MicrobetLiveV2() {
                 ))}
               </div>
               {scenario.note && (
-                <div style={{ margin: '8px 18px 16px', padding: '10px 12px', background: 'rgba(255,200,0,0.07)', border: '1px solid rgba(255,200,0,0.15)', borderRadius: 10 }}>
+                <div style={{ margin: '8px 18px 8px', padding: '10px 12px', background: 'rgba(255,200,0,0.07)', border: '1px solid rgba(255,200,0,0.15)', borderRadius: 10 }}>
                   <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,200,0,0.7)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Что оцениваем</div>
                   <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: '15px' }}>{scenario.note}</div>
                 </div>
               )}
+              <div style={{ margin: '4px 18px 16px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Рамка карточки</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {[['#00cc66','Зелёная — много времени'],['#ffcc00','Жёлтая — мало времени'],['#ff4444','Красная — критично / пенальти']].map(([c,t]) => (
+                    <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <div style={{ width: 7, height: 7, minWidth: 7, borderRadius: '50%', background: c, boxShadow: `0 0 5px ${c}` }} />
+                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', lineHeight: '13px' }}>{t}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </>
           )}
         </div>
