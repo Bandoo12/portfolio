@@ -824,6 +824,18 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                   </div>
                 </div>
 
+              ) : betPlaced ? (
+                // ── WAITING FOR RESULT ──
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%' }}>
+                  <SoccerBallSVG size={56} />
+                  <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0 }}>Ожидаем результат...</p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.07)', borderRadius: 18, padding: '10px 18px' }}>
+                    <span style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{placedBetRef.current.label}</span>
+                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>·</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>коэф. {placedBetRef.current.odds}</span>
+                  </div>
+                </motion.div>
+
               ) : betResult ? (
                 // ── ROUND RESULT ──
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
@@ -1080,30 +1092,24 @@ const SCENARIOS = [
 ];
 
 // Spotlight positions (% of phone content area height) for each scenario's steps
-const ONBOARD: Array<Array<{ text: string; top: number; height: number }>> = [
+const ONBOARD: Array<Array<{ text: string; sub: string; top: number; height: number }>> = [
   [ // S1 interval yesno
-    { text: 'Нажмите «Да» или «Нет»', top: 52, height: 16 },
-    { text: 'Введите сумму и нажмите «Сделать ставку»', top: 70, height: 22 },
+    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', top: 55, height: 17 },
   ],
   [ // S2 team
-    { text: 'Выберите команду — Зенит или Спартак', top: 52, height: 16 },
-    { text: 'Введите сумму и нажмите «Сделать ставку»', top: 70, height: 22 },
+    { text: 'Выберите команду', sub: 'Зенит или Спартак — откроется форма ставки', top: 55, height: 17 },
   ],
   [ // S3 2nd chance yesno
-    { text: 'Нажмите «Да» или «Нет»', top: 52, height: 16 },
-    { text: 'Введите сумму и нажмите «Сделать ставку»', top: 70, height: 22 },
+    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', top: 55, height: 17 },
   ],
   [ // S4 penalty series
-    { text: 'Выберите игрока — «Да» (забьёт) или «Нет»', top: 57, height: 20 },
-    { text: 'Введите сумму и нажмите «Сделать ставку»', top: 70, height: 22 },
+    { text: 'Забьёт или нет?', sub: 'Нажмите «Да» или «Нет» — откроется форма ставки', top: 60, height: 18 },
   ],
   [ // S5 lineevent
-    { text: 'Выберите исход следующего события', top: 49, height: 27 },
-    { text: 'Введите сумму и нажмите «Сделать ставку»', top: 70, height: 22 },
+    { text: 'Выберите исход события', sub: 'Нажмите на одну из кнопок — откроется форма ставки', top: 51, height: 26 },
   ],
   [ // S6 line
-    { text: 'Выберите исход матча: П1, X или П2', top: 49, height: 27 },
-    { text: 'Введите сумму и нажмите «Сделать ставку»', top: 70, height: 22 },
+    { text: 'Выберите исход матча', sub: 'П1, X или П2 — откроется форма ставки', top: 51, height: 26 },
   ],
 ];
 
@@ -1468,34 +1474,31 @@ export default function MicrobetLiveV2() {
             const steps = ONBOARD[lockedIdx] ?? [];
             const step = steps[onboardStep];
             if (!step) return null;
-            const isLast = onboardStep >= steps.length - 1;
             return (
               <div style={{ position: 'absolute', inset: 0, zIndex: 200, borderRadius: '32px 32px 0 0', pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()}>
-                {/* SVG mask: dark overlay with transparent cutout for the spotlight */}
+                {/* SVG mask: dark overlay with transparent cutout for spotlight */}
                 <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
                   <defs>
                     <mask id="ob-mask">
                       <rect width="100%" height="100%" fill="white" />
-                      <rect x="6%" y={`${step.top}%`} width="88%" height={`${step.height}%`} rx="22" ry="22" fill="black" />
+                      <rect x="5%" y={`${step.top}%`} width="90%" height={`${step.height}%`} rx="20" ry="20" fill="black" />
                     </mask>
                   </defs>
-                  <rect width="100%" height="100%" fill="rgba(0,0,0,0.76)" mask="url(#ob-mask)" />
+                  <rect width="100%" height="100%" fill="rgba(0,0,0,0.78)" mask="url(#ob-mask)" />
                 </svg>
                 {/* Green border around spotlight */}
-                <div style={{ position: 'absolute', top: `${step.top}%`, left: '6%', right: '6%', height: `${step.height}%`, borderRadius: 22, border: '1.5px solid rgba(0,201,88,0.75)', pointerEvents: 'none' }} />
-                {/* Tooltip card */}
-                <div style={{ position: 'absolute', bottom: 76, left: 14, right: 14, background: '#191d22', borderRadius: 20, padding: '16px 16px 14px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: '#00c958', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase' }}>
-                    Шаг {onboardStep + 1} из {steps.length}
-                  </div>
-                  <p style={{ fontSize: 15, fontWeight: 600, color: '#fff', margin: '0 0 14px', lineHeight: '19px' }}>{step.text}</p>
+                <div style={{ position: 'absolute', top: `${step.top}%`, left: '5%', right: '5%', height: `${step.height}%`, borderRadius: 20, border: '1.5px solid rgba(0,201,88,0.8)', pointerEvents: 'none' }} />
+                {/* Arrow pointing down to spotlight */}
+                <div style={{ position: 'absolute', top: `calc(${step.top}% - 22px)`, left: '50%', transform: 'translateX(-50%)', fontSize: 18, lineHeight: 1, pointerEvents: 'none' }}>↓</div>
+                {/* Tooltip card — always at top, away from spotlight */}
+                <div style={{ position: 'absolute', top: 10, left: 12, right: 12, background: '#191d22', borderRadius: 18, padding: '14px 14px 12px', border: '1px solid rgba(255,255,255,0.12)' }}>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: '0 0 4px', lineHeight: '19px' }}>{step.text}</p>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: '0 0 12px', lineHeight: '16px' }}>{step.sub}</p>
                   <div
-                    onClick={() => isLast ? setOnboardStep(null) : setOnboardStep(s => (s ?? 0) + 1)}
-                    style={{ height: 46, background: isLast ? '#00c958' : 'rgba(255,255,255,0.1)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    onClick={() => setOnboardStep(null)}
+                    style={{ height: 40, background: 'rgba(255,255,255,0.08)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                   >
-                    <span style={{ fontSize: 14, fontWeight: 700, color: isLast ? '#000' : '#fff' }}>
-                      {isLast ? 'Начать →' : 'Далее'}
-                    </span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>Пропустить</span>
                   </div>
                 </div>
               </div>
