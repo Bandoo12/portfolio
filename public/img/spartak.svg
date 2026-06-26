@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#CC0000"/>
+  <polygon points="50,12 78,50 50,88 22,50" fill="white"/>
+  <text x="50" y="57" font-family="Arial Black, Arial" font-weight="900" font-size="26" fill="#CC0000" text-anchor="middle">С</text>
+</svg>
