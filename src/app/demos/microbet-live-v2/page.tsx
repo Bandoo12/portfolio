@@ -106,7 +106,7 @@ function CheckCircleSVG({ size = 80 }: { size?: number }) {
   );
 }
 
-function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon, timerPaused }: {
+function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon }: {
   card: CardData; i: number; x: MotionValue<number>; vIdx: number;
   onCanvasRef: (el: HTMLCanvasElement | null) => void;
   onBet: (label: string, odds: string, logo?: string) => void;
@@ -117,7 +117,6 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   onExpireInactive: (virtualIdx: number) => void;
   onBetPlaced: () => void;
   onBetWon: () => void;
-  timerPaused?: boolean;
 }) {
   const isActive = i === vIdx;
 
@@ -135,14 +134,6 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   const [penaltySeriesOver, setPenaltySeriesOver] = useState(false);
   const penaltyRoundInitRef = useRef(true);
   const [roundResultTimer, setRoundResultTimer] = useState(0);
-
-  // Timer reset when coachmark unpauses
-  const prevTimerPausedRef = useRef(!!timerPaused);
-  useEffect(() => {
-    const wasJustUnpaused = prevTimerPausedRef.current && !timerPaused;
-    prevTimerPausedRef.current = !!timerPaused;
-    if (wasJustUnpaused) setTimeLeft(card.start);
-  }, [timerPaused]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Reset per-round state when penalty round advances
   useEffect(() => {
@@ -280,10 +271,10 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!tabVisible || timerPaused) return;
+    if (!tabVisible) return;
     const id = setInterval(() => setTimeLeft(t => (t <= 0 ? 0 : t - 1)), 1000);
     return () => clearInterval(id);
-  }, [tabVisible, timerPaused]);
+  }, [tabVisible]);
 
   const isExpired = timeLeft === 0;
 
@@ -1105,37 +1096,6 @@ const SCENARIOS = [
   },
 ];
 
-// Spotlight positions (% of phone content area height) for each scenario's steps
-// Pixel coordinates in 756px phone content space (card is 328px wide, centered at x=16..344).
-// br = bottom border-radius (card active bottom corners = 24px). Card bottom y=515. BetSheet y=515-703.
-// lx/rx: card left/right x in phone content coords (default 16/344).
-const CARD_LX = 16; const CARD_RX = 344; // (360-328)/2 = 16px margin each side
-const ONBOARD: Array<Array<{ text: string; sub: string; y: number; h: number; br: number }>> = [
-  [ // S1 yesno — badge+buttons y=409-515 (to card bottom), br=24
-    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', y: 408, h: 107, br: 24 },
-    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
-  ],
-  [ // S2 team — same layout
-    { text: 'Выберите команду', sub: 'Зенит или Спартак — откроется форма ставки', y: 408, h: 107, br: 24 },
-    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
-  ],
-  [ // S3 yesno2 — same
-    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', y: 408, h: 107, br: 24 },
-    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
-  ],
-  [ // S4 penalty — badge+buttons y=419-515 (to card bottom), br=24
-    { text: 'Забьёт или нет?', sub: 'Нажмите «Да» или «Нет» — откроется форма ставки', y: 419, h: 96, br: 24 },
-    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
-  ],
-  [ // S5 lineevent — full grid y=303-515 (to card bottom), br=24
-    { text: 'Выберите исход события', sub: 'Нажмите на одну из кнопок — откроется форма ставки', y: 303, h: 212, br: 24 },
-    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
-  ],
-  [ // S6 line — full grid y=301-515 (to card bottom), br=24
-    { text: 'Выберите исход матча', sub: 'П1, X или П2 — откроется форма ставки', y: 301, h: 214, br: 24 },
-    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
-  ],
-];
 
 export default function MicrobetLiveV2() {
   const sharedVideoRef = useRef<HTMLVideoElement>(null);
@@ -1170,7 +1130,6 @@ export default function MicrobetLiveV2() {
   const [selectedBet, setSelectedBet] = useState<{ label: string; odds: string; logo?: string } | null>(null);
   const [betsInPlay, setBetsInPlay] = useState(2);
   const [lockedIdx, setLockedIdx] = useState(-1);
-  const [onboardStep, setOnboardStep] = useState<number | null>(null);
 
   const [resetKey, setResetKey] = useState(0);
   const [liveCards, setLiveCards] = useState<CardData[]>(() => [...CARDS]);
@@ -1314,33 +1273,36 @@ export default function MicrobetLiveV2() {
   const handleScenarioClick = (scenarioIdx: number) => {
     const targetCard = CARDS[scenarioIdx];
     if (!targetCard) return;
-    const currentCards = liveCardsRef.current;
-    const existingPos = currentCards.findIndex(c => c.id === targetCard.id);
-    if (existingPos >= 0) {
-      const newVIdx = existingPos + 1;
-      stopShift();
-      if (animCtrl.current) { animCtrl.current.stop(); animCtrl.current = null; }
-      vIdxRef.current = newVIdx;
-      x.set(getX(newVIdx));
-      setVIdx(newVIdx);
+    stopShift();
+    if (animCtrl.current) { animCtrl.current.stop(); animCtrl.current = null; }
+    // Penalty series: show only the penalty card (no other cards in carousel)
+    if (scenarioIdx === 3) {
+      const penaltyOnly = [targetCard];
+      liveCardsRef.current = penaltyOnly;
+      vIdxRef.current = 1;
+      flushSync(() => { setLiveCards(penaltyOnly); setVIdx(1); });
+      x.set(getX(1));
     } else {
-      const newCards = [...currentCards, targetCard].sort((a, b) => a.id - b.id);
-      const newPos = newCards.findIndex(c => c.id === targetCard.id);
-      const newVIdx = newPos + 1;
-      liveCardsRef.current = newCards;
-      vIdxRef.current = newVIdx;
-      stopShift();
-      if (animCtrl.current) { animCtrl.current.stop(); animCtrl.current = null; }
-      flushSync(() => {
-        setLiveCards(newCards);
+      const currentCards = liveCardsRef.current;
+      const existingPos = currentCards.findIndex(c => c.id === targetCard.id);
+      if (existingPos >= 0) {
+        const newVIdx = existingPos + 1;
+        vIdxRef.current = newVIdx;
+        x.set(getX(newVIdx));
         setVIdx(newVIdx);
-      });
-      x.set(getX(newVIdx));
+      } else {
+        const newCards = [...currentCards, targetCard].sort((a, b) => a.id - b.id);
+        const newPos = newCards.findIndex(c => c.id === targetCard.id);
+        const newVIdx = newPos + 1;
+        liveCardsRef.current = newCards;
+        vIdxRef.current = newVIdx;
+        flushSync(() => { setLiveCards(newCards); setVIdx(newVIdx); });
+        x.set(getX(newVIdx));
+      }
     }
     setLockedIdx(scenarioIdx);
     setSelectedBet(null);
     setResetKey(k => k + 1);
-    setOnboardStep(0);
   };
 
   const currentCard = liveCards[realIdx];
@@ -1363,7 +1325,7 @@ export default function MicrobetLiveV2() {
             <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.09em', textTransform: 'uppercase' }}>Режим</div>
           </div>
           <div
-            onClick={() => { setLockedIdx(-1); setOnboardStep(null); }}
+            onClick={() => { setLockedIdx(-1); }}
             style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px', cursor: 'pointer', background: lockedIdx === -1 ? 'rgba(255,255,255,0.06)' : 'transparent', borderLeft: `3px solid ${lockedIdx === -1 ? '#00c958' : 'transparent'}`, borderBottom: '1px solid rgba(255,255,255,0.06)' }}
           >
             <div style={{ width: 24, height: 24, minWidth: 24, borderRadius: 7, background: lockedIdx === -1 ? 'rgba(0,201,88,0.2)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
@@ -1426,15 +1388,14 @@ export default function MicrobetLiveV2() {
                     key={`${resetKey}-${keyPrefix}-${card.id}`}
                     card={card} i={i} x={x} vIdx={vIdx}
                     onCanvasRef={el => { canvasEls.current[i] = el; }}
-                    onBet={(label, odds, logo) => { setSelectedBet({ label, odds, logo }); if (onboardStep === 0) setOnboardStep(1); else if (onboardStep !== null) setOnboardStep(null); }}
+                    onBet={(label, odds, logo) => { setSelectedBet({ label, odds, logo }); }}
                     activeBet={selectedBet}
                     onClearBet={() => setSelectedBet(null)}
                     onExpire={handleExpire}
                     isGhost={isGhost}
                     onExpireInactive={handleExpireInactive}
-                    onBetPlaced={() => { setBetsInPlay(n => n + 1); setOnboardStep(null); }}
+                    onBetPlaced={() => { setBetsInPlay(n => n + 1); }}
                     onBetWon={() => setBetsInPlay(n => Math.max(0, n - 1))}
-                    timerPaused={onboardStep !== null && i === vIdx && !isGhost}
                   />
                 );
               })}
@@ -1495,52 +1456,6 @@ export default function MicrobetLiveV2() {
 
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 64, background: 'linear-gradient(180deg, transparent 0%, #0a0c0b 100%)', pointerEvents: 'none' }} />
 
-          {/* Onboarding coachmark overlay */}
-          {onboardStep !== null && lockedIdx >= 0 && (() => {
-            const steps = ONBOARD[lockedIdx] ?? [];
-            const step = steps[onboardStep];
-            if (!step) return null;
-            // Spotlight shape: card-aligned (328px wide, centered at CARD_LX..CARD_RX)
-            // br=0 top corners, br=step.br bottom corners (matching card active bottom radius=24)
-            const spotY = step.y; const spotB = step.y + step.h; const r = step.br;
-            const lx = CARD_LX; const rx = CARD_RX;
-            const spotPath = r > 0
-              ? `M ${lx} ${spotY} L ${rx} ${spotY} L ${rx} ${spotB - r} A ${r} ${r} 0 0 1 ${rx - r} ${spotB} L ${lx + r} ${spotB} A ${r} ${r} 0 0 1 ${lx} ${spotB - r} Z`
-              : `M ${lx} ${spotY} L ${rx} ${spotY} L ${rx} ${spotB} L ${lx} ${spotB} Z`;
-            const isLastStep = onboardStep >= steps.length - 1;
-            return (
-              <div style={{ position: 'absolute', inset: 0, zIndex: 200, borderRadius: '32px 32px 0 0', pointerEvents: 'none' }}>
-                {/* SVG dark overlay with viewBox for pixel-precise card-aligned cutout */}
-                <svg viewBox="0 0 360 756" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-                  <defs>
-                    <mask id="ob-mask">
-                      <rect width="360" height="756" fill="white" />
-                      <path d={spotPath} fill="black" />
-                    </mask>
-                  </defs>
-                  <rect width="360" height="756" fill="rgba(0,0,0,0.78)" mask="url(#ob-mask)" />
-                </svg>
-                {/* Barriers on dark areas to prevent accidental swipe (spotlight click-through) */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: spotY, pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()} />
-                <div style={{ position: 'absolute', top: spotB, left: 0, right: 0, bottom: 0, pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()} />
-                {/* Green border — card-edge width, top sharp / bottom rounded to match card */}
-                <div style={{ position: 'absolute', top: spotY, left: lx, right: 360 - rx, height: step.h, borderRadius: `0 0 ${r}px ${r}px`, border: '2px solid rgba(0,201,88,0.85)', pointerEvents: 'none', boxSizing: 'border-box' }} />
-                {/* Arrow pointing down from tooltip to spotlight */}
-                <div style={{ position: 'absolute', top: spotY - 26, left: '50%', transform: 'translateX(-50%)', fontSize: 18, lineHeight: 1, pointerEvents: 'none', color: 'rgba(0,201,88,0.9)' }}>↓</div>
-                {/* Tooltip card at top */}
-                <div style={{ position: 'absolute', top: 10, left: 12, right: 12, background: '#191d22', borderRadius: 18, padding: '14px 14px 12px', border: '1px solid rgba(255,255,255,0.12)', pointerEvents: 'auto' }}>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: '0 0 4px', lineHeight: '19px' }}>{step.text}</p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: '0 0 12px', lineHeight: '16px' }}>{step.sub}</p>
-                  <div
-                    onClick={() => setOnboardStep(null)}
-                    style={{ height: 40, background: isLastStep ? 'rgba(0,201,88,0.12)' : 'rgba(255,255,255,0.08)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                  >
-                    <span style={{ fontSize: 13, fontWeight: 600, color: isLastStep ? 'rgba(0,201,88,0.9)' : 'rgba(255,255,255,0.6)' }}>{isLastStep ? 'Начать!' : 'Пропустить'}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
         </div>
       </div>
 
