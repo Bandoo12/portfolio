@@ -134,6 +134,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   const [penaltyScore, setPenaltyScore] = useState({ z: 0, s: 0 });
   const [penaltySeriesOver, setPenaltySeriesOver] = useState(false);
   const penaltyRoundInitRef = useRef(true);
+  const [roundResultTimer, setRoundResultTimer] = useState(0);
 
   // Timer reset when coachmark unpauses
   const prevTimerPausedRef = useRef(!!timerPaused);
@@ -172,6 +173,17 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   const [scLabel, setScLabel]       = useState<string | null>(null);
   const [scBetPlaced, setScBetPlaced] = useState(false);
   const [scBetWon, setScBetWon]     = useState<boolean | null>(null);
+
+  // Round result countdown (penalty only — shows time pressure on the "next kick" button)
+  useEffect(() => {
+    if (!betResult || penaltySeriesOver || card.type !== 'penalty') { setRoundResultTimer(0); return; }
+    setRoundResultTimer(card.timer);
+  }, [betResult, penaltySeriesOver]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (roundResultTimer <= 0) return;
+    const id = setTimeout(() => setRoundResultTimer(t => t - 1), 1000);
+    return () => clearTimeout(id);
+  }, [roundResultTimer]);
 
   const ballX = useMotionValue(0);
   const ballY = useMotionValue(0);
@@ -364,7 +376,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     ([rv, gv, bv]: number[]) => `rgba(${Math.round(rv)},${Math.round(gv)},${Math.round(bv)},0.5)`
   );
 
-  const sheetOpen = !!(activeBet && isActive);
+  const sheetOpen = !!(activeBet && isActive && !betPlaced && !betResult);
 
   useEffect(() => {
     if (!sheetOpen) setKeyboardOpen(false);
@@ -768,6 +780,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     const betWasPlaced = !!placedBetRef.current.label;
 
     const handleNextRound = () => {
+      setRoundResultTimer(0);
       const newZ = penaltyScore.z + (round.team === 'Зенит' && round.scored ? 1 : 0);
       const newS = penaltyScore.s + (round.team === 'Спартак' && round.scored ? 1 : 0);
       setPenaltyScore({ z: newZ, s: newS });
@@ -829,10 +842,9 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, width: '100%' }}>
                   <SoccerBallSVG size={56} />
                   <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0 }}>Ожидаем результат...</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(255,255,255,0.07)', borderRadius: 18, padding: '10px 18px' }}>
-                    <span style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{placedBetRef.current.label}</span>
-                    <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>·</span>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>коэф. {placedBetRef.current.odds}</span>
+                  <div style={{ width: '100%', borderRadius: 24, height: 60, border: '1px solid rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', padding: '0 14px', justifyContent: 'space-between', overflow: 'hidden' }}>
+                    <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>{placedBetRef.current.label}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: '#fff', opacity: 0.7 }}>{placedBetRef.current.odds}</span>
                   </div>
                 </motion.div>
 
@@ -856,7 +868,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                   </p>
                   {betWasPlaced && (
                     <div style={{ fontSize: 13, color: betWon ? '#00c958' : 'rgba(238,239,243,0.45)' }}>
-                      {betWon ? '✓ Ставка выиграла!' : '✗ Ставка не зашла'}
+                      {betWon ? '✓ Ставка выиграла!' : 'Ставка не зашла'}
                     </div>
                   )}
                   <div style={{ marginTop: 'auto', width: '100%', paddingTop: 6 }} onPointerDown={e => e.stopPropagation()}>
@@ -866,7 +878,9 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                       style={{ height: 56, background: 'transparent', border: '1px solid rgba(255,255,255,0.45)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer' }}
                     >
                       <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>
-                        {isLastRound ? 'Результат серии' : `Следующий удар · ${penaltyRoundIdx + 2}/${PENALTY_SERIES.length}`}
+                        {isLastRound ? 'Результат серии'
+                          : roundResultTimer > 0 ? `Следующий удар через ${roundResultTimer}с`
+                          : `Следующий удар · ${penaltyRoundIdx + 2}/${PENALTY_SERIES.length}`}
                       </span>
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </motion.div>
@@ -1337,7 +1351,7 @@ export default function MicrobetLiveV2() {
             <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.09em', textTransform: 'uppercase' }}>Режим</div>
           </div>
           <div
-            onClick={() => setLockedIdx(-1)}
+            onClick={() => { setLockedIdx(-1); setOnboardStep(null); }}
             style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px', cursor: 'pointer', background: lockedIdx === -1 ? 'rgba(255,255,255,0.06)' : 'transparent', borderLeft: `3px solid ${lockedIdx === -1 ? '#00c958' : 'transparent'}`, borderBottom: '1px solid rgba(255,255,255,0.06)' }}
           >
             <div style={{ width: 24, height: 24, minWidth: 24, borderRadius: 7, background: lockedIdx === -1 ? 'rgba(0,201,88,0.2)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
@@ -1536,7 +1550,7 @@ export default function MicrobetLiveV2() {
               </div>
               <div style={{ margin: '0 18px 16px', padding: '10px 12px', background: 'rgba(100,100,255,0.07)', border: '1px solid rgba(100,100,255,0.18)', borderRadius: 10 }}>
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(150,150,255,0.8)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Подсказка</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: '15px' }}>Выберите конкретный сценарий слева — мы проведём через него с пошаговыми инструкциями</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: '15px' }}>Выберите конкретный сценарий слева — я проведу тебя через него с пошаговыми инструкциями</div>
               </div>
               <div style={{ margin: '0 18px 16px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10 }}>
                 <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.4)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Индикатор рамки</div>
