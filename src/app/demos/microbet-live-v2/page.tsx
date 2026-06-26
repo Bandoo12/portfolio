@@ -1106,24 +1106,32 @@ const SCENARIOS = [
 ];
 
 // Spotlight positions (% of phone content area height) for each scenario's steps
-const ONBOARD: Array<Array<{ text: string; sub: string; top: number; height: number }>> = [
-  [ // S1 yesno — buttons at y=415-507 of 756px → 54-67%
-    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', top: 53, height: 15 },
+// Pixel coordinates in 756px phone content space.
+// br = bottom border-radius. Card bottom = y=515. BetSheet y=515-703.
+const ONBOARD: Array<Array<{ text: string; sub: string; y: number; h: number; br: number }>> = [
+  [ // S1 yesno — buttons y=416-515 (to card bottom), br=32
+    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', y: 416, h: 99, br: 32 },
+    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
-  [ // S2 team — same layout as yesno
-    { text: 'Выберите команду', sub: 'Зенит или Спартак — откроется форма ставки', top: 53, height: 15 },
+  [ // S2 team — same layout
+    { text: 'Выберите команду', sub: 'Зенит или Спартак — откроется форма ставки', y: 416, h: 99, br: 32 },
+    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
-  [ // S3 yesno2 — same as S1
-    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', top: 53, height: 15 },
+  [ // S3 yesno2 — same
+    { text: 'Нажмите «Да» или «Нет»', sub: 'Выберите исход — откроется форма ставки', y: 416, h: 99, br: 32 },
+    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
-  [ // S4 penalty — buttons at y=427-507 of 756px → 57-67%
-    { text: 'Забьёт или нет?', sub: 'Нажмите «Да» или «Нет» — откроется форма ставки', top: 56, height: 12 },
+  [ // S4 penalty — buttons y=427-515 (to card bottom), br=32
+    { text: 'Забьёт или нет?', sub: 'Нажмите «Да» или «Нет» — откроется форма ставки', y: 427, h: 88, br: 32 },
+    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
-  [ // S5 lineevent — full grid at y=305-507 of 756px → 40-67%
-    { text: 'Выберите исход события', sub: 'Нажмите на одну из кнопок — откроется форма ставки', top: 40, height: 27 },
+  [ // S5 lineevent — full grid y=305-515 (to card bottom), br=32
+    { text: 'Выберите исход события', sub: 'Нажмите на одну из кнопок — откроется форма ставки', y: 305, h: 210, br: 32 },
+    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
-  [ // S6 line — full grid at y=303-501 of 756px → 40-66%
-    { text: 'Выберите исход матча', sub: 'П1, X или П2 — откроется форма ставки', top: 40, height: 26 },
+  [ // S6 line — full grid y=303-515 (to card bottom), br=32
+    { text: 'Выберите исход матча', sub: 'П1, X или П2 — откроется форма ставки', y: 303, h: 212, br: 32 },
+    { text: 'Введите сумму ставки', sub: 'Выберите чип или введите вручную, затем нажмите «Сделать ставку»', y: 515, h: 188, br: 0 },
   ],
 ];
 
@@ -1328,6 +1336,8 @@ export default function MicrobetLiveV2() {
       x.set(getX(newVIdx));
     }
     setLockedIdx(scenarioIdx);
+    setSelectedBet(null);
+    setResetKey(k => k + 1);
     setOnboardStep(0);
   };
 
@@ -1414,13 +1424,13 @@ export default function MicrobetLiveV2() {
                     key={`${resetKey}-${keyPrefix}-${card.id}`}
                     card={card} i={i} x={x} vIdx={vIdx}
                     onCanvasRef={el => { canvasEls.current[i] = el; }}
-                    onBet={(label, odds, logo) => { setSelectedBet({ label, odds, logo }); if (onboardStep !== null) setOnboardStep(null); }}
+                    onBet={(label, odds, logo) => { setSelectedBet({ label, odds, logo }); if (onboardStep === 0) setOnboardStep(1); else if (onboardStep !== null) setOnboardStep(null); }}
                     activeBet={selectedBet}
                     onClearBet={() => setSelectedBet(null)}
                     onExpire={handleExpire}
                     isGhost={isGhost}
                     onExpireInactive={handleExpireInactive}
-                    onBetPlaced={() => setBetsInPlay(n => n + 1)}
+                    onBetPlaced={() => { setBetsInPlay(n => n + 1); setOnboardStep(null); }}
                     onBetWon={() => setBetsInPlay(n => Math.max(0, n - 1))}
                     timerPaused={onboardStep !== null && i === vIdx && !isGhost}
                   />
@@ -1488,44 +1498,40 @@ export default function MicrobetLiveV2() {
             const steps = ONBOARD[lockedIdx] ?? [];
             const step = steps[onboardStep];
             if (!step) return null;
-            // If spotlight is in upper half, put tooltip below it; else put tooltip at top
-            const tooltipBelow = step.top < 50;
-            const spotlightBottomPct = step.top + step.height;
+            // Spotlight shape: rectangle with br=0 top corners, br=step.br bottom corners
+            const spotY = step.y; const spotB = step.y + step.h; const r = step.br;
+            const spotPath = r > 0
+              ? `M 0 ${spotY} L 360 ${spotY} L 360 ${spotB - r} A ${r} ${r} 0 0 1 ${360 - r} ${spotB} L ${r} ${spotB} A ${r} ${r} 0 0 1 0 ${spotB - r} Z`
+              : `M 0 ${spotY} L 360 ${spotY} L 360 ${spotB} L 0 ${spotB} Z`;
+            const isLastStep = onboardStep >= steps.length - 1;
             return (
-              <div style={{ position: 'absolute', inset: 0, zIndex: 200, borderRadius: '32px 32px 0 0', pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()}>
-                {/* SVG mask: dark overlay with transparent cutout for spotlight */}
-                <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+              <div style={{ position: 'absolute', inset: 0, zIndex: 200, borderRadius: '32px 32px 0 0', pointerEvents: 'none' }}>
+                {/* SVG dark overlay with viewBox for pixel-precise cutout */}
+                <svg viewBox="0 0 360 756" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
                   <defs>
                     <mask id="ob-mask">
-                      <rect width="100%" height="100%" fill="white" />
-                      <rect x="5%" y={`${step.top}%`} width="90%" height={`${step.height}%`} rx="20" ry="20" fill="black" />
+                      <rect width="360" height="756" fill="white" />
+                      <path d={spotPath} fill="black" />
                     </mask>
                   </defs>
-                  <rect width="100%" height="100%" fill="rgba(0,0,0,0.78)" mask="url(#ob-mask)" />
+                  <rect width="360" height="756" fill="rgba(0,0,0,0.78)" mask="url(#ob-mask)" />
                 </svg>
-                {/* Green border around spotlight */}
-                <div style={{ position: 'absolute', top: `${step.top}%`, left: '5%', right: '5%', height: `${step.height}%`, borderRadius: 20, border: '1.5px solid rgba(0,201,88,0.8)', pointerEvents: 'none' }} />
-                {/* Arrow between tooltip and spotlight */}
-                <div style={{
-                  position: 'absolute',
-                  top: tooltipBelow ? `calc(${spotlightBottomPct}% + 6px)` : `calc(${step.top}% - 24px)`,
-                  left: '50%', transform: 'translateX(-50%)', fontSize: 18, lineHeight: 1, pointerEvents: 'none',
-                }}>{tooltipBelow ? '↑' : '↓'}</div>
-                {/* Tooltip card */}
-                <div style={{
-                  position: 'absolute',
-                  ...(tooltipBelow
-                    ? { top: `calc(${spotlightBottomPct}% + 30px)` }
-                    : { top: 10 }),
-                  left: 12, right: 12, background: '#191d22', borderRadius: 18, padding: '14px 14px 12px', border: '1px solid rgba(255,255,255,0.12)',
-                }}>
+                {/* Barriers on dark areas to prevent accidental swipe (spotlight area stays click-through) */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: spotY, pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()} />
+                <div style={{ position: 'absolute', top: spotB, left: 0, right: 0, bottom: 0, pointerEvents: 'all' }} onPointerDown={e => e.stopPropagation()} />
+                {/* Green border — card-edge aligned, top sharp / bottom rounded */}
+                <div style={{ position: 'absolute', top: spotY, left: 0, right: 0, height: step.h, borderRadius: `0 0 ${r}px ${r}px`, border: '2px solid rgba(0,201,88,0.85)', pointerEvents: 'none', boxSizing: 'border-box' }} />
+                {/* Arrow pointing down from tooltip to spotlight */}
+                <div style={{ position: 'absolute', top: spotY - 26, left: '50%', transform: 'translateX(-50%)', fontSize: 18, lineHeight: 1, pointerEvents: 'none', color: 'rgba(0,201,88,0.9)' }}>↓</div>
+                {/* Tooltip card at top */}
+                <div style={{ position: 'absolute', top: 10, left: 12, right: 12, background: '#191d22', borderRadius: 18, padding: '14px 14px 12px', border: '1px solid rgba(255,255,255,0.12)', pointerEvents: 'auto' }}>
                   <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: '0 0 4px', lineHeight: '19px' }}>{step.text}</p>
                   <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', margin: '0 0 12px', lineHeight: '16px' }}>{step.sub}</p>
                   <div
                     onClick={() => setOnboardStep(null)}
-                    style={{ height: 40, background: 'rgba(255,255,255,0.08)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    style={{ height: 40, background: isLastStep ? 'rgba(0,201,88,0.12)' : 'rgba(255,255,255,0.08)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                   >
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>Пропустить</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: isLastStep ? 'rgba(0,201,88,0.9)' : 'rgba(255,255,255,0.6)' }}>{isLastStep ? 'Начать!' : 'Пропустить'}</span>
                   </div>
                 </div>
               </div>
