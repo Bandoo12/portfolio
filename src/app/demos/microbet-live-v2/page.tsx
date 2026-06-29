@@ -106,7 +106,7 @@ function CheckCircleSVG({ size = 80 }: { size?: number }) {
   );
 }
 
-function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon, onBetResult }: {
+function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon, onBetResult, historyScrolled }: {
   card: CardData; i: number; x: MotionValue<number>; vIdx: number;
   onCanvasRef: (el: HTMLCanvasElement | null) => void;
   onBet: (label: string, odds: string, logo?: string) => void;
@@ -118,6 +118,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   onBetPlaced: () => void;
   onBetWon: () => void;
   onBetResult?: (won: boolean, label: string, odds: string, amount: number, market: string) => void;
+  historyScrolled?: boolean;
 }) {
   const isActive = i === vIdx;
 
@@ -611,7 +612,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   const VideoBlock = ({ collapse }: { collapse?: boolean }) => (
     <motion.div
       initial={false}
-      animate={{ height: collapse && keyboardOpen ? 0 : 175 }}
+      animate={{ height: (collapse && keyboardOpen) || historyScrolled ? 0 : 175 }}
       transition={{ type: 'spring', stiffness: 340, damping: 34, mass: 0.9 }}
       style={{ position: 'relative', width: '100%', borderRadius: 32, overflow: 'hidden' }}
     >
@@ -1197,6 +1198,7 @@ export default function MicrobetLiveV2() {
   const [sessionWins, setSessionWins] = useState(3);
   const [totalBets, setTotalBets] = useState(5);
   const [bottomTab, setBottomTab] = useState<'stats' | 'history'>('stats');
+  const [historyScrolled, setHistoryScrolled] = useState(false);
 
   type BetHistoryItem = { id: number; won: boolean; label: string; odds: string; amount: number; market: string; pnl: number };
   const [betHistory, setBetHistory] = useState<BetHistoryItem[]>([
@@ -1491,7 +1493,9 @@ export default function MicrobetLiveV2() {
                       if (!won) setBetsInPlay(n => Math.max(0, n - 1));
                       setSessionPnL(n => n + pnl);
                       setBottomTab('history');
+                      setHistoryScrolled(false);
                     }}
+                    historyScrolled={bottomTab === 'history' && historyScrolled}
                   />
                 );
               })}
@@ -1515,7 +1519,7 @@ export default function MicrobetLiveV2() {
           <div style={{ marginTop: 12, width: 312, flexShrink: 0 }}>
             <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: 3, marginBottom: 10 }}>
               {(['stats', 'history'] as const).map(tab => (
-                <button key={tab} onClick={() => setBottomTab(tab)}
+                <button key={tab} onClick={() => { setBottomTab(tab); if (tab === 'stats') setHistoryScrolled(false); }}
                   style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 8, padding: '7px 0', fontSize: 11, fontWeight: 600,
                     transition: 'background 0.2s ease, color 0.2s ease',
                     background: bottomTab === tab ? 'rgba(255,255,255,0.12)' : 'transparent',
@@ -1527,35 +1531,52 @@ export default function MicrobetLiveV2() {
 
             <AnimatePresence mode="wait" initial={false}>
               {bottomTab === 'stats' ? (
-                <motion.div key="stats" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.18 }}>
-                  {[
-                    { t1: 'Краснодар', t2: 'ЦСКА',     l1: `${BASE}/img/krasnodar_real.png`, l2: `${BASE}/img/cska_real.png`,      score: '2:1', min: "61'" },
-                    { t1: 'Динамо',    t2: 'Локомотив', l1: `${BASE}/img/dynamo_real.png`,    l2: `${BASE}/img/lokomotiv_real.png`, score: '0:0', min: "34'" },
-                    { t1: 'Рубин',     t2: 'Ростов',   l1: `${BASE}/img/rubin_real.png`,     l2: `${BASE}/img/rostov_real.png`,   score: '1:2', min: "77'" },
-                  ].map((bet, i) => (
-                    <div key={i} style={{ marginBottom: 6, height: 56, borderRadius: 20, background: 'linear-gradient(180deg, #252333 0%, #131214 55%)', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
-                      <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
-                        {[bet.l1, bet.l2].map((src, li) => (
-                          <div key={li} style={{ width: 28, height: 28, minWidth: 28, borderRadius: '50%', background: '#fff', overflow: 'hidden', border: '1px solid #434c5b', marginLeft: li ? -8 : 0, flexShrink: 0 }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                          </div>
-                        ))}
+                <motion.div key="stats" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.18 }}
+                  style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={`${BASE}/img/zenit_real.png`} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3', lineHeight: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bet.t1}</div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3', lineHeight: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bet.t2}</div>
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
-                        <span style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>{bet.score}</span>
-                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>⚡ {bet.min}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#eeeff3' }}>Зенит</span>
+                    </div>
+                    <span style={{ fontSize: 9, fontWeight: 500, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.04em', textTransform: 'uppercase', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>Матч</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#eeeff3' }}>Спартак</span>
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={`${BASE}/img/spartak_real.png`} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       </div>
                     </div>
-                  ))}
+                  </div>
+                  {[
+                    { label: 'Владение', home: 58, away: 42, pct: true },
+                    { label: 'Удары',    home: 7,  away: 4,  pct: false },
+                    { label: 'Угловые', home: 3,  away: 1,  pct: false },
+                    { label: '🟡 Карточки', home: 2, away: 1, pct: false },
+                  ].map((s, i) => {
+                    const total = s.home + s.away;
+                    const homePct = (s.home / total) * 100;
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < 2 ? 7 : 0 }}>
+                        <span style={{ width: 22, fontSize: 12, fontWeight: 700, color: '#eeeff3', textAlign: 'right', flexShrink: 0 }}>{s.pct ? `${s.home}%` : s.home}</span>
+                        <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', position: 'relative' }}>
+                          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${homePct}%`, background: '#27db55', borderRadius: 2 }} />
+                        </div>
+                        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', minWidth: 46, textAlign: 'center', flexShrink: 0 }}>{s.label}</span>
+                        <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', position: 'relative' }}>
+                          <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: `${100 - homePct}%`, background: '#e03030', borderRadius: 2 }} />
+                        </div>
+                        <span style={{ width: 22, fontSize: 12, fontWeight: 700, color: '#eeeff3', flexShrink: 0 }}>{s.pct ? `${s.away}%` : s.away}</span>
+                      </div>
+                    );
+                  })}
                 </motion.div>
               ) : (
                 <motion.div key="history" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} transition={{ duration: 0.18 }}>
                   <div onPointerDown={e => e.stopPropagation()}
+                    onScroll={e => setHistoryScrolled((e.target as HTMLElement).scrollTop > 10)}
                     style={{ maxHeight: 180, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, scrollbarWidth: 'none', paddingBottom: 24 } as React.CSSProperties}>
                     <AnimatePresence initial={false}>
                       {betHistory.map(item => (
