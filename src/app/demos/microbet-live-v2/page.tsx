@@ -403,9 +403,9 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
       animate={{ height: sheetOpen ? (keyboardOpen ? 356 : 188) : 0 }}
       transition={{ type: 'spring', stiffness: 340, damping: 34, mass: 0.9 }}
       style={{ overflow: 'hidden', pointerEvents: 'auto', background: '#171C1F', borderRadius: '0 0 24px 24px' }}
-      onPointerDown={e => e.stopPropagation()}
+      data-nodrag="true"
     >
-      <div ref={chipsRef} style={{ display: 'flex', gap: 6, flexWrap: 'nowrap', background: '#171C1F', padding: '12px 8px 4px', overflowX: 'auto', scrollbarWidth: 'none', cursor: 'grab', userSelect: 'none' }}
+      <div ref={chipsRef} style={{ display: 'flex', gap: 6, flexWrap: 'nowrap', background: '#171C1F', padding: '12px 8px 4px', overflowX: 'auto', scrollbarWidth: 'none', cursor: 'grab', userSelect: 'none', touchAction: 'none' } as React.CSSProperties}
         onPointerDown={e => {
           e.stopPropagation();
           const el = chipsRef.current;
@@ -679,7 +679,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                         <motion.div key="grid" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                             {lineEvents.map((btn, bi) => (
-                              <div key={bi} style={{ width: btn.full ? '100%' : 'calc(50% - 4px)', height: 62, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer', backdropFilter: 'blur(27px)', WebkitBackdropFilter: 'blur(27px)', position: 'relative', overflow: 'hidden' }} onPointerDown={e => { e.stopPropagation(); onBet(btn.label, btn.odds); }}>
+                              <div key={bi} style={{ width: btn.full ? '100%' : 'calc(50% - 4px)', height: 62, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer', backdropFilter: 'blur(27px)', WebkitBackdropFilter: 'blur(27px)', position: 'relative', overflow: 'hidden' }} onClick={() => onBet(btn.label, btn.odds)}>
                                 <div style={{ position: 'absolute', inset: 0, borderRadius: 24, background: 'linear-gradient(225deg, rgba(255,255,255,0.07) 0%, transparent 40%)', pointerEvents: 'none' }} />
                                 <span style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', position: 'relative' }}>{btn.label}</span>
                                 <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.4)', position: 'relative' }}>{btn.odds}</span>
@@ -751,7 +751,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                         <motion.div key="grid" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', rowGap: 6, columnGap: 8 }}>
                             {btns.map((btn, bi) => (
-                              <div key={bi} style={{ width: 'calc((100% - 16px) / 3)', height: 62, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, cursor: 'pointer' }} onPointerDown={e => { e.stopPropagation(); onBet(btn.l, btn.o); }}>
+                              <div key={bi} style={{ width: 'calc((100% - 16px) / 3)', height: 62, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, cursor: 'pointer' }} onClick={() => onBet(btn.l, btn.o)}>
                                 <span style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', lineHeight: 1 }}>{btn.l}</span>
                                 <span style={{ fontSize: 12, fontWeight: 500, color: '#555f71', lineHeight: 1 }}>{btn.o}</span>
                               </div>
@@ -1218,9 +1218,11 @@ export default function MicrobetLiveV2() {
 
   const [vIdx, setVIdx] = useState(1);
   const [dragging, setDragging] = useState(false);
-  const vIdxRef    = useRef(1);
-  const draggingRef = useRef(false);
-  const startX     = useRef(0);
+  const vIdxRef      = useRef(1);
+  const draggingRef  = useRef(false);
+  const dragTrackRef = useRef(false);
+  const wasDragRef   = useRef(false);
+  const startX       = useRef(0);
   const x          = useMotionValue(getX(1));
   const animCtrl   = useRef<{ stop: () => void } | null>(null);
   const shiftCtrl  = useRef<{ stop: () => void } | null>(null);
@@ -1259,23 +1261,33 @@ export default function MicrobetLiveV2() {
     setVIdx(v);
   };
 
-  const onDown = (e: React.PointerEvent) => {
-    stopShift();
-    if (animCtrl.current) { animCtrl.current.stop(); animCtrl.current = null; }
-    const curN = liveNRef.current;
-    if (vIdxRef.current === 0)         { x.set(getX(curN)); vIdxRef.current = curN; setVIdx(curN); }
-    if (vIdxRef.current === curN + 1)  { x.set(getX(1));    vIdxRef.current = 1;    setVIdx(1); }
-    draggingRef.current = true;
-    setDragging(true);
+  const onDownCapture = (e: React.PointerEvent) => {
+    if (liveNRef.current <= 1 || selectedBet) return;
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-nodrag]')) return;
+    wasDragRef.current = false;
+    dragTrackRef.current = true;
     startX.current = e.clientX;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
-  const onMove = (e: React.PointerEvent) => {
-    if (!draggingRef.current) return;
-    x.set(getX(vIdxRef.current) + (e.clientX - startX.current));
+  const onMoveCapture = (e: React.PointerEvent) => {
+    if (!dragTrackRef.current) return;
+    const dx = e.clientX - startX.current;
+    if (!wasDragRef.current && Math.abs(dx) > 8) {
+      wasDragRef.current = true;
+      draggingRef.current = true;
+      setDragging(true);
+      stopShift();
+      if (animCtrl.current) { animCtrl.current.stop(); animCtrl.current = null; }
+      const curN = liveNRef.current;
+      if (vIdxRef.current === 0) { x.set(getX(curN)); vIdxRef.current = curN; setVIdx(curN); }
+      if (vIdxRef.current === curN + 1) { x.set(getX(1)); vIdxRef.current = 1; setVIdx(1); }
+    }
+    if (wasDragRef.current) x.set(getX(vIdxRef.current) + dx);
   };
-  const onUp = (e: React.PointerEvent) => {
-    if (!draggingRef.current) return;
+  const onUpCapture = (e: React.PointerEvent) => {
+    if (!dragTrackRef.current) return;
+    dragTrackRef.current = false;
+    if (!wasDragRef.current) return;
     draggingRef.current = false;
     setDragging(false);
     const offset = e.clientX - startX.current;
@@ -1284,6 +1296,9 @@ export default function MicrobetLiveV2() {
     else if (offset > 50) next--;
     next = Math.max(0, Math.min(liveNRef.current + 1, next));
     snapTo(next);
+  };
+  const onClickCapture = (e: React.MouseEvent) => {
+    if (wasDragRef.current) { e.stopPropagation(); wasDragRef.current = false; }
   };
 
   const handleExpire = () => {
@@ -1460,13 +1475,15 @@ export default function MicrobetLiveV2() {
         <div style={{ position: 'absolute', top: 44, left: 0, right: 0, bottom: 0, background: '#0a0c0b', borderRadius: '32px 32px 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto', scrollbarWidth: 'none' } as React.CSSProperties}>
           <div style={{ width: 134, height: 5, background: '#ffffff', borderRadius: 100, marginTop: 13, flexShrink: 0 }} />
 
-          <div style={{ width: '100%', marginTop: 4, flexShrink: 0, overflow: 'hidden', position: 'relative', zIndex: 2 }} onWheel={onWheel}>
+          <div style={{ width: '100%', marginTop: 4, flexShrink: 0, overflow: 'hidden', position: 'relative', zIndex: 2 }} onWheel={onWheel}
+            onPointerDownCapture={onDownCapture}
+            onPointerMoveCapture={onMoveCapture}
+            onPointerUpCapture={onUpCapture}
+            onPointerCancelCapture={onUpCapture}
+            onClickCapture={onClickCapture}
+          >
             <motion.div
-              style={{ display: 'flex', gap: GAP, x, cursor: (selectedBet || liveN <= 1) ? 'default' : (dragging ? 'grabbing' : 'grab'), userSelect: 'none', pointerEvents: selectedBet ? 'none' : 'auto' }}
-              onPointerDown={(selectedBet || liveN <= 1) ? undefined : onDown}
-              onPointerMove={(selectedBet || liveN <= 1) ? undefined : onMove}
-              onPointerUp={(selectedBet || liveN <= 1) ? undefined : onUp}
-              onPointerCancel={(selectedBet || liveN <= 1) ? undefined : onUp}
+              style={{ display: 'flex', gap: GAP, x, cursor: (selectedBet || liveN <= 1) ? 'default' : (dragging ? 'grabbing' : 'grab'), userSelect: 'none' }}
             >
               {liveVirtual.map((card, i) => {
                 const isGhost = i === 0 || i === liveN + 1;
@@ -1513,10 +1530,10 @@ export default function MicrobetLiveV2() {
 
           {/* Tabs */}
           <div style={{ marginTop: 12, width: 312, flexShrink: 0 }}>
-            <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: 3, marginBottom: 10 }}>
+            <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: 22, padding: 3, marginBottom: 10 }}>
               {(['stats', 'history'] as const).map(tab => (
                 <button key={tab} onClick={() => setBottomTab(tab)}
-                  style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 8, padding: '7px 0', fontSize: 11, fontWeight: 600,
+                  style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 19, padding: '7px 0', fontSize: 11, fontWeight: 600,
                     transition: 'background 0.2s ease, color 0.2s ease',
                     background: bottomTab === tab ? 'rgba(255,255,255,0.12)' : 'transparent',
                     color: bottomTab === tab ? '#eeeff3' : 'rgba(255,255,255,0.35)' }}>
@@ -1555,16 +1572,16 @@ export default function MicrobetLiveV2() {
                     const total = s.home + s.away;
                     const homePct = (s.home / total) * 100;
                     return (
-                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < 2 ? 7 : 0 }}>
-                        <span style={{ width: 22, fontSize: 12, fontWeight: 700, color: '#eeeff3', textAlign: 'right', flexShrink: 0 }}>{s.pct ? `${s.home}%` : s.home}</span>
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < 3 ? 7 : 0 }}>
+                        <span style={{ width: 28, fontSize: 12, fontWeight: 700, color: '#eeeff3', textAlign: 'right', flexShrink: 0 }}>{s.pct ? `${s.home}%` : s.home}</span>
                         <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', position: 'relative' }}>
                           <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${homePct}%`, background: '#27db55', borderRadius: 2 }} />
                         </div>
-                        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', minWidth: 46, textAlign: 'center', flexShrink: 0 }}>{s.label}</span>
+                        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', width: 72, textAlign: 'center', flexShrink: 0 }}>{s.label}</span>
                         <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', position: 'relative' }}>
                           <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: `${100 - homePct}%`, background: '#e03030', borderRadius: 2 }} />
                         </div>
-                        <span style={{ width: 22, fontSize: 12, fontWeight: 700, color: '#eeeff3', flexShrink: 0 }}>{s.pct ? `${s.away}%` : s.away}</span>
+                        <span style={{ width: 28, fontSize: 12, fontWeight: 700, color: '#eeeff3', flexShrink: 0 }}>{s.pct ? `${s.away}%` : s.away}</span>
                       </div>
                     );
                   })}
@@ -1579,7 +1596,7 @@ export default function MicrobetLiveV2() {
                           initial={{ opacity: 0, y: -20, scale: 0.97 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-                          style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${item.won ? 'rgba(84,199,99,0.15)' : 'rgba(255,80,80,0.12)'}`, borderRadius: 12, padding: '7px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${item.won ? 'rgba(84,199,99,0.15)' : 'rgba(255,80,80,0.12)'}`, borderRadius: 24, padding: '7px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                           <div style={{ minWidth: 0 }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3' }}>{item.label} · {item.odds}</div>
                             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{item.market}</div>
