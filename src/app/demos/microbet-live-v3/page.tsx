@@ -106,7 +106,7 @@ function CheckCircleSVG({ size = 80 }: { size?: number }) {
   );
 }
 
-function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon, onBetResult, historyScrollOffset }: {
+function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon, onBetResult }: {
   card: CardData; i: number; x: MotionValue<number>; vIdx: number;
   onCanvasRef: (el: HTMLCanvasElement | null) => void;
   onBet: (label: string, odds: string, logo?: string) => void;
@@ -118,7 +118,6 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   onBetPlaced: () => void;
   onBetWon: () => void;
   onBetResult?: (won: boolean, label: string, odds: string, amount: number, market: string) => void;
-  historyScrollOffset?: number;
 }) {
   const isActive = i === vIdx;
 
@@ -612,8 +611,8 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   const VideoBlock = ({ collapse }: { collapse?: boolean }) => (
     <motion.div
       initial={false}
-      animate={{ height: (collapse && keyboardOpen) ? 0 : Math.max(0, 175 - (historyScrollOffset ?? 0)) }}
-      transition={{ duration: 0 }}
+      animate={{ height: (collapse && keyboardOpen) ? 0 : 175 }}
+      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
       style={{ position: 'relative', width: '100%', borderRadius: 32, overflow: 'hidden' }}
     >
       <div style={{ position: 'absolute', inset: 0, background: '#000' }}>
@@ -1197,7 +1196,6 @@ export default function MicrobetLiveV2() {
   const [sessionWins, setSessionWins] = useState(3);
   const [totalBets, setTotalBets] = useState(5);
   const [bottomTab, setBottomTab] = useState<'stats' | 'history'>('stats');
-  const [historyScrollOffset, setHistoryScrollOffset] = useState(0);
 
   type BetHistoryItem = { id: number; won: boolean; label: string; odds: string; amount: number; market: string; pnl: number };
   const [betHistory, setBetHistory] = useState<BetHistoryItem[]>([
@@ -1459,7 +1457,7 @@ export default function MicrobetLiveV2() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`${BASE}/img/microbet-bg.png`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
 
-        <div style={{ position: 'absolute', top: 44, left: 0, right: 0, bottom: 0, background: '#0a0c0b', borderRadius: '32px 32px 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 44, left: 0, right: 0, bottom: 0, background: '#0a0c0b', borderRadius: '32px 32px 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto', scrollbarWidth: 'none' } as React.CSSProperties}>
           <div style={{ width: 134, height: 5, background: '#ffffff', borderRadius: 100, marginTop: 13, flexShrink: 0 }} />
 
           <div style={{ width: '100%', marginTop: 4, flexShrink: 0, overflow: 'hidden', position: 'relative', zIndex: 2 }} onWheel={onWheel}>
@@ -1493,9 +1491,7 @@ export default function MicrobetLiveV2() {
                       if (!won) setBetsInPlay(n => Math.max(0, n - 1));
                       setSessionPnL(n => n + pnl);
                       setBottomTab('history');
-                      setHistoryScrollOffset(0);
                     }}
-                    historyScrollOffset={bottomTab === 'history' ? historyScrollOffset : 0}
                   />
                 );
               })}
@@ -1519,7 +1515,7 @@ export default function MicrobetLiveV2() {
               {(['stats', 'history'] as const).map(tab => (
                 <button
                   key={tab}
-                  onClick={() => { setBottomTab(tab); if (tab !== 'history') setHistoryScrollOffset(0); }}
+                  onClick={() => setBottomTab(tab)}
                   style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 15, padding: '8px 0', fontSize: 12, fontWeight: 600, transition: 'background 0.2s ease, color 0.2s ease', background: bottomTab === tab ? 'rgba(255,255,255,0.12)' : 'transparent', color: bottomTab === tab ? '#eeeff3' : 'rgba(255,255,255,0.35)' }}
                 >
                   {tab === 'stats' ? 'Матч' : `История · ${betHistory.length}`}
@@ -1573,7 +1569,7 @@ export default function MicrobetLiveV2() {
                 </motion.div>
               ) : (
                 <motion.div key="history" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.18 }}>
-                  <div onPointerDown={e => e.stopPropagation()} onScroll={e => setHistoryScrollOffset((e.target as HTMLElement).scrollTop)} style={{ maxHeight: 156, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, touchAction: 'pan-y', paddingBottom: 32, scrollbarWidth: 'none' } as React.CSSProperties}>
+                  <div onPointerDown={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <AnimatePresence initial={false}>
                       {betHistory.map((item) => (
                         <motion.div
@@ -1604,9 +1600,7 @@ export default function MicrobetLiveV2() {
             </AnimatePresence>
           </div>
 
-          {bottomTab === 'history' && (
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 64, background: 'linear-gradient(180deg, transparent 0%, #0a0c0b 100%)', pointerEvents: 'none' }} />
-          )}
+          <div style={{ height: 32, flexShrink: 0 }} />
 
         </div>
       </div>
