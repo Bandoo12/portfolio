@@ -507,49 +507,44 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
           {scBetWon && <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ fontSize: 12, color: 'rgba(238,239,243,0.6)', margin: 0 }}>+1 850₽ к твоему банку</motion.p>}
         </div>
 
-        {/* 2-й шанс */}
+        {/* Badge + question — middle */}
         {betResult && !scBetWon && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} style={{ width: '100%', marginTop: 'auto', paddingTop: 6 }} onPointerDown={e => e.stopPropagation()}>
-            {/* Badge + timer */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginTop: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: '#f4a019', background: 'rgba(244,160,25,0.15)', borderRadius: 10, padding: '3px 10px', letterSpacing: 0.3 }}>⚡ 2-й шанс</span>
               {scActive && !scBetPlaced && <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(244,160,25,0.8)' }}>{scTimeLeft}с</span>}
             </div>
-
             {!scActive && !scBetPlaced && scBetWon === null && (
-              <div style={{ height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>Готовим шанс отыграться...</span>
-              </div>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>Готовим шанс отыграться...</span>
             )}
-
             {scActive && !scBetPlaced && (
-              <>
-                <p style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: '0 0 10px', textAlign: 'center', lineHeight: '20px' }}>{card.question2nd}</p>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[{ l: 'Да', o: card.odds1 }, { l: 'Нет', o: card.odds2 }].map((btn) => (
-                    <div key={btn.l} onClick={() => { setScLabel(btn.l); setScBetPlaced(true); setScActive(false); }}
-                      style={{ flex: 1, height: 92, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 14, paddingBottom: 10, gap: 4, cursor: 'pointer', position: 'relative', backdropFilter: 'blur(27px)', WebkitBackdropFilter: 'blur(27px)' }}>
-                      <div style={{ position: 'absolute', inset: 0, borderRadius: 28, background: 'linear-gradient(225deg, rgba(255,255,255,0.09) 0%, transparent 40%)', pointerEvents: 'none' }} />
-                      <div style={{ height: 34, display: 'flex', alignItems: 'center' }}>
-                        <span style={{ fontSize: 24, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{btn.l}</span>
-                      </div>
-                      <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(238,239,243,0.65)' }}>{btn.o}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
-            {scBetPlaced && scBetWon === null && (
-              <div style={{ height: 92, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', borderRadius: 28, padding: '0 20px' }}>
-                <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>{scLabel}</span>
-                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Ожидаем результат...</span>
-              </div>
+              <p style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: 0, textAlign: 'center', lineHeight: '20px' }}>{card.question2nd}</p>
             )}
           </motion.div>
         )}
 
-        <div style={{ marginTop: scBetWon !== null ? 'auto' : 12, paddingTop: 8, width: '100%', position: 'relative', zIndex: 12 }}>
+        {/* Buttons — pinned to bottom */}
+        <div style={{ marginTop: 'auto', paddingTop: 8, width: '100%', position: 'relative', zIndex: 12 }} onPointerDown={e => e.stopPropagation()}>
+          {betResult && !scBetWon && scActive && !scBetPlaced && (
+            <div style={{ display: 'flex', gap: 8 }}>
+              {[{ l: 'Да', o: card.odds1 }, { l: 'Нет', o: card.odds2 }].map((btn) => (
+                <div key={btn.l} onClick={() => { setScLabel(btn.l); setScBetPlaced(true); setScActive(false); }}
+                  style={{ flex: 1, height: 92, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 14, paddingBottom: 10, gap: 4, cursor: 'pointer', position: 'relative', backdropFilter: 'blur(27px)', WebkitBackdropFilter: 'blur(27px)' }}>
+                  <div style={{ position: 'absolute', inset: 0, borderRadius: 28, background: 'linear-gradient(225deg, rgba(255,255,255,0.09) 0%, transparent 40%)', pointerEvents: 'none' }} />
+                  <div style={{ height: 34, display: 'flex', alignItems: 'center' }}>
+                    <span style={{ fontSize: 24, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{btn.l}</span>
+                  </div>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(238,239,243,0.65)' }}>{btn.o}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {betResult && !scBetWon && scBetPlaced && scBetWon === null && (
+            <div style={{ height: 92, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', borderRadius: 28, padding: '0 20px' }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>{scLabel}</span>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>Ожидаем результат...</span>
+            </div>
+          )}
           {(scBetWon !== null || (scActive && scTimeLeft <= 0)) && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} onClick={handleNextMarket} onPointerDown={e => e.stopPropagation()} style={{ height: 56, background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer' }}>
               <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{(card.type === 'line' || card.type === 'lineevent') ? 'Поставить ещё раз' : 'Следующий маркет'}</span>
