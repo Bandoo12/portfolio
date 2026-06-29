@@ -1516,44 +1516,75 @@ export default function MicrobetLiveV2() {
             </div>
           )}
 
-          <div style={{ marginTop: 10, width: 312, flexShrink: 0, border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, display: 'flex', alignItems: 'center', padding: '12px 16px', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 12, fontWeight: 500, color: '#929bae' }}>Мои ставки</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ fontSize: 12, fontWeight: 500, color: '#008900' }}>В игре</span>
-              <div style={{ background: '#008900', borderRadius: 50, minWidth: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color: '#d9dde5' }}>{betsInPlay}</span>
-              </div>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4.66732 6.00016L8.00065 9.3335L11.334 6.00016" stroke="#929bae" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          {/* Tabs */}
+          <div style={{ marginTop: 12, width: 312, flexShrink: 0 }}>
+            <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: 10, padding: 3, marginBottom: 10 }}>
+              {(['stats', 'history'] as const).map(tab => (
+                <button key={tab} onClick={() => setBottomTab(tab)}
+                  style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 8, padding: '7px 0', fontSize: 11, fontWeight: 600,
+                    transition: 'background 0.2s ease, color 0.2s ease',
+                    background: bottomTab === tab ? 'rgba(255,255,255,0.12)' : 'transparent',
+                    color: bottomTab === tab ? '#eeeff3' : 'rgba(255,255,255,0.35)' }}>
+                  {tab === 'stats' ? 'Матч' : `История · ${betHistory.length}`}
+                </button>
+              ))}
             </div>
-          </div>
 
-          {[
-            { t1: 'Краснодар', t2: 'ЦСКА',     l1: `${BASE}/img/krasnodar_real.png`, l2: `${BASE}/img/cska_real.png`,      score: '2:1', min: "61'", micro: true },
-            { t1: 'Динамо',    t2: 'Локомотив', l1: `${BASE}/img/dynamo_real.png`,    l2: `${BASE}/img/lokomotiv_real.png`, score: '0:0', min: "34'", micro: true },
-            { t1: 'Рубин',     t2: 'Ростов',   l1: `${BASE}/img/rubin_real.png`,     l2: `${BASE}/img/rostov_real.png`,   score: '1:2', min: "77'", micro: true },
-          ].map((bet, i) => (
-            <div key={i} style={{ marginTop: 8, width: 312, flexShrink: 0, height: 56, borderRadius: 24, background: 'linear-gradient(180deg, #252333 0%, #131214 55%)', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
-              <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
-                {[bet.l1, bet.l2].map((src, li) => (
-                  <div key={li} style={{ width: 28, height: 28, minWidth: 28, borderRadius: '50%', background: '#fff', overflow: 'hidden', border: '1px solid #434c5b', marginLeft: li ? -8 : 0, flexShrink: 0 }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <AnimatePresence mode="wait" initial={false}>
+              {bottomTab === 'stats' ? (
+                <motion.div key="stats" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.18 }}>
+                  {[
+                    { t1: 'Краснодар', t2: 'ЦСКА',     l1: `${BASE}/img/krasnodar_real.png`, l2: `${BASE}/img/cska_real.png`,      score: '2:1', min: "61'" },
+                    { t1: 'Динамо',    t2: 'Локомотив', l1: `${BASE}/img/dynamo_real.png`,    l2: `${BASE}/img/lokomotiv_real.png`, score: '0:0', min: "34'" },
+                    { t1: 'Рубин',     t2: 'Ростов',   l1: `${BASE}/img/rubin_real.png`,     l2: `${BASE}/img/rostov_real.png`,   score: '1:2', min: "77'" },
+                  ].map((bet, i) => (
+                    <div key={i} style={{ marginBottom: 6, height: 56, borderRadius: 20, background: 'linear-gradient(180deg, #252333 0%, #131214 55%)', display: 'flex', alignItems: 'center', padding: '0 12px', gap: 8 }}>
+                      <div style={{ display: 'flex', flexShrink: 0, alignItems: 'center' }}>
+                        {[bet.l1, bet.l2].map((src, li) => (
+                          <div key={li} style={{ width: 28, height: 28, minWidth: 28, borderRadius: '50%', background: '#fff', overflow: 'hidden', border: '1px solid #434c5b', marginLeft: li ? -8 : 0, flexShrink: 0 }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3', lineHeight: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bet.t1}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3', lineHeight: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bet.t2}</div>
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+                        <span style={{ fontSize: 16, fontWeight: 600, color: '#fff' }}>{bet.score}</span>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>⚡ {bet.min}</span>
+                      </div>
+                    </div>
+                  ))}
+                </motion.div>
+              ) : (
+                <motion.div key="history" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} transition={{ duration: 0.18 }}>
+                  <div onPointerDown={e => e.stopPropagation()}
+                    style={{ maxHeight: 180, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, scrollbarWidth: 'none', paddingBottom: 24 } as React.CSSProperties}>
+                    <AnimatePresence initial={false}>
+                      {betHistory.map(item => (
+                        <motion.div key={item.id}
+                          initial={{ opacity: 0, y: -20, scale: 0.97 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{ type: 'spring', stiffness: 380, damping: 26 }}
+                          style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${item.won ? 'rgba(84,199,99,0.15)' : 'rgba(255,80,80,0.12)'}`, borderRadius: 12, padding: '7px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3' }}>{item.label} · {item.odds}</div>
+                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{item.market}</div>
+                          </div>
+                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: item.won ? '#54c763' : '#ff5050' }}>{item.won ? '+' : ''}₽{Math.abs(item.pnl)}</div>
+                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{item.won ? '✓ выиграно' : '✗ проиграно'}</div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
-                ))}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#eeeff3', lineHeight: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bet.t1}</div>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#eeeff3', lineHeight: '16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{bet.t2}</div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
-                <span style={{ fontSize: 18, fontWeight: 600, color: '#ffffff', lineHeight: '20px' }}>{bet.score}</span>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                  {bet.micro && <span style={{ fontSize: 10, color: '#f0c040' }}>⚡</span>}
-                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{bet.min}</span>
-                </div>
-              </div>
-            </div>
-          ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 64, background: 'linear-gradient(180deg, transparent 0%, #0a0c0b 100%)', pointerEvents: 'none' }} />
 
