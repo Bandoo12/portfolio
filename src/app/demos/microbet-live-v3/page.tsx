@@ -106,7 +106,7 @@ function CheckCircleSVG({ size = 80 }: { size?: number }) {
   );
 }
 
-function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon, onBetResult, historyScrolled }: {
+function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon, onBetResult, historyScrollOffset }: {
   card: CardData; i: number; x: MotionValue<number>; vIdx: number;
   onCanvasRef: (el: HTMLCanvasElement | null) => void;
   onBet: (label: string, odds: string, logo?: string) => void;
@@ -118,7 +118,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   onBetPlaced: () => void;
   onBetWon: () => void;
   onBetResult?: (won: boolean, label: string, odds: string, amount: number, market: string) => void;
-  historyScrolled?: boolean;
+  historyScrollOffset?: number;
 }) {
   const isActive = i === vIdx;
 
@@ -612,8 +612,8 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   const VideoBlock = ({ collapse }: { collapse?: boolean }) => (
     <motion.div
       initial={false}
-      animate={{ height: (collapse && keyboardOpen) || historyScrolled ? 0 : 175 }}
-      transition={{ type: 'spring', stiffness: 340, damping: 34, mass: 0.9 }}
+      animate={{ height: (collapse && keyboardOpen) ? 0 : Math.max(0, 175 - (historyScrollOffset ?? 0)) }}
+      transition={{ duration: 0 }}
       style={{ position: 'relative', width: '100%', borderRadius: 32, overflow: 'hidden' }}
     >
       <div style={{ position: 'absolute', inset: 0, background: '#000' }}>
@@ -1197,7 +1197,7 @@ export default function MicrobetLiveV2() {
   const [sessionWins, setSessionWins] = useState(3);
   const [totalBets, setTotalBets] = useState(5);
   const [bottomTab, setBottomTab] = useState<'stats' | 'history'>('stats');
-  const [historyScrolled, setHistoryScrolled] = useState(false);
+  const [historyScrollOffset, setHistoryScrollOffset] = useState(0);
 
   type BetHistoryItem = { id: number; won: boolean; label: string; odds: string; amount: number; market: string; pnl: number };
   const [betHistory, setBetHistory] = useState<BetHistoryItem[]>([
@@ -1493,9 +1493,9 @@ export default function MicrobetLiveV2() {
                       if (!won) setBetsInPlay(n => Math.max(0, n - 1));
                       setSessionPnL(n => n + pnl);
                       setBottomTab('history');
-                      setHistoryScrolled(false);
+                      setHistoryScrollOffset(0);
                     }}
-                    historyScrolled={bottomTab === 'history' && historyScrolled}
+                    historyScrollOffset={bottomTab === 'history' ? historyScrollOffset : 0}
                   />
                 );
               })}
@@ -1519,7 +1519,7 @@ export default function MicrobetLiveV2() {
               {(['stats', 'history'] as const).map(tab => (
                 <button
                   key={tab}
-                  onClick={() => { setBottomTab(tab); if (tab === 'stats') setHistoryScrolled(false); }}
+                  onClick={() => { setBottomTab(tab); if (tab !== 'history') setHistoryScrollOffset(0); }}
                   style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 15, padding: '8px 0', fontSize: 12, fontWeight: 600, transition: 'background 0.2s ease, color 0.2s ease', background: bottomTab === tab ? 'rgba(255,255,255,0.12)' : 'transparent', color: bottomTab === tab ? '#eeeff3' : 'rgba(255,255,255,0.35)' }}
                 >
                   {tab === 'stats' ? 'Матч' : `История · ${betHistory.length}`}
@@ -1573,7 +1573,7 @@ export default function MicrobetLiveV2() {
                 </motion.div>
               ) : (
                 <motion.div key="history" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.18 }}>
-                  <div onPointerDown={e => e.stopPropagation()} onScroll={e => setHistoryScrolled((e.target as HTMLElement).scrollTop > 10)} style={{ maxHeight: 156, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, touchAction: 'pan-y', paddingBottom: 32, scrollbarWidth: 'none' } as React.CSSProperties}>
+                  <div onPointerDown={e => e.stopPropagation()} onScroll={e => setHistoryScrollOffset((e.target as HTMLElement).scrollTop)} style={{ maxHeight: 156, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 4, touchAction: 'pan-y', paddingBottom: 32, scrollbarWidth: 'none' } as React.CSSProperties}>
                     <AnimatePresence initial={false}>
                       {betHistory.map((item) => (
                         <motion.div
