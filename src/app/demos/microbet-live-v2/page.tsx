@@ -106,7 +106,7 @@ function CheckCircleSVG({ size = 80 }: { size?: number }) {
   );
 }
 
-function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon, onBetResult }: {
+function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearBet, onExpire, isGhost, onExpireInactive, onBetPlaced, onBetWon, onBetResult, showTracker, onToggleTracker }: {
   card: CardData; i: number; x: MotionValue<number>; vIdx: number;
   onCanvasRef: (el: HTMLCanvasElement | null) => void;
   onBet: (label: string, odds: string, logo?: string) => void;
@@ -118,6 +118,8 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   onBetPlaced: () => void;
   onBetWon: () => void;
   onBetResult?: (won: boolean, label: string, odds: string, amount: number, market: string) => void;
+  showTracker: boolean;
+  onToggleTracker: (v: boolean) => void;
 }) {
   const isActive = i === vIdx;
 
@@ -159,6 +161,20 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   const [betResult, setBetResult] = useState(false);
   const [betWon, setBetWon] = useState(true);
   const placedBetRef = useRef<{ label: string; odds: string; amount: number }>({ label: '', odds: '', amount: 0 });
+
+  const pct1Num = parseInt(card.pct1 || '50', 10) || 50;
+  const [momentumPct, setMomentumPct] = useState(pct1Num);
+  const momentumMV = useMotionValue(pct1Num);
+  const momentumRef = useRef(pct1Num);
+  const ballPosX = useMotionValue(157);
+  const ballPosY = useMotionValue(87.5);
+  const [eventFlash, setEventFlash] = useState<string | null>(null);
+  const eventFlashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ballShadowY = useTransform(ballPosY, (v: number) => v + 2.5);
+  const directionAngle = useTransform(
+    [ballPosX, ballPosY],
+    (values: number[]) => Math.atan2(values[1] - 87.5, values[0] - 157) * 180 / Math.PI
+  );
 
   const [scActive, setScActive]     = useState(false);
   const [scTimeLeft, setScTimeLeft] = useState(10);
@@ -305,6 +321,87 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     if (!isExpired || isActive || isGhost || card.type === 'penalty') return;
     onExpireInactive(i);
   }, [isExpired]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!showTracker) return;
+    const bias = pct1Num / 100;
+    const id = setInterval(() => {
+      const cur = momentumRef.current;
+      const drift = (bias - cur / 100) * 7;
+      const rand = (Math.random() - 0.5) * 11;
+      const next = Math.max(18, Math.min(82, cur + drift + rand));
+      momentumRef.current = next;
+      setMomentumPct(Math.round(next));
+      animate(momentumMV, next, { duration: 0.7, ease: 'easeOut' });
+    }, 950);
+    return () => clearInterval(id);
+  }, [showTracker]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!showTracker || card.type === 'penalty') return;
+    let alive = true;
+    let tid: ReturnType<typeof setTimeout>;
+    const CORNERS = [{ x: 18, y: 18 }, { x: 296, y: 18 }, { x: 18, y: 157 }, { x: 296, y: 157 }];
+
+    const flash = (text: string) => {
+      if (eventFlashTimerRef.current) clearTimeout(eventFlashTimerRef.current);
+      setEventFlash(text);
+      eventFlashTimerRef.current = setTimeout(() => setEventFlash(null), 2000);
+    };
+
+    const move = () => {
+      if (!alive) return;
+      const mom = momentumRef.current;
+      const isCornerMkt = card.question.includes('угловой');
+      const isPossessionMkt = card.type === 'team';
+      let tx: number, ty: number;
+
+      if (isCornerMkt) {
+        if (mom > 58 && Math.random() < (mom - 58) / 55) {
+          const c = CORNERS[Math.floor(Math.random() * CORNERS.length)];
+          tx = c.x + (Math.random() - 0.5) * 20;
+          ty = c.y + (Math.random() - 0.5) * 20;
+          flash('↗ Движение к углу!');
+        } else if (mom > 64 && Math.random() < 0.4) {
+          const side = Math.random() > 0.5;
+          tx = side ? (253 + Math.random() * 44) : (17 + Math.random() * 44);
+          ty = 52 + Math.random() * 71;
+          flash('⚡ Атака на ворота');
+        } else {
+          tx = 50 + Math.random() * 214;
+          ty = 22 + Math.random() * 131;
+        }
+      } else if (isPossessionMkt) {
+        const goLeft = Math.random() * 100 < mom;
+        tx = goLeft ? (14 + Math.random() * 115) : (185 + Math.random() * 105);
+        ty = 20 + Math.random() * 135;
+        if (goLeft && mom > 70) flash(`${card.label1} давит`);
+        else if (!goLeft && mom < 30) flash(`${card.label2} давит`);
+      } else if (card.type === 'line' || card.type === 'lineevent') {
+        tx = 20 + Math.random() * 274;
+        ty = 14 + Math.random() * 147;
+        const lineFlashes = ['⚽ Атака', '⚡ Единоборство', '↗ Прострел', '→ Зенит давит', '← Спартак давит'];
+        if (Math.random() < 0.35) flash(lineFlashes[Math.floor(Math.random() * lineFlashes.length)]);
+      } else {
+        tx = 95 + Math.random() * 124;
+        ty = 38 + Math.random() * 99;
+        if (mom > 66 && Math.random() < 0.45) flash('⚡ Борьба за мяч!');
+      }
+
+      tx = Math.max(14, Math.min(300, tx));
+      ty = Math.max(14, Math.min(161, ty));
+      const dur = 0.85 + Math.random() * 1.2;
+      animate(ballPosX, tx, { duration: dur, ease: [0.4, 0, 0.2, 1] });
+      animate(ballPosY, ty, { duration: dur, ease: [0.4, 0, 0.2, 1] });
+      tid = setTimeout(move, (dur + 0.12 + Math.random() * 0.6) * 1000);
+    };
+    move();
+    return () => {
+      alive = false;
+      clearTimeout(tid);
+      if (eventFlashTimerRef.current) clearTimeout(eventFlashTimerRef.current);
+    };
+  }, [showTracker]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const pct = timeLeft / card.timer;
   const [r, g, b] = glowColorAt(pct);
@@ -507,7 +604,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
           {scBetWon && <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} style={{ fontSize: 12, color: 'rgba(238,239,243,0.6)', margin: 0 }}>+1 850₽ к твоему банку</motion.p>}
         </div>
 
-        {/* Badge + question — middle */}
+        {/* Badge + question — middle content */}
         {betResult && !scBetWon && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginTop: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -608,6 +705,210 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     </div>
   );
 
+  const MediaSlot = ({ collapse }: { collapse?: boolean }) => {
+    const trackerState = betResult ? (betWon ? 'win' : 'loss') : betPlaced ? 'live' : 'setup';
+    const isCornerMkt = card.question.includes('угловой');
+    const isPossessionMkt = card.type === 'team';
+    const cornerGlow = Math.max(0, (momentumPct - 50) / 40);
+    const leftAlpha = isPossessionMkt ? (momentumPct / 100) * 0.32 : 0;
+    const rightAlpha = isPossessionMkt ? ((100 - momentumPct) / 100) * 0.32 : 0;
+    const tacklePulse = (!isCornerMkt && !isPossessionMkt) ? Math.max(0, (momentumPct - 35) / 65) * 0.28 : 0;
+    if (!showTracker) return (
+      <div style={{ position: 'relative' }}>
+        <VideoBlock collapse={collapse} />
+        <div onClick={() => onToggleTracker(true)}
+          style={{ position: 'absolute', top: 10, right: 10, zIndex: 20, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: 10, padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid rgba(255,255,255,0.08)' }}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="0.5" y="0.5" width="13" height="13" rx="3" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
+            <rect x="3" y="3" width="8" height="5" rx="1" fill="rgba(255,255,255,0.15)"/>
+            <path d="M3 10.5H11M3 12H8" stroke="rgba(255,255,255,0.45)" strokeWidth="1" strokeLinecap="round"/>
+          </svg>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>трекер</span>
+        </div>
+      </div>
+    );
+
+    return (
+      <motion.div
+        initial={false}
+        animate={{ height: (collapse && keyboardOpen) ? 0 : 175 }}
+        transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+        style={{ position: 'relative', width: '100%', borderRadius: 32, overflow: 'hidden', flexShrink: 0 }}
+      >
+        {/* SVG football pitch */}
+        <svg width="314" height="175" viewBox="0 0 314 175" style={{ display: 'block', position: 'absolute', inset: 0 }}>
+          {/* Base field with subtle gradient */}
+          <defs>
+            <radialGradient id="fieldGrad" cx="50%" cy="50%" r="60%">
+              <stop offset="0%" stopColor="#1e6b32" />
+              <stop offset="100%" stopColor="#154e24" />
+            </radialGradient>
+          </defs>
+          <rect width="314" height="175" fill="url(#fieldGrad)" />
+          {/* Alternating stripes */}
+          {[0,2,4,6].map(i => (
+            <rect key={i} x={8 + i * 37.25} y={8} width={37.25} height={159} fill="rgba(0,0,0,0.06)" />
+          ))}
+
+          {/* Possession heat zones */}
+          {isPossessionMkt && (
+            <>
+              <rect x="8" y="8" width="149" height="159" fill={`rgba(50,200,120,${leftAlpha})`} />
+              <rect x="157" y="8" width="149" height="159" fill={`rgba(220,70,70,${rightAlpha})`} />
+            </>
+          )}
+
+          {/* Corner danger zones */}
+          {isCornerMkt && cornerGlow > 0 && (
+            <>
+              <circle cx="8" cy="8" r="44" fill={`rgba(255,210,30,${cornerGlow * 0.5})`} />
+              <circle cx="306" cy="8" r="44" fill={`rgba(255,210,30,${cornerGlow * 0.5})`} />
+              <circle cx="8" cy="167" r="44" fill={`rgba(255,210,30,${cornerGlow * 0.5})`} />
+              <circle cx="306" cy="167" r="44" fill={`rgba(255,210,30,${cornerGlow * 0.5})`} />
+              {/* Corner flag dots */}
+              <circle cx="8" cy="8" r="3" fill={`rgba(255,230,80,${cornerGlow})`} />
+              <circle cx="306" cy="8" r="3" fill={`rgba(255,230,80,${cornerGlow})`} />
+              <circle cx="8" cy="167" r="3" fill={`rgba(255,230,80,${cornerGlow})`} />
+              <circle cx="306" cy="167" r="3" fill={`rgba(255,230,80,${cornerGlow})`} />
+            </>
+          )}
+
+          {/* Tackle: center hot zone */}
+          {tacklePulse > 0 && (
+            <circle cx="157" cy="87.5" r="46" fill={`rgba(255,200,50,${tacklePulse})`} />
+          )}
+
+          {/* Field lines */}
+          <rect x="8" y="8" width="298" height="159" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+          <line x1="157" y1="8" x2="157" y2="167" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" />
+          <circle cx="157" cy="87.5" r="26" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+          <circle cx="157" cy="87.5" r="2" fill="rgba(255,255,255,0.6)" />
+          <rect x="8" y="51" width="54" height="73" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+          <rect x="252" y="51" width="54" height="73" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+          <rect x="8" y="68" width="20" height="39" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+          <rect x="286" y="68" width="20" height="39" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+          <circle cx="47" cy="87.5" r="2" fill="rgba(255,255,255,0.55)" />
+          <circle cx="267" cy="87.5" r="2" fill="rgba(255,255,255,0.55)" />
+          <path d="M 18,8 A 10,10 0 0,0 8,18" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+          <path d="M 296,8 A 10,10 0 0,1 306,18" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+          <path d="M 8,157 A 10,10 0 0,1 18,167" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+          <path d="M 296,167 A 10,10 0 0,0 306,157" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none" />
+
+          {/* Team1 players (attacking, cluster around ball) */}
+          <motion.g style={{ x: ballPosX, y: ballPosY }}>
+            <circle cx="-22" cy="12" r="4" fill="rgba(80,220,140,0.85)" />
+            <circle cx="-12" cy="-19" r="4" fill="rgba(80,220,140,0.85)" />
+            <circle cx="-30" cy="-6" r="3.5" fill="rgba(80,220,140,0.7)" />
+          </motion.g>
+          {/* Team2 players (defending, slightly offset) */}
+          <motion.g style={{ x: ballPosX, y: ballPosY }}>
+            <circle cx="25" cy="-12" r="4" fill="rgba(220,80,80,0.85)" />
+            <circle cx="16" cy="20" r="4" fill="rgba(220,80,80,0.85)" />
+            <circle cx="32" cy="6" r="3.5" fill="rgba(220,80,80,0.7)" />
+          </motion.g>
+
+          {/* Direction arrow from center toward ball */}
+          <line x1="157" y1="87.5" x2="0" y2="0" stroke="none" />
+
+          {/* Ball glow halo */}
+          <motion.circle cx={0} cy={0} r={22} fill="rgba(255,255,255,0.1)" style={{ x: ballPosX, y: ballPosY }} />
+          {/* Ball shadow */}
+          <motion.circle cx={0} cy={0} r={5.5} fill="rgba(0,0,0,0.3)" style={{ x: ballPosX, y: ballShadowY }} />
+          {/* Ball body */}
+          <motion.circle cx={0} cy={0} r={5.2} fill="white" style={{ x: ballPosX, y: ballPosY }} />
+          {/* Ball panel lines */}
+          <motion.circle cx={0} cy={0} r={5.2} fill="none" stroke="rgba(30,30,30,0.25)" strokeWidth="0.7" style={{ x: ballPosX, y: ballPosY }} />
+
+        </svg>
+
+        {/* Direction arrow overlay (CSS, rotates toward ball) */}
+        {(trackerState === 'setup' || trackerState === 'live') && !isPossessionMkt && (
+          <div style={{ position: 'absolute', left: 157, top: 87.5, zIndex: 6, pointerEvents: 'none' }}>
+            <motion.div style={{ rotate: directionAngle, width: 46, height: 14, transformOrigin: '0 50%', display: 'flex', alignItems: 'center', marginTop: -7 }}>
+              <div style={{ flex: 1, height: 1.5, background: 'rgba(255,255,255,0.28)', borderRadius: 1 }} />
+              <div style={{ width: 0, height: 0, borderTop: '4px solid transparent', borderBottom: '4px solid transparent', borderLeft: '7px solid rgba(255,255,255,0.28)' }} />
+            </motion.div>
+          </div>
+        )}
+
+        {/* Event flash — центр поля */}
+        <AnimatePresence>
+          {eventFlash && (
+            <motion.div key={eventFlash + timeLeft} initial={{ opacity: 0, scale: 0.88, y: 6 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: -4 }} transition={{ duration: 0.22 }}
+              style={{ position: 'absolute', top: '42%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 25, pointerEvents: 'none' }}>
+              <div style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderRadius: 10, padding: '5px 13px', border: '1px solid rgba(255,255,255,0.14)' }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>{eventFlash}</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* WIN / LOSS overlays */}
+        <AnimatePresence>
+          {trackerState === 'win' && (
+            <motion.div key="win" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(0,110,48,0.68)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 32 }}>
+              <CheckCircleSVG size={52} />
+              <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>Ставка выиграла!</span>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{placedBetRef.current.label} · ×{placedBetRef.current.odds}</span>
+            </motion.div>
+          )}
+          {trackerState === 'loss' && (
+            <motion.div key="loss" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.4 }}
+              style={{ position: 'absolute', inset: 0, background: 'rgba(130,15,15,0.65)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 32 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 26, background: 'rgba(255,80,80,0.18)', border: '1px solid rgba(255,80,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 4L18 18M18 4L4 18" stroke="#ff6666" strokeWidth="2.5" strokeLinecap="round"/></svg>
+              </div>
+              <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>Не зашло</span>
+              <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{placedBetRef.current.label} · ×{placedBetRef.current.odds}</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* LIVE badge */}
+        {trackerState === 'live' && (
+          <div style={{ position: 'absolute', top: 10, left: 14, zIndex: 20, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: 8, padding: '4px 9px', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <motion.div animate={{ opacity: [1, 0.15, 1] }} transition={{ duration: 0.9, repeat: Infinity }} style={{ width: 6, height: 6, borderRadius: 3, background: '#ff3333', flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 800, color: '#ff4444', letterSpacing: 0.5 }}>В ИГРЕ</span>
+            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginLeft: 3 }}>{placedBetRef.current.label} · ×{placedBetRef.current.odds}</span>
+          </div>
+        )}
+
+
+        {/* Possession team labels — bottom corners */}
+        {isPossessionMkt && trackerState === 'setup' && (
+          <>
+            <div style={{ position: 'absolute', bottom: 10, left: 14, zIndex: 20, background: `rgba(40,180,100,${0.2 + leftAlpha * 0.5})`, borderRadius: 7, padding: '3px 8px' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#7fffd4' }}>{card.label1} {momentumPct}%</span>
+            </div>
+            <div style={{ position: 'absolute', bottom: 10, right: 54, zIndex: 20, background: `rgba(200,60,60,${0.2 + rightAlpha * 0.5})`, borderRadius: 7, padding: '3px 8px' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#ffaaaa' }}>{card.label2} {100 - momentumPct}%</span>
+            </div>
+          </>
+        )}
+
+        {/* Market label (corner / tackle) */}
+        {trackerState === 'setup' && !isPossessionMkt && (
+          <div style={{ position: 'absolute', bottom: 10, right: 54, zIndex: 20, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: 8, padding: '4px 9px' }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>
+              {isCornerMkt ? `угловой · ${momentumPct}%` : `отбор · ${momentumPct}%`}
+            </span>
+          </div>
+        )}
+
+        {/* Toggle to video */}
+        <div onClick={() => onToggleTracker(false)}
+          style={{ position: 'absolute', top: 10, right: 10, zIndex: 20, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: 10, padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, border: '1px solid rgba(255,255,255,0.08)' }}>
+          <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+            <rect x="0.5" y="0.5" width="12" height="9" rx="1.5" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
+            <path d="M5 3L9 5L5 7V3Z" fill="rgba(255,255,255,0.5)"/>
+          </svg>
+          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>видео</span>
+        </div>
+      </motion.div>
+    );
+  };
+
   const VideoBlock = ({ collapse }: { collapse?: boolean }) => (
     <motion.div
       initial={false}
@@ -658,7 +959,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
         >
           <div style={{ position: 'relative', isolation: 'isolate' }}>
             <TeamHeader />
-            <VideoBlock />
+            <MediaSlot />
             <div style={{ background: sheetOpen ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: (sheetOpen && !betPlaced && !betResult) ? 0 : '0 0 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 8px 8px', minHeight: (sheetOpen && !betPlaced && !betResult) ? 0 : 268 }}>
               {(betPlaced || betResult) ? BetResultArea() : (
                 <>
@@ -730,7 +1031,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
         >
           <div style={{ position: 'relative', isolation: 'isolate' }}>
             <TeamHeader />
-            <VideoBlock />
+            <MediaSlot />
             <div style={{ background: (sheetOpen && !betPlaced && !betResult) ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: (sheetOpen && !betPlaced && !betResult) ? 0 : '0 0 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 8px 8px', minHeight: (sheetOpen && !betPlaced && !betResult) ? 0 : 268 }}>
               {(betPlaced || betResult) ? BetResultArea() : (
                 <>
@@ -926,6 +1227,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                       </div>
                     )}
                   </div>
+                  {/* Button pinned to bottom */}
                   <div style={{ width: '100%', paddingTop: 6 }} onPointerDown={e => e.stopPropagation()}>
                     <motion.div
                       initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
@@ -1032,7 +1334,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
       >
         <div style={{ position: 'relative', isolation: 'isolate' }}>
           <TeamHeader />
-          <VideoBlock collapse />
+          <MediaSlot collapse />
 
           <div style={{ background: sheetOpen ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: sheetOpen ? 0 : '0 0 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 8px 8px', minHeight: (betPlaced || betResult) ? 268 : sheetOpen ? 260 : 268 }}>
             {(betPlaced || betResult) ? BetResultArea() : isExpired ? (
@@ -1191,8 +1493,6 @@ export default function MicrobetLiveV2() {
 
   const [selectedBet, setSelectedBet] = useState<{ label: string; odds: string; logo?: string } | null>(null);
   const [betsInPlay, setBetsInPlay] = useState(2);
-  const [lockedIdx, setLockedIdx] = useState(-1);
-
   const [sessionPnL, setSessionPnL] = useState(850);
   const [sessionWins, setSessionWins] = useState(3);
   const [totalBets, setTotalBets] = useState(5);
@@ -1207,6 +1507,7 @@ export default function MicrobetLiveV2() {
     { id: 5, won: false, label: 'Нет',   odds: '2.35', amount: 200,  market: 'Забьёт Соболев?',            pnl: -200 },
   ]);
   const historyIdRef = useRef(6);
+  const [lockedIdx, setLockedIdx] = useState(-1);
 
   const [resetKey, setResetKey] = useState(0);
   const [liveCards, setLiveCards] = useState<CardData[]>(() => [...CARDS]);
@@ -1218,6 +1519,7 @@ export default function MicrobetLiveV2() {
 
   const [vIdx, setVIdx] = useState(1);
   const [dragging, setDragging] = useState(false);
+  const [showTracker, setShowTracker] = useState(false);
   const vIdxRef      = useRef(1);
   const draggingRef  = useRef(false);
   const dragTrackRef = useRef(false);
@@ -1301,6 +1603,18 @@ export default function MicrobetLiveV2() {
     if (wasDragRef.current) { e.stopPropagation(); wasDragRef.current = false; }
   };
 
+  const lastWheelTime = useRef(0);
+  const onWheel = (e: React.WheelEvent) => {
+    if (selectedBet || liveN <= 1) return;
+    if (Math.abs(e.deltaX) < 8) return;
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 0.7) return;
+    const now = Date.now();
+    if (now - lastWheelTime.current < 600) return;
+    lastWheelTime.current = now;
+    const next = Math.max(0, Math.min(liveNRef.current + 1, vIdxRef.current + (e.deltaX > 0 ? 1 : -1)));
+    snapTo(next);
+  };
+
   const handleExpire = () => {
     stopShift();
     if (animCtrl.current) { animCtrl.current.stop(); animCtrl.current = null; }
@@ -1361,18 +1675,6 @@ export default function MicrobetLiveV2() {
     }
   };
 
-  const lastWheelTime = useRef(0);
-  const onWheel = (e: React.WheelEvent) => {
-    if (selectedBet || liveN <= 1) return;
-    if (Math.abs(e.deltaX) < 8) return;
-    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 0.7) return;
-    const now = Date.now();
-    if (now - lastWheelTime.current < 600) return;
-    lastWheelTime.current = now;
-    const next = Math.max(0, Math.min(liveNRef.current + 1, vIdxRef.current + (e.deltaX > 0 ? 1 : -1)));
-    snapTo(next);
-  };
-
   const realIdx = liveN > 0 ? ((vIdx - 1) % liveN + liveN) % liveN : 0;
   const handleScenarioClick = (scenarioIdx: number) => {
     const targetCard = CARDS[scenarioIdx];
@@ -1422,8 +1724,8 @@ export default function MicrobetLiveV2() {
       `}</style>
       <video ref={sharedVideoRef} src={`${BASE}/img/microbet-match.mp4`} autoPlay muted loop playsInline style={{ position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }} />
 
-      {/* Left panel */}
-      <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
+      {/* Left panel hidden in v3 */}
+      {false && <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
         <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 20, overflow: 'hidden' }}>
           <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.09em', textTransform: 'uppercase' }}>Режим</div>
@@ -1465,7 +1767,7 @@ export default function MicrobetLiveV2() {
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', lineHeight: '14px' }}>Нажмите сценарий чтобы перейти на нужную карточку</div>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Phone mockup */}
       <div style={{ width: 360, height: 800, position: 'relative', overflow: 'hidden', borderRadius: 40, flexShrink: 0 }}>
@@ -1509,6 +1811,8 @@ export default function MicrobetLiveV2() {
                       setSessionPnL(n => n + pnl);
                       setBottomTab('history');
                     }}
+                    showTracker={showTracker}
+                    onToggleTracker={setShowTracker}
                   />
                 );
               })}
@@ -1522,21 +1826,19 @@ export default function MicrobetLiveV2() {
                   <div key={i} onClick={() => liveN > 1 ? snapTo(i + 1) : undefined} style={{ width: i === realIdx ? 18 : 6, height: 6, borderRadius: 3, background: i === realIdx ? '#ffffff' : 'rgba(255,255,255,0.4)', transition: 'width 0.3s ease, background 0.3s ease', cursor: liveN > 1 ? 'pointer' : 'default' }} />
                 ))}
               </div>
-              <span style={{ fontSize: 10, fontWeight: 500, color: 'rgba(238,239,243,0.35)' }}>
-                Маркет {realIdx + 1} из {liveN}
-              </span>
             </div>
           )}
 
-          {/* Tabs */}
+          {/* Bottom tabs */}
           <div style={{ marginTop: 12, width: 312, flexShrink: 0 }}>
+            {/* Tab switcher */}
             <div style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: 22, padding: 3, marginBottom: 10 }}>
               {(['stats', 'history'] as const).map(tab => (
-                <button key={tab} onClick={() => setBottomTab(tab)}
-                  style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 19, padding: '7px 0', fontSize: 11, fontWeight: 600,
-                    transition: 'background 0.2s ease, color 0.2s ease',
-                    background: bottomTab === tab ? 'rgba(255,255,255,0.12)' : 'transparent',
-                    color: bottomTab === tab ? '#eeeff3' : 'rgba(255,255,255,0.35)' }}>
+                <button
+                  key={tab}
+                  onClick={() => setBottomTab(tab)}
+                  style={{ flex: 1, border: 'none', cursor: 'pointer', borderRadius: 19, padding: '8px 0', fontSize: 12, fontWeight: 600, transition: 'background 0.2s ease, color 0.2s ease', background: bottomTab === tab ? 'rgba(255,255,255,0.12)' : 'transparent', color: bottomTab === tab ? '#eeeff3' : 'rgba(255,255,255,0.35)' }}
+                >
                   {tab === 'stats' ? 'Матч' : `История · ${betHistory.length}`}
                 </button>
               ))}
@@ -1544,23 +1846,19 @@ export default function MicrobetLiveV2() {
 
             <AnimatePresence mode="wait" initial={false}>
               {bottomTab === 'stats' ? (
-                <motion.div key="stats" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.18 }}
+                <motion.div key="stats" initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.18 }}
                   style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={`${BASE}/img/zenit_real.png`} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                      </div>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}><img src={`${BASE}/img/zenit_real.png`} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /></div>
                       <span style={{ fontSize: 11, fontWeight: 700, color: '#eeeff3' }}>Зенит</span>
                     </div>
                     <span style={{ fontSize: 9, fontWeight: 500, color: 'rgba(255,255,255,0.28)', letterSpacing: '0.04em', textTransform: 'uppercase', position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>Матч</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <span style={{ fontSize: 11, fontWeight: 700, color: '#eeeff3' }}>Спартак</span>
-                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={`${BASE}/img/spartak_real.png`} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                      </div>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}><img src={`${BASE}/img/spartak_real.png`} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /></div>
                     </div>
                   </div>
                   {[
@@ -1573,7 +1871,9 @@ export default function MicrobetLiveV2() {
                     const homePct = (s.home / total) * 100;
                     return (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < 3 ? 7 : 0 }}>
-                        <span style={{ width: 28, fontSize: 12, fontWeight: 700, color: '#eeeff3', textAlign: 'right', flexShrink: 0 }}>{s.pct ? `${s.home}%` : s.home}</span>
+                        <span style={{ width: 28, fontSize: 12, fontWeight: 700, color: '#eeeff3', textAlign: 'right', flexShrink: 0 }}>
+                          {s.pct ? `${s.home}%` : s.home}
+                        </span>
                         <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', position: 'relative' }}>
                           <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${homePct}%`, background: '#27db55', borderRadius: 2 }} />
                         </div>
@@ -1581,29 +1881,36 @@ export default function MicrobetLiveV2() {
                         <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', position: 'relative' }}>
                           <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: `${100 - homePct}%`, background: '#e03030', borderRadius: 2 }} />
                         </div>
-                        <span style={{ width: 28, fontSize: 12, fontWeight: 700, color: '#eeeff3', flexShrink: 0 }}>{s.pct ? `${s.away}%` : s.away}</span>
+                        <span style={{ width: 28, fontSize: 12, fontWeight: 700, color: '#eeeff3', flexShrink: 0 }}>
+                          {s.pct ? `${s.away}%` : s.away}
+                        </span>
                       </div>
                     );
                   })}
                 </motion.div>
               ) : (
-                <motion.div key="history" initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} transition={{ duration: 0.18 }}>
-                  <div onPointerDown={e => e.stopPropagation()}
-                    style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <motion.div key="history" initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.18 }}>
+                  <div onPointerDown={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     <AnimatePresence initial={false}>
-                      {betHistory.map(item => (
-                        <motion.div key={item.id}
-                          initial={{ opacity: 0, y: -20, scale: 0.97 }}
+                      {betHistory.map((item) => (
+                        <motion.div
+                          key={item.id}
+                          initial={{ opacity: 0, y: -24, scale: 0.97 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           transition={{ type: 'spring', stiffness: 380, damping: 26 }}
-                          style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${item.won ? 'rgba(84,199,99,0.15)' : 'rgba(255,80,80,0.12)'}`, borderRadius: 24, padding: '7px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          style={{ background: 'rgba(255,255,255,0.04)', border: `1px solid ${item.won ? 'rgba(84,199,99,0.15)' : 'rgba(255,80,80,0.12)'}`, borderRadius: 24, padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                        >
                           <div style={{ minWidth: 0 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3' }}>{item.label} · {item.odds}</div>
-                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{item.market}</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: '#eeeff3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{item.label} · {item.odds}</div>
+                            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{item.market}</div>
                           </div>
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: item.won ? '#54c763' : '#ff5050' }}>{item.won ? '+' : ''}₽{Math.abs(item.pnl)}</div>
-                            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{item.won ? '✓ выиграно' : '✗ проиграно'}</div>
+                            <div style={{ fontSize: 12, fontWeight: 800, color: item.won ? '#54C763' : '#ff6b6b' }}>
+                              {item.won ? '+' : '−'}₽{Math.abs(item.pnl).toLocaleString('ru-RU')}
+                            </div>
+                            <div style={{ fontSize: 9, color: item.won ? 'rgba(84,199,99,0.5)' : 'rgba(255,80,80,0.5)', marginTop: 1 }}>
+                              {item.won ? '✓ выиграно' : '✗ проиграно'}
+                            </div>
                           </div>
                         </motion.div>
                       ))}
@@ -1619,8 +1926,8 @@ export default function MicrobetLiveV2() {
         </div>
       </div>
 
-      {/* Right panel */}
-      <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
+      {/* Right panel hidden in v3 */}
+      {false && <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
         <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 20, overflow: 'hidden' }}>
           {lockedIdx === -1 ? (
             <>
@@ -1703,7 +2010,7 @@ export default function MicrobetLiveV2() {
             </>
           )}
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
