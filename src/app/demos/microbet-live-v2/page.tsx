@@ -1877,7 +1877,7 @@ export default function MicrobetLiveV2() {
                         <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', position: 'relative' }}>
                           <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${homePct}%`, background: '#27db55', borderRadius: 2 }} />
                         </div>
-                        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', width: 72, textAlign: 'center', flexShrink: 0 }}>{s.label}</span>
+                        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', width: 72, textAlign: 'center', flexShrink: 0 }}>{s.label}</span>
                         <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden', position: 'relative' }}>
                           <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: `${100 - homePct}%`, background: '#e03030', borderRadius: 2 }} />
                         </div>
