@@ -1578,6 +1578,7 @@ export default function MicrobetLiveV2() {
       wasDragRef.current = true;
       draggingRef.current = true;
       setDragging(true);
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
       stopShift();
       if (animCtrl.current) { animCtrl.current.stop(); animCtrl.current = null; }
       const curN = liveNRef.current;
@@ -1724,8 +1725,8 @@ export default function MicrobetLiveV2() {
       `}</style>
       <video ref={sharedVideoRef} src={`${BASE}/img/microbet-match.mp4`} autoPlay muted loop playsInline style={{ position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }} />
 
-      {/* Left panel hidden in v3 */}
-      {false && <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
+      {/* Left panel */}
+      <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
         <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 20, overflow: 'hidden' }}>
           <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.09em', textTransform: 'uppercase' }}>Режим</div>
@@ -1767,7 +1768,7 @@ export default function MicrobetLiveV2() {
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', lineHeight: '14px' }}>Нажмите сценарий чтобы перейти на нужную карточку</div>
           </div>
         </div>
-      </div>}
+      </div>
 
       {/* Phone mockup */}
       <div style={{ width: 360, height: 800, position: 'relative', overflow: 'hidden', borderRadius: 40, flexShrink: 0 }}>
@@ -1902,13 +1903,13 @@ export default function MicrobetLiveV2() {
                         >
                           <div style={{ minWidth: 0 }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: '#eeeff3', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{item.label} · {item.odds}</div>
-                            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{item.market}</div>
+                            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{item.market}</div>
                           </div>
                           <div style={{ textAlign: 'right', flexShrink: 0 }}>
                             <div style={{ fontSize: 12, fontWeight: 800, color: item.won ? '#54C763' : '#ff6b6b' }}>
                               {item.won ? '+' : '−'}₽{Math.abs(item.pnl).toLocaleString('ru-RU')}
                             </div>
-                            <div style={{ fontSize: 9, color: item.won ? 'rgba(84,199,99,0.5)' : 'rgba(255,80,80,0.5)', marginTop: 1 }}>
+                            <div style={{ fontSize: 10, color: item.won ? 'rgba(84,199,99,0.5)' : 'rgba(255,80,80,0.5)', marginTop: 1 }}>
                               {item.won ? '✓ выиграно' : '✗ проиграно'}
                             </div>
                           </div>
@@ -1926,8 +1927,8 @@ export default function MicrobetLiveV2() {
         </div>
       </div>
 
-      {/* Right panel hidden in v3 */}
-      {false && <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
+      {/* Right panel */}
+      <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
         <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 20, overflow: 'hidden' }}>
           {lockedIdx === -1 ? (
             <>
@@ -2010,7 +2011,7 @@ export default function MicrobetLiveV2() {
             </>
           )}
         </div>
-      </div>}
+      </div>
     </div>
   );
 }
