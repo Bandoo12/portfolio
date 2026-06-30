@@ -32,7 +32,7 @@ const PENALTY_SERIES = [
 const CARDS = [
   { id: 1, type: 'yesno'    as const, question: 'Будет угловой\nследующие',        timer: 30, start: 30, unit: 'секунд', period: 'в период 34:00–34:30', logo1: IMG.zenit, logo2: IMG.spartak, odds1: '1.55', odds2: '2.40', pct1: '62%', pct2: '38%', label1: 'Да',    label2: 'Нет',     hint1: 'угловой каждые ~6 мин',  hint2: '2 угловых в тайме',     question2nd: '' },
   { id: 2, type: 'team'     as const, question: 'Кто дольше будет\nвладеть мячом', timer: 30, start: 20, unit: 'секунд', period: 'в период 34:00–34:30', logo1: IMG.zenit, logo2: IMG.spartak, odds1: '1.70', odds2: '3.20', pct1: '67%', pct2: '33%', label1: 'Зенит', label2: 'Спартак', hint1: '67% владения за 10 мин',  hint2: 'потерял мяч 3 раза',    question2nd: '' },
-  { id: 3, type: 'yesno'    as const, question: 'Будет отбор мяча\nследующие',     timer: 30, start: 24, unit: 'секунд', period: 'в период 34:00–34:30', logo1: IMG.zenit, logo2: IMG.spartak, odds1: '2.05', odds2: '1.85', pct1: '52%', pct2: '48%', label1: 'Да',    label2: 'Нет',     hint1: 'отбор раз в ~2 мин',     hint2: '5 отборов в тайме',     question2nd: 'Ещё один отбор\nв 10 секунд?' },
+  { id: 3, type: 'yesno'    as const, question: 'Будет отбор мяча\nследующие',     timer: 30, start: 24, unit: 'секунд', period: 'в период 34:00–34:30', logo1: IMG.zenit, logo2: IMG.spartak, odds1: '2.05', odds2: '1.85', pct1: '50%', pct2: '50%', label1: 'Да',    label2: 'Нет',     hint1: 'отбор раз в ~2 мин',     hint2: '5 отборов в тайме',     question2nd: 'Ещё один отбор\nв 10 секунд?' },
   { id: 4, type: 'penalty'  as const, question: 'Забьёт Смолов?',                  timer:  8, start:  8, unit: 'секунд', period: '2 тайм. 118:20',        logo1: IMG.zenit, logo2: IMG.spartak, odds1: '1.30', odds2: '3.80', pct1: '77%', pct2: '23%', label1: 'Да',    label2: 'Нет',     hint1: '',                        hint2: '',                      question2nd: '' },
   { id: 5, type: 'line'     as const, question: '',                                 timer: 999999, start: 999999, unit: '', period: '',                    logo1: IMG.zenit, logo2: IMG.spartak, odds1: '', odds2: '', pct1: '', pct2: '', label1: '', label2: '', hint1: '', hint2: '', question2nd: '' },
   { id: 6, type: 'lineevent' as const, question: '',                                timer: 999999, start: 999999, unit: '', period: '',                    logo1: IMG.zenit, logo2: IMG.spartak, odds1: '', odds2: '', pct1: '', pct2: '', label1: '', label2: '', hint1: '', hint2: '', question2nd: '' },
@@ -325,11 +325,12 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   useEffect(() => {
     if (!showTracker) return;
     const bias = pct1Num / 100;
+    const isEven = pct1Num === 50;
     const id = setInterval(() => {
       const cur = momentumRef.current;
-      const drift = (bias - cur / 100) * 7;
-      const rand = (Math.random() - 0.5) * 11;
-      const next = Math.max(18, Math.min(82, cur + drift + rand));
+      const drift = (bias - cur / 100) * (isEven ? 3 : 7);
+      const rand = (Math.random() - 0.5) * (isEven ? 20 : 11);
+      const next = Math.max(28, Math.min(72, cur + drift + rand));
       momentumRef.current = next;
       setMomentumPct(Math.round(next));
       animate(momentumMV, next, { duration: 0.7, ease: 'easeOut' });
