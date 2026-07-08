@@ -391,7 +391,14 @@ export default function LuckyNumbersPage() {
 
         <img className="ln-reel-frame" src={`${IMG}/reel-frame.png`} alt="" />
 
-        <img className="ln-character" src={`${IMG}/character.png`} alt="" />
+        <video
+          className="ln-character"
+          src={`${BASE}/img/transparent.webm`}
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
 
         <div className="ln-bar">
           <div className="ln-left-group">
