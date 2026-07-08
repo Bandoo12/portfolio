@@ -146,6 +146,116 @@ export default function LuckyNumbersPage() {
 
   const timeoutIds = useRef<number[]>([]);
   const rafIds = useRef<number[]>([]);
+  const characterVideoRef = useRef<HTMLVideoElement>(null);
+  const characterCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // The source video has no alpha channel: it's a plain H.264 clip with the
+  // despilled color on top and a white/black luma mask stacked below. Hardware
+  // video decoding on real GPUs silently drops VP9/alpha-webm transparency
+  // (only software decode preserves it), which showed up as a hazy translucent
+  // box in real Chrome even though headless (software-decode) tests looked clean.
+  // Compositing the alpha ourselves from the mask half sidesteps that entirely.
+  useEffect(() => {
+    const video = characterVideoRef.current;
+    const canvas = characterCanvasRef.current;
+    if (!video || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // Cap the working resolution — getImageData/putImageData cost scales with
+    // pixel count, and redrawing at full DPR every frame was janking on real hardware.
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = 498 * dpr;
+    canvas.height = 668 * dpr;
+
+    const offColor = document.createElement('canvas');
+    const offMask = document.createElement('canvas');
+    const offColorCtx = offColor.getContext('2d', { willReadFrequently: true });
+    const offMaskCtx = offMask.getContext('2d', { willReadFrequently: true });
+
+    // H.264 compression leaves the mask's "black" background a little above 0
+    // (encoder noise in flat dark regions), which read as a faint green haze
+    // once used as alpha over the raw (non-despilled) color layer. Stretching
+    // the low end of the mask to true 0 while leaving the hair/edge gradient
+    // intact clears that without hardening the silhouette's edges.
+    const MASK_BLACK = 70;
+    const MASK_WHITE = 200;
+    const maskStretch = (v: number) => {
+      if (v <= MASK_BLACK) return 0;
+      if (v >= MASK_WHITE) return 255;
+      return Math.round(((v - MASK_BLACK) / (MASK_WHITE - MASK_BLACK)) * 255);
+    };
+
+    let cancelled = false;
+    let rafId: number;
+    let vfcId: number;
+
+    const draw = () => {
+      if (video.videoWidth && video.videoHeight && offColorCtx && offMaskCtx) {
+        const vw = video.videoWidth;
+        const halfH = video.videoHeight / 2;
+        const scaleFit = Math.min(canvas.width / vw, canvas.height / halfH);
+        const w = Math.round(vw * scaleFit);
+        const h = Math.round(halfH * scaleFit);
+        const x = Math.round((canvas.width - w) / 2);
+        const y = Math.round((canvas.height - h) / 2);
+
+        // Resizing a canvas reallocates its backing store, so only do it when
+        // the fit dimensions actually change instead of on every frame.
+        if (offColor.width !== w || offColor.height !== h) {
+          offColor.width = w;
+          offColor.height = h;
+          offMask.width = w;
+          offMask.height = h;
+        }
+        offColorCtx.drawImage(video, 0, 0, vw, halfH, 0, 0, w, h);
+        offMaskCtx.drawImage(video, 0, halfH, vw, halfH, 0, 0, w, h);
+
+        const colorData = offColorCtx.getImageData(0, 0, w, h);
+        const maskData = offMaskCtx.getImageData(0, 0, w, h);
+        const out = colorData;
+        for (let i = 0; i < out.data.length; i += 4) {
+          // Suppress leftover green-screen spill at the soft edge of the mask
+          // (ffmpeg's despill doesn't fully clear it once the mask threshold
+          // above makes those partially-transparent edge pixels more opaque).
+          const r = out.data[i];
+          const g = out.data[i + 1];
+          const b = out.data[i + 2];
+          if (g > r && g > b) {
+            out.data[i + 1] = Math.max(r, b);
+          }
+          out.data[i + 3] = maskStretch(maskData.data[i]);
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.putImageData(out, x, y);
+      }
+    };
+
+    // requestVideoFrameCallback fires exactly once per decoded video frame
+    // (video is ~24fps) instead of redrawing the same frame 2-3x per rAF tick.
+    const hasVFC = 'requestVideoFrameCallback' in video;
+    if (hasVFC) {
+      const loop = () => {
+        if (cancelled) return;
+        draw();
+        vfcId = (video as HTMLVideoElement & { requestVideoFrameCallback: (cb: () => void) => number }).requestVideoFrameCallback(loop);
+      };
+      vfcId = (video as HTMLVideoElement & { requestVideoFrameCallback: (cb: () => void) => number }).requestVideoFrameCallback(loop);
+    } else {
+      const loop = () => {
+        draw();
+        rafId = requestAnimationFrame(loop);
+      };
+      rafId = requestAnimationFrame(loop);
+    }
+
+    return () => {
+      cancelled = true;
+      if (hasVFC) (video as HTMLVideoElement & { cancelVideoFrameCallback: (id: number) => void }).cancelVideoFrameCallback(vfcId);
+      else cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     function update() {
@@ -392,13 +502,15 @@ export default function LuckyNumbersPage() {
         <img className="ln-reel-frame" src={`${IMG}/reel-frame.png`} alt="" />
 
         <video
-          className="ln-character"
-          src={`${BASE}/img/transparent.webm`}
+          ref={characterVideoRef}
+          src={`${BASE}/img/transparent-stacked.mp4`}
           autoPlay
           loop
           muted
           playsInline
+          style={{ position: 'absolute', left: 924, top: 126, width: 498, height: 668, opacity: 0, pointerEvents: 'none' }}
         />
+        <canvas ref={characterCanvasRef} className="ln-character" />
 
         <div className="ln-bar">
           <div className="ln-left-group">
