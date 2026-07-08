@@ -298,7 +298,7 @@ export default function LuckyNumbersPage() {
           display:flex; align-items:center; justify-content:space-between; padding-left:16px; color:#fff; }
 
         .ln-left-group { display:flex; align-items:center; gap:14px; }
-        .ln-balance { display:flex; align-items:center; gap:16px; }
+        .ln-balance { display:flex; align-items:center; gap:16px; background:rgba(0,0,0,0.2); border-radius:28px; padding:12px; }
         .ln-text-block { display:flex; flex-direction:column; gap:4px; }
         .ln-label { font-weight:700; font-size:14px; line-height:15.4px; letter-spacing:-0.28px; text-transform:uppercase; }
         .ln-balance-value { font-weight:700; font-size:28px; line-height:30.8px; letter-spacing:-0.56px; }
