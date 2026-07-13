@@ -164,6 +164,86 @@ export default function LuckyNumbersV2Page() {
 
   const timeoutIds = useRef<number[]>([]);
   const rafIds = useRef<number[]>([]);
+  const characterVideoRef = useRef<HTMLVideoElement>(null);
+  const characterCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // The character video is pre-keyed offline (adaptive per-frame chroma key,
+  // since the green-screen source drifted color frame to frame) into a stacked
+  // clip: color on top, a clean 0/255 luma alpha mask on the bottom half. We
+  // just recombine them into a canvas every decoded frame.
+  useEffect(() => {
+    const video = characterVideoRef.current;
+    const canvas = characterCanvasRef.current;
+    if (!video || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = 853 * dpr;
+    canvas.height = 687 * dpr;
+
+    const offColor = document.createElement('canvas');
+    const offMask = document.createElement('canvas');
+    const offColorCtx = offColor.getContext('2d', { willReadFrequently: true });
+    const offMaskCtx = offMask.getContext('2d', { willReadFrequently: true });
+
+    let cancelled = false;
+    let rafId: number;
+    let vfcId: number;
+
+    const draw = () => {
+      if (video.videoWidth && video.videoHeight && offColorCtx && offMaskCtx) {
+        const vw = video.videoWidth;
+        const halfH = video.videoHeight / 2;
+        const scaleFit = Math.min(canvas.width / vw, canvas.height / halfH);
+        const w = Math.round(vw * scaleFit);
+        const h = Math.round(halfH * scaleFit);
+        const x = Math.round((canvas.width - w) / 2);
+        const y = Math.round((canvas.height - h) / 2);
+
+        if (offColor.width !== w || offColor.height !== h) {
+          offColor.width = w;
+          offColor.height = h;
+          offMask.width = w;
+          offMask.height = h;
+        }
+        offColorCtx.drawImage(video, 0, 0, vw, halfH, 0, 0, w, h);
+        offMaskCtx.drawImage(video, 0, halfH, vw, halfH, 0, 0, w, h);
+
+        const colorData = offColorCtx.getImageData(0, 0, w, h);
+        const maskData = offMaskCtx.getImageData(0, 0, w, h);
+        const out = colorData;
+        for (let i = 0; i < out.data.length; i += 4) {
+          out.data[i + 3] = maskData.data[i];
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.putImageData(out, x, y);
+      }
+    };
+
+    const hasVFC = 'requestVideoFrameCallback' in video;
+    if (hasVFC) {
+      const loop = () => {
+        if (cancelled) return;
+        draw();
+        vfcId = (video as HTMLVideoElement & { requestVideoFrameCallback: (cb: () => void) => number }).requestVideoFrameCallback(loop);
+      };
+      vfcId = (video as HTMLVideoElement & { requestVideoFrameCallback: (cb: () => void) => number }).requestVideoFrameCallback(loop);
+    } else {
+      const loop = () => {
+        draw();
+        rafId = requestAnimationFrame(loop);
+      };
+      rafId = requestAnimationFrame(loop);
+    }
+
+    return () => {
+      cancelled = true;
+      if (hasVFC) (video as HTMLVideoElement & { cancelVideoFrameCallback: (id: number) => void }).cancelVideoFrameCallback(vfcId);
+      else cancelAnimationFrame(rafId);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     function update() {
@@ -412,7 +492,16 @@ export default function LuckyNumbersV2Page() {
 
         <img className="ln-reel-frame" src={`${IMG}/reel-frame.png`} alt="" />
 
-        <img className="ln-character" src={`${IMG}/character.png`} alt="" />
+        <video
+          ref={characterVideoRef}
+          src={`${IMG}/character-stacked.mp4`}
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{ position: 'absolute', left: 783, top: 120, width: 853, height: 687, opacity: 0, pointerEvents: 'none' }}
+        />
+        <canvas ref={characterCanvasRef} className="ln-character" />
 
         <div className="ln-bar">
           <div className="ln-left-group">
