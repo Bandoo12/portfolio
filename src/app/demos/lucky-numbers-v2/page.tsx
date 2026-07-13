@@ -1,5 +1,6 @@
 'use client';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const IMG = `${BASE}/img/lucky-numbers-v2`;
@@ -44,14 +45,18 @@ function computeMultiplier(matchCount: number): number {
   return Math.round((base + jitter) * 10) / 10;
 }
 
-// Vertical reel-spin animation: each column is a strip of [current values, random filler, final values],
-// scrolled upward inside a clipped viewport so it lands exactly on the final grid.
-const LEAD_IN = 15;
-const STRIP_LEN = ROWS + LEAD_IN + ROWS;
-const REEL_TRAVEL = (STRIP_LEN - ROWS) * CELL_H;
-const REEL_BASE_MS = 900;
-const REEL_STAGGER_MS = 180;
-const REEL_EASE = 'cubic-bezier(0.15,0.85,0.3,1)';
+// Pop-reveal: bubbles hold as question marks, then burst open in a diagonal
+// wave to reveal the landed numbers underneath.
+const POP_REVEAL_DELAY = 260;
+const POP_STAGGER = 0.035;
+const POP_SETTLE_MS = 480;
+const POP_MAX_STAGGER_MS = (ROWS - 1 + COLS - 1) * POP_STAGGER * 1000;
+
+function popDelay(i: number) {
+  const row = Math.floor(i / COLS);
+  const col = i % COLS;
+  return (row + col) * POP_STAGGER;
+}
 
 function randDigit() {
   return 1 + Math.floor(Math.random() * 12);
@@ -157,8 +162,7 @@ export default function LuckyNumbersV2Page() {
   const [lightning, setLightning] = useState<string[]>([]);
   const [multiplierTarget, setMultiplierTarget] = useState<number | null>(null);
   const [multiplierDisplay, setMultiplierDisplay] = useState(0);
-  const [reels, setReels] = useState<number[][] | null>(null);
-  const [reelActive, setReelActive] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [balance, setBalance] = useState(INITIAL_BALANCE);
   const [bet, setBet] = useState(INITIAL_BET);
 
@@ -287,6 +291,7 @@ export default function LuckyNumbersV2Page() {
     setMultiplierTarget(null);
     setMultiplierDisplay(0);
     setBalance(b => b - bet);
+    setRevealed(false);
     timeoutIds.current.forEach(clearTimeout);
     rafIds.current.forEach(cancelAnimationFrame);
     timeoutIds.current = [];
@@ -294,28 +299,16 @@ export default function LuckyNumbersV2Page() {
 
     const finalGrid = generateFinalGrid();
 
-    const newReels: number[][] = [];
-    for (let c = 0; c < COLS; c++) {
-      const startVals = Array.from({ length: ROWS }, (_, r) => grid[r * COLS + c]);
-      const filler = Array.from({ length: LEAD_IN }, randDigit);
-      const finalVals = Array.from({ length: ROWS }, (_, r) => finalGrid[r * COLS + c]);
-      newReels.push([...startVals, ...filler, ...finalVals]);
-    }
-
-    setReelActive(false);
-    setReels(newReels);
-
-    const raf1 = requestAnimationFrame(() => {
-      const raf2 = requestAnimationFrame(() => setReelActive(true));
-      rafIds.current.push(raf2);
-    });
-    rafIds.current.push(raf1);
-
-    const totalDuration = REEL_BASE_MS + (COLS - 1) * REEL_STAGGER_MS;
-    const doneId = window.setTimeout(() => {
+    // Hold on the question-mark bubbles for a beat, then pop them open in a
+    // diagonal wave to reveal the landed numbers underneath.
+    const popId = window.setTimeout(() => {
       setGrid(finalGrid);
-      setReels(null);
-      setReelActive(false);
+      setRevealed(true);
+    }, POP_REVEAL_DELAY);
+    timeoutIds.current.push(popId);
+
+    const totalDuration = POP_REVEAL_DELAY + POP_MAX_STAGGER_MS + POP_SETTLE_MS;
+    const doneId = window.setTimeout(() => {
       setSpinning(false);
 
       const counts = new Map<number, number>();
@@ -340,9 +333,9 @@ export default function LuckyNumbersV2Page() {
         }, 350);
         timeoutIds.current.push(multId);
       }
-    }, totalDuration + 60);
+    }, totalDuration);
     timeoutIds.current.push(doneId);
-  }, [spinning, grid, bet, balance]);
+  }, [spinning, bet, balance]);
 
   const winningIndices = useMemo(
     () => (winValue === null ? [] : grid.reduce<number[]>((acc, v, i) => (v === winValue ? [...acc, i] : acc), [])),
@@ -363,15 +356,10 @@ export default function LuckyNumbersV2Page() {
         .ln-cell { position:absolute; display:flex; align-items:center; justify-content:center; }
         .ln-cell img { width:70%; height:82%; object-fit:contain; transition:opacity .25s ease; transform-origin:center; }
         .ln-cell img.ln-dim { opacity:0.25; }
-        @keyframes ln-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.24); } }
+        @keyframes ln-pulse { 0%,100% { scale:1; } 50% { scale:1.24; } }
         @keyframes ln-float-0 { 0%,100% { translate:0 0; } 50% { translate:2px calc(var(--bubble-drift) * -1); } }
         @keyframes ln-float-1 { 0%,100% { translate:0 0; } 50% { translate:-3px calc(var(--bubble-drift) * -1); } }
         @keyframes ln-float-2 { 0%,100% { translate:0 0; } 50% { translate:0 calc(var(--bubble-drift) * -1); } }
-
-        .ln-reel-viewport { position:absolute; overflow:hidden; }
-        .ln-reel-strip { display:flex; flex-direction:column; transition-property:transform; will-change:transform; }
-        .ln-reel-item { display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .ln-reel-item img { width:70%; height:82%; object-fit:contain; }
 
         .ln-lightning-svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; z-index:6; }
         .ln-bolt { fill:none; stroke:#baf3ff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round;
@@ -434,51 +422,43 @@ export default function LuckyNumbersV2Page() {
           <div key={i} className="ln-divider" style={{ left: x, top: GRID_TOP, height: GRID_HEIGHT }} />
         ))}
 
-        {reels ? (
-          reels.map((strip, c) => (
+        {grid.map((val, i) => {
+          const row = Math.floor(i / COLS);
+          const col = i % COLS;
+          const isDim = winValue !== null && val !== winValue;
+          const isWin = winValue !== null && val === winValue;
+          return (
             <div
-              key={c}
-              className="ln-reel-viewport"
-              style={{ left: COL_LEFT[c], top: ROW_TOP[0], width: CELL_W, height: GRID_HEIGHT }}
+              key={i}
+              className="ln-cell"
+              style={{ left: COL_LEFT[col], top: ROW_TOP[row], width: CELL_W, height: CELL_H }}
             >
-              <div
-                className="ln-reel-strip"
-                style={{
-                  transform: `translateY(${reelActive ? -REEL_TRAVEL : 0}px)`,
-                  transitionDuration: reelActive ? `${REEL_BASE_MS + c * REEL_STAGGER_MS}ms` : '0ms',
-                  transitionTimingFunction: REEL_EASE,
-                }}
-              >
-                {strip.map((val, i) => (
-                  <div className="ln-reel-item" key={i} style={{ height: CELL_H }}>
-                    <img src={`${IMG}/num-${val}.png`} alt={String(val)} />
-                  </div>
-                ))}
-              </div>
+              <AnimatePresence initial={false}>
+                {revealed ? (
+                  <motion.img
+                    key="num"
+                    src={`${IMG}/num-${val}.png`}
+                    alt={String(val)}
+                    className={isDim ? 'ln-dim' : ''}
+                    style={bubbleFloatStyle(i, isWin)}
+                    initial={{ scale: 0.15, opacity: 0, rotate: -20 }}
+                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                    transition={{ delay: popDelay(i), type: 'spring', stiffness: 320, damping: 15 }}
+                  />
+                ) : (
+                  <motion.img
+                    key="q"
+                    src={`${IMG}/num-question.png`}
+                    alt="?"
+                    style={bubbleFloatStyle(i, false)}
+                    initial={false}
+                    exit={{ scale: 1.6, opacity: 0, transition: { delay: popDelay(i), duration: 0.28, ease: 'easeOut' } }}
+                  />
+                )}
+              </AnimatePresence>
             </div>
-          ))
-        ) : (
-          grid.map((val, i) => {
-            const row = Math.floor(i / COLS);
-            const col = i % COLS;
-            const isDim = winValue !== null && val !== winValue;
-            const isWin = winValue !== null && val === winValue;
-            return (
-              <div
-                key={i}
-                className="ln-cell"
-                style={{ left: COL_LEFT[col], top: ROW_TOP[row], width: CELL_W, height: CELL_H }}
-              >
-                <img
-                  src={`${IMG}/num-${val}.png`}
-                  alt={String(val)}
-                  className={isDim ? 'ln-dim' : ''}
-                  style={bubbleFloatStyle(i, isWin)}
-                />
-              </div>
-            );
-          })
-        )}
+          );
+        })}
 
         {lightning.length > 0 && winningIndices.length > 1 && (
           <svg className="ln-lightning-svg" width={DESIGN_W} height={DESIGN_H}>
