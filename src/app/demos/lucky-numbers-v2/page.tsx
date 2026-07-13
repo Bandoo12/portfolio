@@ -353,9 +353,10 @@ export default function LuckyNumbersV2Page() {
         .ln-divider { position:absolute; width:2px; background:rgba(255,255,255,0.24); }
         .ln-character { position:absolute; left:723px; top:120px; width:853px; height:687px; object-fit:contain; pointer-events:none; }
 
-        .ln-cell { position:absolute; display:flex; align-items:center; justify-content:center; }
+        .ln-cell { position:absolute; display:grid; place-items:center; }
+        .ln-cell img { grid-area:1 / 1; }
         .ln-cell img { width:70%; height:82%; object-fit:contain; transition:opacity .25s ease; transform-origin:center; }
-        .ln-cell img.ln-dim { opacity:0.25; }
+        .ln-cell img.ln-dim { opacity:0.1; }
         @keyframes ln-pulse { 0%,100% { scale:1; } 50% { scale:1.24; } }
         @keyframes ln-float-0 { 0%,100% { translate:0 0; } 50% { translate:2px calc(var(--bubble-drift) * -1); } }
         @keyframes ln-float-1 { 0%,100% { translate:0 0; } 50% { translate:-3px calc(var(--bubble-drift) * -1); } }
