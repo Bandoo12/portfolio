@@ -358,7 +358,7 @@ export default function LuckyNumbersV2Page() {
         .ln-plate { position:absolute; background:rgba(217,242,244,0.546); }
         .ln-reel-frame { position:absolute; left:211px; top:-18px; width:1025px; height:826px; pointer-events:none; }
         .ln-divider { position:absolute; width:2px; background:rgba(255,255,255,0.24); }
-        .ln-character { position:absolute; left:783px; top:120px; width:853px; height:687px; object-fit:contain; pointer-events:none; }
+        .ln-character { position:absolute; left:723px; top:120px; width:853px; height:687px; object-fit:contain; pointer-events:none; }
 
         .ln-cell { position:absolute; display:flex; align-items:center; justify-content:center; }
         .ln-cell img { width:70%; height:82%; object-fit:contain; transition:opacity .25s ease; transform-origin:center; }
@@ -499,7 +499,7 @@ export default function LuckyNumbersV2Page() {
           loop
           muted
           playsInline
-          style={{ position: 'absolute', left: 783, top: 120, width: 853, height: 687, opacity: 0, pointerEvents: 'none' }}
+          style={{ position: 'absolute', left: 723, top: 120, width: 853, height: 687, opacity: 0, pointerEvents: 'none' }}
         />
         <canvas ref={characterCanvasRef} className="ln-character" />
 
