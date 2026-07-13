@@ -52,6 +52,11 @@ const POP_STAGGER = 0.035;
 const POP_SETTLE_MS = 480;
 const POP_MAX_STAGGER_MS = (ROWS - 1 + COLS - 1) * POP_STAGGER * 1000;
 
+// Swap: when numbers are already showing, they slide out left while fresh
+// question marks slide in from the right — softens the old instant-cut reset.
+const SWAP_ANIM_MS = 340;
+const SWAP_TOTAL_MS = POP_MAX_STAGGER_MS + SWAP_ANIM_MS;
+
 function popDelay(i: number) {
   const row = Math.floor(i / COLS);
   const col = i % COLS;
@@ -285,6 +290,7 @@ export default function LuckyNumbersV2Page() {
 
   const spin = useCallback(() => {
     if (spinning || balance < bet) return;
+    const wasRevealed = revealed;
     setSpinning(true);
     setWinValue(null);
     setLightning([]);
@@ -299,15 +305,20 @@ export default function LuckyNumbersV2Page() {
 
     const finalGrid = generateFinalGrid();
 
+    // If numbers were already showing, let them swap out to question marks
+    // (numbers slide left, questions slide in from the right) before holding
+    // and popping — otherwise that reset would cut instantly.
+    const swapSpan = wasRevealed ? SWAP_TOTAL_MS : 0;
+
     // Hold on the question-mark bubbles for a beat, then pop them open in a
     // diagonal wave to reveal the landed numbers underneath.
     const popId = window.setTimeout(() => {
       setGrid(finalGrid);
       setRevealed(true);
-    }, POP_REVEAL_DELAY);
+    }, swapSpan + POP_REVEAL_DELAY);
     timeoutIds.current.push(popId);
 
-    const totalDuration = POP_REVEAL_DELAY + POP_MAX_STAGGER_MS + POP_SETTLE_MS;
+    const totalDuration = swapSpan + POP_REVEAL_DELAY + POP_MAX_STAGGER_MS + POP_SETTLE_MS;
     const doneId = window.setTimeout(() => {
       setSpinning(false);
 
@@ -335,7 +346,7 @@ export default function LuckyNumbersV2Page() {
       }
     }, totalDuration);
     timeoutIds.current.push(doneId);
-  }, [spinning, bet, balance]);
+  }, [spinning, bet, balance, revealed]);
 
   const winningIndices = useMemo(
     () => (winValue === null ? [] : grid.reduce<number[]>((acc, v, i) => (v === winValue ? [...acc, i] : acc), [])),
@@ -363,9 +374,12 @@ export default function LuckyNumbersV2Page() {
         @keyframes ln-float-2 { 0%,100% { translate:0 0; } 50% { translate:0 calc(var(--bubble-drift) * -1); } }
 
         .ln-lightning-svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; z-index:6; }
-        .ln-bolt { fill:none; stroke:#baf3ff; stroke-width:3; stroke-linecap:round; stroke-linejoin:round;
-          filter:drop-shadow(0 0 6px #7ff0ff) drop-shadow(0 0 16px #4fd8ff); animation:ln-flicker 0.45s steps(3) infinite; }
-        @keyframes ln-flicker { 0% { opacity:1; } 30% { opacity:0.4; } 55% { opacity:1; } 80% { opacity:0.55; } 100% { opacity:1; } }
+        .ln-bolt-glow { fill:none; stroke:#5fe4ff; stroke-width:11; stroke-linecap:round; stroke-linejoin:round;
+          opacity:0.65; filter:blur(5px); animation:ln-flicker 0.4s steps(2) infinite; }
+        .ln-bolt-core { fill:none; stroke:#ffffff; stroke-width:3.2; stroke-linecap:round; stroke-linejoin:round;
+          filter:drop-shadow(0 0 6px #eafcff) drop-shadow(0 0 16px #6fe8ff) drop-shadow(0 0 30px #35c8ff);
+          animation:ln-flicker 0.4s steps(2) infinite; }
+        @keyframes ln-flicker { 0% { opacity:1; } 30% { opacity:0.55; } 55% { opacity:1; } 80% { opacity:0.7; } 100% { opacity:1; } }
 
         .ln-multiplier { position:absolute; left:${COL_LEFT[0] + (COLS * CELL_W) / 2}px; top:${GRID_TOP + GRID_HEIGHT / 2}px;
           transform:translate(-50%,-50%); z-index:7; pointer-events:none;
@@ -443,7 +457,8 @@ export default function LuckyNumbersV2Page() {
                     className={isDim ? 'ln-dim' : ''}
                     style={bubbleFloatStyle(i, isWin)}
                     initial={{ scale: 0.15, opacity: 0, rotate: -20 }}
-                    animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                    animate={{ scale: 1, opacity: 1, rotate: 0, x: 0 }}
+                    exit={{ x: -60, opacity: 0, transition: { delay: popDelay(i), duration: SWAP_ANIM_MS / 1000, ease: 'easeIn' } }}
                     transition={{ delay: popDelay(i), type: 'spring', stiffness: 320, damping: 15 }}
                   />
                 ) : (
@@ -452,7 +467,8 @@ export default function LuckyNumbersV2Page() {
                     src={`${IMG}/num-question.png`}
                     alt="?"
                     style={bubbleFloatStyle(i, false)}
-                    initial={false}
+                    initial={{ x: 60, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1, transition: { delay: popDelay(i), duration: SWAP_ANIM_MS / 1000, ease: 'easeOut' } }}
                     exit={{ scale: 1.6, opacity: 0, transition: { delay: popDelay(i), duration: 0.28, ease: 'easeOut' } }}
                   />
                 )}
@@ -464,7 +480,10 @@ export default function LuckyNumbersV2Page() {
         {lightning.length > 0 && winningIndices.length > 1 && (
           <svg className="ln-lightning-svg" width={DESIGN_W} height={DESIGN_H}>
             {lightning.map((d, i) => (
-              <path key={i} d={d} className="ln-bolt" style={{ animationDelay: `${i * 0.06}s` }} />
+              <path key={`glow-${i}`} d={d} className="ln-bolt-glow" style={{ animationDelay: `${i * 0.06}s` }} />
+            ))}
+            {lightning.map((d, i) => (
+              <path key={`core-${i}`} d={d} className="ln-bolt-core" style={{ animationDelay: `${i * 0.06}s` }} />
             ))}
           </svg>
         )}
