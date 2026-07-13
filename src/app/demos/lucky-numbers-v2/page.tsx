@@ -131,6 +131,24 @@ function buildLightning(winningIndices: number[]) {
   return paths;
 }
 
+// Deterministic per-cell pseudo-random, so each bubble gets its own drift
+// timing without re-rolling (and desyncing) on every render.
+function seededRand(seed: number) {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function bubbleFloatStyle(i: number, isWin: boolean): React.CSSProperties {
+  const duration = (3.2 + seededRand(i * 2 + 1) * 2.4).toFixed(2);
+  const delay = (-seededRand(i * 2 + 2) * 5).toFixed(2);
+  const drift = (5 + seededRand(i * 2 + 3) * 6).toFixed(2);
+  const floatAnim = `ln-float-${i % 3} ${duration}s ease-in-out ${delay}s infinite`;
+  return {
+    animation: isWin ? `${floatAnim}, ln-pulse 0.85s ease-in-out infinite` : floatAnim,
+    '--bubble-drift': `${drift}px`,
+  } as React.CSSProperties;
+}
+
 export default function LuckyNumbersV2Page() {
   const [scale, setScale] = useState(1);
   const [grid, setGrid] = useState<number[]>(INITIAL_GRID);
@@ -265,8 +283,10 @@ export default function LuckyNumbersV2Page() {
         .ln-cell { position:absolute; display:flex; align-items:center; justify-content:center; }
         .ln-cell img { width:70%; height:82%; object-fit:contain; transition:opacity .25s ease; transform-origin:center; }
         .ln-cell img.ln-dim { opacity:0.25; }
-        .ln-cell img.ln-win { animation:ln-pulse 0.85s ease-in-out infinite; }
         @keyframes ln-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.24); } }
+        @keyframes ln-float-0 { 0%,100% { translate:0 0; } 50% { translate:2px calc(var(--bubble-drift) * -1); } }
+        @keyframes ln-float-1 { 0%,100% { translate:0 0; } 50% { translate:-3px calc(var(--bubble-drift) * -1); } }
+        @keyframes ln-float-2 { 0%,100% { translate:0 0; } 50% { translate:0 calc(var(--bubble-drift) * -1); } }
 
         .ln-reel-viewport { position:absolute; overflow:hidden; }
         .ln-reel-strip { display:flex; flex-direction:column; transition-property:transform; will-change:transform; }
@@ -372,7 +392,8 @@ export default function LuckyNumbersV2Page() {
                 <img
                   src={`${IMG}/num-${val}.png`}
                   alt={String(val)}
-                  className={isDim ? 'ln-dim' : isWin ? 'ln-win' : ''}
+                  className={isDim ? 'ln-dim' : ''}
+                  style={bubbleFloatStyle(i, isWin)}
                 />
               </div>
             );
