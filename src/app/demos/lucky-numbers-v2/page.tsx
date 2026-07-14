@@ -455,7 +455,7 @@ export default function LuckyNumbersV2Page() {
                     alt={String(val)}
                     style={bubbleFloatStyle(i, isWin)}
                     initial={{ scale: 0.15, opacity: 0, rotate: -20 }}
-                    animate={{ scale: 1, opacity: isDim ? 0.3 : 1, rotate: 0, x: 0 }}
+                    animate={{ scale: 1, opacity: isDim ? 0.3 : 1, filter: isDim ? 'blur(2px)' : 'blur(0px)', rotate: 0, x: 0 }}
                     exit={{ x: -60, opacity: 0, transition: { delay: popDelay(i), duration: SWAP_ANIM_MS / 1000, ease: 'easeIn' } }}
                     transition={{ delay: popDelay(i), type: 'spring', stiffness: 320, damping: 15 }}
                   />
