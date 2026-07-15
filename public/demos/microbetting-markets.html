@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Лига Ставок · Market Opens · Demo</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: #1a1a2e;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-items: center;
+  justify-items: center;
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  padding: 24px 40px;
+  gap: 18px;
+}
+
+.caption-header {
+  color: rgba(255,255,255,0.28);
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  text-align: center; line-height: 2;
+}
+.caption-title {
+  color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.01em; margin-top: 2px;
+}
+
+.main-row { display: flex; gap: 24px; align-items: center; height: 100%; min-height: 0; }
+
+.phone-col { display: flex; flex-direction: column; align-items: center; gap: 12px; height: 100%; }
+
+.caption {
+  color: rgba(255,255,255,0.35); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase; text-align: center; flex-shrink: 0;
+}
+
+/* ── Center legend ── */
+.center-col {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 10px; flex-shrink: 0; width: 140px;
+}
+.ctrl-label {
+  color: rgba(255,255,255,0.28); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase; text-align: center; margin-bottom: 2px;
+}
+.ctrl-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.07); margin: 4px 0; }
+.legend-col { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.legend-item { display: flex; align-items: flex-start; gap: 7px; }
+.legend-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+.legend-text { color: rgba(255,255,255,0.28); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4; }
+
+/* ════ iPhone ════ */
+.iphone {
+  width: 300px; flex: 1; min-height: 0; max-height: 600px;
+  border-radius: 46px; border: 8px solid #2a2a30;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 0 1px rgba(0,0,0,0.5), 0 40px 80px rgba(0,0,0,0.85);
+  background: #000; position: relative; overflow: hidden; display: flex; flex-direction: column;
+}
+.island {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  width: 88px; height: 22px; background: #000; border-radius: 14px; z-index: 30;
+}
+.screen {
+  flex: 1; background: #10121a; display: flex; flex-direction: column;
+  overflow: hidden; padding-top: 40px;
+}
+
+/* Status bar */
+.statusbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 16px 4px; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0;
+}
+.sb-right { display: flex; gap: 4px; align-items: center; font-size: 10px; }
+
+/* Navbar */
+.navbar {
+  position: relative; display: flex; align-items: center;
+  justify-content: space-between; padding: 3px 10px 5px;
+  background: #10121a; flex-shrink: 0;
+}
+.nav-back    { color: #fff; font-size: 20px; line-height: 1; }
+.nav-balance { position: absolute; left: 50%; transform: translateX(-50%); color: #fff; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.nav-balance .plus { color: #4ade80; font-size: 14px; font-weight: 700; }
+.nav-icon-btn { color: rgba(255,255,255,0.6); font-size: 14px; z-index: 1; }
+
+/* Match header (score bar, always pinned) */
+.match-header {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 12px 7px; background: #1e2030; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.mh-team { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 4px; }
+.mh-score { font-size: 16px; font-weight: 900; color: #fff; letter-spacing: 0.06em; }
+.mh-period{ font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Section label */
+.section-label {
+  padding: 8px 10px 4px; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  flex-shrink: 0;
+}
+.section-label.active { color: #4ade80; }
+.section-label.closed { color: rgba(255,255,255,0.22); }
+
+/* ── Scrollable market list ── */
+.market-list {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+  gap: 0; padding: 0 8px 10px; scrollbar-width: none;
+}
+.market-list::-webkit-scrollbar { display: none; }
+
+/* ══════════════════════════════
+   BEFORE phone cards
+══════════════════════════════ */
+.b-card {
+  border-radius: 11px; background: #1e2235;
+  overflow: hidden; flex-shrink: 0;
+  margin-bottom: 6px;
+  /* only transition: opacity for "appearing" */
+  transition: opacity 0.18s ease;
+}
+.b-card.b-new { opacity: 0; }       /* flashes in */
+.b-card.b-active { opacity: 1; }
+.b-card.b-warning { opacity: 1; }   /* looks same as active — no warning */
+.b-card.b-closed {
+  opacity: 0.55;                     /* dimmed but same size — bad UX */
+}
+
+.b-card-head { padding: 8px 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.b-card-q   { color: #fff; font-size: 10.5px; font-weight: 700; line-height: 1.3; flex: 1; }
+.b-badge-closed { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.4); font-size: 8px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: 8px; white-space: nowrap; flex-shrink: 0; }
+.b-badge-new { background: rgba(34,197,94,0.12); color: rgba(34,197,94,0.7); font-size: 8px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: 8px; white-space: nowrap; flex-shrink: 0; }
+
+.yn-row { display: flex; gap: 6px; padding: 6px 8px 8px; }
+.yn-btn { flex: 1; background: rgba(255,255,255,0.07); border: 2px solid transparent; border-radius: 9px; padding: 7px 8px; display: flex; align-items: center; justify-content: space-between; }
+.yn-label { color: rgba(255,255,255,0.6); font-size: 10px; font-weight: 600; }
+.yn-odds  { color: #fff; font-size: 14px; font-weight: 800; }
+
+/* ══════════════════════════════
+   AFTER phone cards
+══════════════════════════════ */
+.a-card {
+  border-radius: 11px; background: #1e2235;
+  border: 1.5px solid transparent;
+  overflow: hidden; flex-shrink: 0;
+  margin-bottom: 6px;
+  opacity: 1;
+  /* base transitions — border fades smoothly between states */
+  transition: border-color 0.7s ease, opacity 0.55s ease,
+              background 0.6s ease, margin-bottom 0.5s ease;
+}
+
+/* Card body — collapses via max-height, no display:none jump */
+.a-card-body {
+  overflow: hidden;
+  max-height: 80px;
+  transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* NEW: smooth slide from above */
+@keyframes a-slide-in {
+  0%   { transform: translateY(-28px) scale(0.98); opacity: 0; }
+  70%  { transform: translateY(2px)   scale(1);    opacity: 1; }
+  100% { transform: translateY(0)     scale(1);    opacity: 1; }
+}
+/* NEW: single calm glow pulse */
+@keyframes a-glow {
+  0%   { box-shadow: 0 0 0 0    rgba(34,197,94,0.65); }
+  55%  { box-shadow: 0 0 0 12px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0    rgba(34,197,94,0); }
+}
+/* CLOSING: slow amber pulse */
+@keyframes a-warn {
+  0%,100% { border-color: rgba(251,146,60,0.3);  background: #1e2235; }
+  50%     { border-color: rgba(251,146,60,0.85); background: rgba(251,146,60,0.05); }
+}
+
+.a-card.a-new {
+  animation: a-slide-in 0.62s cubic-bezier(0.22,1,0.36,1) both,
+             a-glow 2s ease 0.25s forwards;
+  border-color: rgba(34,197,94,0.5);
+}
+.a-card.a-active {
+  /* border-color fades to transparent via base transition */
+  border-color: transparent;
+}
+.a-card.a-warning {
+  animation: a-warn 1.1s ease-in-out infinite;
+}
+.a-card.a-closed {
+  opacity: 0.2;
+  border-color: transparent;
+  margin-bottom: 3px;
+}
+/* body collapses smoothly — no JS needed */
+.a-card.a-closed .a-card-body {
+  max-height: 0;
+}
+
+.a-card-head { padding: 8px 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: space-between; gap: 6px; min-height: 34px; }
+.a-card-q   { color: #fff; font-size: 10.5px; font-weight: 700; line-height: 1.3; flex: 1; }
+
+.a-badge { font-size: 8px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; padding: 2px 6px; border-radius: 8px; white-space: nowrap; flex-shrink: 0; }
+.a-badge.new     { background: rgba(34,197,94,0.18); color: #4ade80; }
+.a-badge.warning { background: rgba(251,146,60,0.18); color: #fb923c; }
+.a-badge.closed  { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.3); }
+
+.a-card-body { padding: 0; }
+</style>
+</head>
+<body>
+
+<div class="caption-header">
+  UX-аудит · Лига Ставок
+  <div class="caption-title">Список рынков — Market Opens</div>
+</div>
+
+<div class="main-row">
+
+  <!-- ══ Phone BEFORE ══ -->
+  <div class="phone-col">
+    <div class="caption">Сейчас</div>
+    <div class="iphone">
+      <div class="island"></div>
+      <div class="screen">
+        <div class="statusbar"><span>18:00</span><div class="sb-right"><span>●●●</span><span>▮</span></div></div>
+        <div class="navbar">
+          <span class="nav-back">←</span>
+          <div class="nav-balance">52 914 ₽ <span class="plus">+</span></div>
+          <span class="nav-icon-btn">🔔</span>
+        </div>
+        <div class="match-header">
+          <div class="mh-team">🇺🇸 США</div>
+          <div style="text-align:center">
+            <div class="mh-score">2 : 0</div>
+            <div class="mh-period">Перерыв · 40:00</div>
+          </div>
+          <div class="mh-team">Венгрия 🇭🇺</div>
+        </div>
+        <div class="market-list" id="b_list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Center ══ -->
+  <div class="center-col">
+    <div class="ctrl-label">Авто-цикл</div>
+    <div class="ctrl-divider"></div>
+    <div class="legend-col">
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div><span class="legend-text">Новый рынок со slide + glow</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fb923c"></div><span class="legend-text">Закрывается — предупреждение</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.18)"></div><span class="legend-text">Закрытый — сворачивается</span></div>
+    </div>
+    <div class="ctrl-divider"></div>
+    <p class="ctrl-label" style="text-align:left;color:rgba(255,255,255,0.18);margin-bottom:4px">Концепция</p>
+    <p style="color:rgba(255,255,255,0.35);font-size:10px;line-height:1.6;text-align:left">Новые рынки появляются с анимацией, закрывающиеся — сворачиваются, а не исчезают. Иерархия активных и закрытых рынков всегда очевидна без перезагрузки списка.</p>
+  </div>
+
+  <!-- ══ Phone AFTER ══ -->
+  <div class="phone-col">
+    <div class="caption">Решение</div>
+    <div class="iphone">
+      <div class="island"></div>
+      <div class="screen">
+        <div class="statusbar"><span>18:00</span><div class="sb-right"><span>●●●</span><span>▮</span></div></div>
+        <div class="navbar">
+          <span class="nav-back">←</span>
+          <div class="nav-balance">52 914 ₽ <span class="plus">+</span></div>
+          <span class="nav-icon-btn">🔔</span>
+        </div>
+        <div class="match-header">
+          <div class="mh-team">🇺🇸 США</div>
+          <div style="text-align:center">
+            <div class="mh-score">2 : 0</div>
+            <div class="mh-period">Перерыв · 40:00</div>
+          </div>
+          <div class="mh-team">Венгрия 🇭🇺</div>
+        </div>
+        <div class="market-list" id="a_list"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const MARKETS = [
+  { q: 'Вбрасывание в следующие 20 сек?',   da: '3.64', net: '1.23' },
+  { q: 'Удар по воротам в 30 сек?',          da: '2.15', net: '1.72' },
+  { q: 'Угловой удар в следующую минуту?',   da: '1.88', net: '1.95' },
+  { q: 'Гол в следующие 3 мин?',             da: '4.20', net: '1.25' },
+  { q: 'США забьёт следующий?',              da: '1.45', net: '2.80' },
+  { q: 'Штрафной в ближайшие 2 мин?',       da: '2.55', net: '1.52' },
+  { q: 'Замена в следующие 5 мин?',          da: '1.65', net: '2.20' },
+  { q: 'Атака в правую зону в 30 сек?',      da: '3.10', net: '1.35' },
+  { q: 'Нарушение в следующие 20 сек?',      da: '2.80', net: '1.44' },
+  { q: 'Офсайд в следующую минуту?',         da: '4.50', net: '1.22' },
+];
+
+let mIdx = 0;      // which market comes next
+const MAX_CLOSED_B = 3;  // before: keep max 3 closed (full height, dimmed)
+const MAX_CLOSED_A = 2;  // after: keep max 2 closed (collapsed)
+
+/* ── Build card HTML ── */
+function cardBody(m) {
+  return `
+    <div class="yn-row">
+      <div class="yn-btn"><span class="yn-label">Да</span><span class="yn-odds">${m.da}</span></div>
+      <div class="yn-btn"><span class="yn-label">Нет</span><span class="yn-odds">${m.net}</span></div>
+    </div>`;
+}
+
+/* ── BEFORE phone helpers ── */
+function addBeforeCard(m) {
+  const list = document.getElementById('b_list');
+  const card = document.createElement('div');
+  card.className = 'b-card b-new';
+  card.dataset.state = 'new';
+  card.innerHTML = `
+    <div class="b-card-head">
+      <div class="b-card-q">${m.q}</div>
+      <div class="b-badge-new">Новый</div>
+    </div>${cardBody(m)}`;
+  list.insertBefore(card, list.firstChild);
+  // fade-in only
+  requestAnimationFrame(() => {
+    card.classList.replace('b-new', 'b-active');
+    card.dataset.state = 'active';
+    // remove NEW badge after 400ms
+    setTimeout(() => {
+      const badge = card.querySelector('.b-badge-new');
+      if (badge) badge.remove();
+    }, 600);
+  });
+}
+
+function closeOldestBefore() {
+  const list = document.getElementById('b_list');
+  const actives = [...list.querySelectorAll('[data-state="active"]')];
+  if (actives.length === 0) return;
+  const oldest = actives[actives.length - 1];
+  oldest.dataset.state = 'closed';
+  oldest.classList.add('b-closed');
+  const badge = oldest.querySelector('.b-badge-new, .b-badge-closed');
+  if (badge) badge.remove();
+  const head = oldest.querySelector('.b-card-head');
+  if (head) {
+    const b = document.createElement('div');
+    b.className = 'b-badge-closed';
+    b.textContent = 'Закрыт';
+    head.appendChild(b);
+  }
+  // Trim excess closed
+  const closed = [...list.querySelectorAll('[data-state="closed"]')];
+  if (closed.length > MAX_CLOSED_B) {
+    closed[closed.length - 1].remove();
+  }
+}
+
+/* ── AFTER phone helpers ── */
+function addAfterCard(m) {
+  const list = document.getElementById('a_list');
+  const card = document.createElement('div');
+  card.className = 'a-card a-new';
+  card.dataset.state = 'new';
+  card.innerHTML = `
+    <div class="a-card-head">
+      <div class="a-card-q">${m.q}</div>
+      <span class="a-badge new">🆕 Новый</span>
+    </div>
+    <div class="a-card-body">${cardBody(m)}</div>`;
+  list.insertBefore(card, list.firstChild);
+  // transition to active after glow
+  setTimeout(() => {
+    if (card.dataset.state === 'new') {
+      card.classList.replace('a-new', 'a-active');
+      card.dataset.state = 'active';
+      const badge = card.querySelector('.a-badge.new');
+      if (badge) badge.remove();
+    }
+  }, 1600);
+}
+
+function warnOldestAfter() {
+  const list = document.getElementById('a_list');
+  const actives = [...list.querySelectorAll('[data-state="active"]')];
+  if (actives.length === 0) return null;
+  const oldest = actives[actives.length - 1];
+  oldest.dataset.state = 'warning';
+  oldest.classList.replace('a-active', 'a-warning');
+  // update badge
+  const head = oldest.querySelector('.a-card-head');
+  if (head) {
+    const b = document.createElement('span');
+    b.className = 'a-badge warning';
+    b.textContent = '⏱ Закрывается';
+    head.appendChild(b);
+  }
+  return oldest;
+}
+
+function closeAfterCard(card) {
+  if (!card) return;
+  card.dataset.state = 'closed';
+  card.classList.replace('a-warning', 'a-closed');
+  const badge = card.querySelector('.a-badge');
+  if (badge) { badge.className = 'a-badge closed'; badge.textContent = '🔒 Закрыт'; }
+  // body collapses via CSS (.a-card.a-closed .a-card-body { max-height: 0 }) — no JS needed
+
+  const list = document.getElementById('a_list');
+  // Trim excess closed after collapse finishes
+  setTimeout(() => {
+    const closed = [...list.querySelectorAll('[data-state="closed"]')];
+    if (closed.length > MAX_CLOSED_A) {
+      const toRemove = closed[closed.length - 1];
+      toRemove.style.transition = 'opacity 0.4s ease, margin-bottom 0.4s ease, max-height 0.4s ease';
+      toRemove.style.opacity = '0';
+      toRemove.style.maxHeight = '0';
+      toRemove.style.marginBottom = '0';
+      setTimeout(() => toRemove.remove(), 450);
+    }
+  }, 600);
+}
+
+/* ── Populate initial state (2 active markets each) ── */
+function init() {
+  // Before: 2 active cards (oldest first, so visually newest on top)
+  const bList = document.getElementById('b_list');
+  for (let i = 1; i >= 0; i--) {
+    const m = MARKETS[mIdx++];
+    const card = document.createElement('div');
+    card.className = 'b-card b-active';
+    card.dataset.state = 'active';
+    card.innerHTML = `
+      <div class="b-card-head"><div class="b-card-q">${m.q}</div></div>${cardBody(m)}`;
+    bList.appendChild(card);
+  }
+  // After: 2 active cards
+  const aList = document.getElementById('a_list');
+  for (let i = 1; i >= 0; i--) {
+    const m = MARKETS[mIdx - 2 + i]; // same markets
+    const card = document.createElement('div');
+    card.className = 'a-card a-active';
+    card.dataset.state = 'active';
+    card.innerHTML = `
+      <div class="a-card-head"><div class="a-card-q">${m.q}</div></div>
+      <div class="a-card-body">${cardBody(m)}</div>`;
+    aList.appendChild(card);
+  }
+}
+
+/* ── Main cycle ── */
+function cycle() {
+  const m = MARKETS[mIdx % MARKETS.length];
+  mIdx++;
+
+  // Both phones get the same new market
+  addBeforeCard(m);
+  addAfterCard(m);
+
+  // After phone: warn oldest active, then close it
+  const warned = warnOldestAfter();
+  setTimeout(() => { closeAfterCard(warned); }, 1400);
+
+  // Before phone: just close oldest (no warning — bad UX)
+  setTimeout(() => { closeOldestBefore(); }, 1400);
+}
+
+init();
+// First cycle after 2.8s, then every 4.5s
+setTimeout(() => {
+  cycle();
+  setInterval(cycle, 4500);
+}, 2800);
+</script>
+</body>
+</html>

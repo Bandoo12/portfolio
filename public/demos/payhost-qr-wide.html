@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payhost · QR Payment</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background: #f2f2f2;
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  background: #fff;
+  border-bottom: 1px solid #ebebeb;
+}
+.header-back { display: flex; align-items: center; gap: 10px; color: #141414; text-decoration: none; cursor: pointer; }
+.header-back svg { color: #525252; }
+.logo-name { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; color: #141414; }
+.state-tab {
+  font-size: 12px; padding: 5px 12px; border-radius: 20px;
+  border: 1px solid #e0e0e0; background: transparent; color: #888;
+  cursor: pointer; font-family: inherit; font-weight: 500;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.state-tab:hover { background: #f5f5f5; color: #333; }
+.state-tab.active { background: #141414; color: #fff; border-color: #141414; }
+.lang-btn {
+  display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+  border: none; border-radius: 12px; background: #efefef;
+  font-size: 14px; font-weight: 500; color: #141414; cursor: pointer; font-family: inherit;
+}
+
+/* ── Main ── */
+.main { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 24px 24px 64px; }
+
+.card {
+  background: #fff; border-radius: 28px; padding: 28px;
+  width: 100%; max-width: 620px; position: relative;
+}
+
+/* ── Pills ── */
+.pills-row { display: flex; gap: 8px; margin-bottom: 20px; }
+.pill { flex: 1; display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 12px; gap: 8px; }
+.pill-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.pill-icon { width: 32px; height: 32px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.pill-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.pill-name { font-size: 14px; font-weight: 600; color: #141414; white-space: nowrap; }
+.pill-sub  { font-size: 12px; font-weight: 400; color: #808080; white-space: nowrap; }
+.pill-action { font-size: 14px; font-weight: 500; color: #141414; cursor: pointer; flex-shrink: 0; }
+.provider-pill { background: #f4f4f4; }
+.timer-pill { transition: background 0.4s; }
+.timer-pill.green  { background: #bfffda; }
+.timer-pill.yellow { background: #fef9c3; }
+.timer-pill.red    { background: #fee2e2; }
+.timer-pill.green  .pill-icon svg { color: #141414; }
+.timer-pill.yellow .pill-icon svg { color: #854d0e; }
+.timer-pill.red    .pill-icon svg { color: #dc2626; }
+
+/* ── Title ── */
+.card-title { font-size: 24px; font-weight: 600; color: #141414; letter-spacing: -0.4px; margin-bottom: 6px; }
+.card-sub { font-size: 14px; color: #525252; line-height: 1.5; margin-bottom: 20px; }
+
+/* ── Two-column layout ── */
+.two-col {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: stretch;
+}
+
+/* ── QR column ── */
+.qr-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #f7f7f7;
+  border-radius: 16px;
+  padding: 16px;
+}
+.qr-wrap {
+  width: 152px; height: 152px;
+  background: #fff; border-radius: 10px; padding: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.qr-wrap svg { width: 100%; height: 100%; }
+.qr-amount { font-size: 16px; font-weight: 700; color: #141414; letter-spacing: -0.3px; }
+.qr-hint { font-size: 11px; color: #bbb; text-align: center; line-height: 1.4; }
+
+/* ── Requisites column ── */
+.req-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #f5f5f5;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.req-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 14px; gap: 10px;
+  flex: 1;
+}
+.req-row + .req-row { border-top: 1px solid #ebebeb; }
+.req-left { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.req-label { font-size: 11px; font-weight: 500; color: #9299a8; text-transform: uppercase; letter-spacing: 0.06em; }
+.req-value { font-size: 14px; font-weight: 600; color: #141415; }
+.copy-btn {
+  flex-shrink: 0; width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  background: #e3e3e3; border: none; border-radius: 10px;
+  cursor: pointer; color: #6e6e6e; transition: background 0.15s, color 0.15s;
+}
+.copy-btn:hover { background: #d5d5d5; }
+.copy-btn.copied { background: #dcfce7; color: #16a34a; }
+
+/* ── Flow steps ── */
+.flow-steps {
+  font-size: 12px; color: #b0b0b0;
+  text-align: center; line-height: 1.6; padding: 0 0 12px;
+}
+
+/* ── Warning ── */
+.warning-block {
+  display: flex; gap: 12px; padding: 13px 14px;
+  background: #fff0bf; border-radius: 16px; margin-bottom: 12px;
+}
+.warning-icon-wrap {
+  width: 34px; height: 34px; background: #fff;
+  border-radius: 10px; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0;
+}
+.warning-text { font-size: 13px; color: #525252; line-height: 1.5; }
+
+/* ── How to pay ── */
+.how-row { display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+.how-link { font-size: 14px; font-weight: 500; color: #919191; cursor: pointer; transition: color 0.15s; }
+.how-link:hover { color: #333; }
+
+/* ── CTA ── */
+.cta-btn {
+  width: 100%; height: 52px; background: #141414; color: #fff;
+  border: none; border-radius: 12px; font-size: 14px; font-weight: 600;
+  font-family: inherit; cursor: pointer; margin-bottom: 20px;
+  transition: background 0.15s, opacity 0.15s;
+}
+.cta-btn:hover { background: #333; }
+.cta-btn.disabled { background: #ccc; cursor: not-allowed; }
+
+/* ── Swipe button ── */
+.swipe-btn {
+  position: relative;
+  height: 56px;
+  background: #f0f0f0;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.swipe-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 56px;
+  background: #141414;
+  border-radius: 14px;
+  pointer-events: none;
+}
+.swipe-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #aaa;
+  pointer-events: none;
+  letter-spacing: -0.1px;
+}
+.swipe-handle {
+  position: absolute;
+  left: 4px; top: 4px; bottom: 4px;
+  width: 48px;
+  background: #141414;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  color: #fff;
+  z-index: 2;
+  flex-shrink: 0;
+}
+.swipe-handle:active { cursor: grabbing; }
+.swipe-btn.disabled { opacity: 0.4; pointer-events: none; }
+
+/* ── Footer ── */
+.card-footer { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-top: 4px; }
+.powered { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: #808080; }
+.powered-logo { font-weight: 700; color: #525252; }
+.badges { display: flex; align-items: center; gap: 16px; }
+
+/* ── Alt states ── */
+.alt-state { display: none; flex-direction: column; align-items: center; text-align: center; padding: 12px 8px 4px; }
+.alt-state.show { display: flex; }
+.payment-state.hide { display: none; }
+
+.state-icon-wrap { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+.state-icon-wrap.green { background: #dcfce7; }
+.state-icon-wrap.red   { background: transparent; }
+.state-title { font-size: 24px; font-weight: 600; color: #141414; margin-bottom: 6px; letter-spacing: -0.4px; }
+.state-desc { font-size: 14px; color: #525252; line-height: 1.55; margin-bottom: 20px; max-width: 340px; }
+.state-rows { width: 100%; background: #f5f5f5; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+.state-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; font-size: 14px; }
+.state-row + .state-row { border-top: 1px solid #ebebeb; }
+.state-row-label { font-weight: 400; color: #9299a8; }
+.state-row-value { font-weight: 600; color: #141415; text-align: right; }
+.state-row-value.amber { color: #b38800; }
+.state-btn-primary { width: 100%; height: 52px; background: #141414; color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+.state-btn-primary:hover { background: #333; }
+.retry-btn { width: 100%; height: 52px; background: #141414; color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; margin-bottom: 12px; transition: opacity 0.15s; }
+.retry-btn.loading { opacity: 0.5; cursor: not-allowed; }
+.error-support { font-size: 14px; font-weight: 500; color: #919191; }
+.error-support a { color: #525252; text-underline-offset: 2px; }
+
+/* ── Expired overlay ── */
+.expired-overlay {
+  position: absolute; inset: 0; background: rgba(255,255,255,0.97);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  border-radius: 28px; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s; text-align: center; padding: 40px;
+}
+.expired-overlay.show { opacity: 1; pointer-events: all; }
+.expired-icon-wrap { width: 56px; height: 56px; background: #dbeafe; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+.expired-title { font-size: 24px; font-weight: 600; color: #141414; margin-bottom: 8px; }
+.expired-desc { font-size: 14px; color: #525252; line-height: 1.5; margin-bottom: 24px; max-width: 320px; }
+.expired-actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 360px; }
+.expired-btn-primary { width: 100%; height: 52px; background: #141414; color: #fff; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+.expired-btn-primary:hover { background: #333; }
+.expired-btn-secondary { width: 100%; height: 52px; background: #e8e8e8; color: #141414; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+.expired-support { font-size: 14px; font-weight: 500; color: #919191; line-height: 1.5; margin-top: 4px; }
+.expired-support a { color: #525252; text-underline-offset: 2px; }
+
+/* ── Popup ── */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: flex-end; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.overlay.open { opacity: 1; pointer-events: all; }
+.popup { background: #fff; border-radius: 24px 24px 0 0; padding: 28px 24px 40px; width: 100%; max-width: 480px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+.overlay.open .popup { transform: translateY(0); }
+.popup-handle { width: 36px; height: 4px; background: #e0e0e0; border-radius: 2px; margin: 0 auto 20px; }
+.popup-title { font-size: 18px; font-weight: 600; color: #141414; margin-bottom: 20px; }
+.popup-steps { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+.popup-step { display: flex; align-items: flex-start; gap: 12px; }
+.step-num { width: 26px; height: 26px; border-radius: 50%; background: #f0f0f0; font-size: 12px; font-weight: 700; color: #525252; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.step-text { font-size: 14px; color: #444; line-height: 1.5; }
+.popup-close { width: 100%; height: 52px; background: #f2f2f2; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; color: #141414; cursor: pointer; font-family: inherit; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <a href="#" class="header-back">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    <span class="logo-name">payhost</span>
+  </a>
+  <div style="display:flex;gap:6px;align-items:center;">
+    <button onclick="setState('normal')"  class="state-tab active" id="tab-normal">Normal</button>
+    <button onclick="setState('success')" class="state-tab" id="tab-success">Success</button>
+    <button onclick="setState('error')"   class="state-tab" id="tab-error">Error</button>
+    <button onclick="setState('expired')" class="state-tab" id="tab-expired">Expired</button>
+  </div>
+  <button class="lang-btn">
+    🇬🇧 English
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+  </button>
+</header>
+
+<main class="main">
+  <div class="card">
+
+    <!-- Success -->
+    <div class="alt-state" id="successState">
+      <div class="state-icon-wrap green">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00c654" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="state-title">Payment in progress</div>
+      <div class="state-desc">Your payment has been submitted. The merchant will confirm it on their end — this usually takes a few minutes.</div>
+      <div class="state-rows">
+        <div class="state-row"><span class="state-row-label">Amount</span><span class="state-row-value">1 500 RUB</span></div>
+        <div class="state-row"><span class="state-row-label">Method</span><span class="state-row-value">СБП QR</span></div>
+        <div class="state-row"><span class="state-row-label">Status</span><span class="state-row-value amber">Awaiting merchant</span></div>
+      </div>
+      <button class="state-btn-primary" onclick="window.history.back()">Return to merchant</button>
+    </div>
+
+    <!-- Error -->
+    <div class="alt-state" id="errorState">
+      <div class="state-icon-wrap red">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><circle cx="28" cy="28" r="28" fill="#ef4444"/><text x="28" y="36" text-anchor="middle" font-size="24" font-weight="600" fill="white" font-family="-apple-system,sans-serif">i</text></svg>
+      </div>
+      <div class="state-title">Failed to load payment details</div>
+      <div class="state-desc">Something went wrong on our end. This usually resolves quickly — please try again.</div>
+      <button class="retry-btn" id="retryBtn" onclick="handleRetry()">Try again</button>
+      <div class="error-support">Having trouble? <a href="#">Contact support</a></div>
+    </div>
+
+    <!-- Payment content -->
+    <div class="payment-state" id="paymentState">
+
+      <!-- Pills -->
+      <div class="pills-row">
+        <div class="pill provider-pill">
+          <div class="pill-left">
+            <div class="pill-icon">
+              <svg width="32" height="32" viewBox="0 0 200 200" fill="none">
+                <path d="M100 15L170 55v60c0 40-32 70-70 80C62 185 30 155 30 115V55z" fill="#5B57A2"/>
+                <path d="M100 15l70 40v60c0 40-32 70-70 80z" fill="#D9075B"/>
+                <path d="M30 55l70 40v100C62 185 30 155 30 115z" fill="#FAB718"/>
+                <path d="M30 55l70-40 70 40-70 40z" fill="#ED6F26" opacity=".7"/>
+              </svg>
+            </div>
+            <div class="pill-info">
+              <span class="pill-name">СБП</span>
+              <span class="pill-sub">QR-code payment</span>
+            </div>
+          </div>
+          <span class="pill-action">Change</span>
+        </div>
+        <div class="pill timer-pill green" id="timerPill">
+          <div class="pill-left">
+            <div class="pill-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="pill-info">
+              <span class="pill-name" id="timerText">13:22</span>
+              <span class="pill-sub">Time left</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Title -->
+      <div class="card-title">Top Up</div>
+      <div class="card-sub">Scan the QR code or transfer manually using the requisites.</div>
+
+      <!-- Two-column: QR + Requisites -->
+      <div class="two-col">
+        <!-- QR -->
+        <div class="qr-col">
+          <div class="qr-wrap">
+            <svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4" y="4" width="44" height="44" rx="4" fill="#141414"/>
+              <rect x="10" y="10" width="32" height="32" rx="2" fill="#fff"/>
+              <rect x="16" y="16" width="20" height="20" rx="1" fill="#141414"/>
+              <rect x="112" y="4" width="44" height="44" rx="4" fill="#141414"/>
+              <rect x="118" y="10" width="32" height="32" rx="2" fill="#fff"/>
+              <rect x="124" y="16" width="20" height="20" rx="1" fill="#141414"/>
+              <rect x="4" y="112" width="44" height="44" rx="4" fill="#141414"/>
+              <rect x="10" y="118" width="32" height="32" rx="2" fill="#fff"/>
+              <rect x="16" y="124" width="20" height="20" rx="1" fill="#141414"/>
+              <rect x="56" y="4" width="8" height="8" fill="#141414"/>
+              <rect x="72" y="4" width="8" height="8" fill="#141414"/>
+              <rect x="88" y="4" width="8" height="8" fill="#141414"/>
+              <rect x="56" y="20" width="8" height="8" fill="#141414"/>
+              <rect x="80" y="20" width="8" height="8" fill="#141414"/>
+              <rect x="100" y="12" width="8" height="8" fill="#141414"/>
+              <rect x="56" y="36" width="8" height="8" fill="#141414"/>
+              <rect x="72" y="36" width="8" height="8" fill="#141414"/>
+              <rect x="4" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="20" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="36" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="56" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="72" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="88" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="104" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="120" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="136" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="148" y="56" width="8" height="8" fill="#141414"/>
+              <rect x="4" y="72" width="8" height="8" fill="#141414"/>
+              <rect x="36" y="72" width="8" height="8" fill="#141414"/>
+              <rect x="64" y="72" width="8" height="8" fill="#141414"/>
+              <rect x="88" y="72" width="8" height="8" fill="#141414"/>
+              <rect x="112" y="72" width="8" height="8" fill="#141414"/>
+              <rect x="136" y="72" width="8" height="8" fill="#141414"/>
+              <rect x="4" y="88" width="8" height="8" fill="#141414"/>
+              <rect x="20" y="88" width="8" height="8" fill="#141414"/>
+              <rect x="56" y="88" width="8" height="8" fill="#141414"/>
+              <rect x="80" y="88" width="8" height="8" fill="#141414"/>
+              <rect x="104" y="88" width="8" height="8" fill="#141414"/>
+              <rect x="128" y="88" width="8" height="8" fill="#141414"/>
+              <rect x="148" y="88" width="8" height="8" fill="#141414"/>
+              <rect x="56" y="112" width="8" height="8" fill="#141414"/>
+              <rect x="80" y="112" width="8" height="8" fill="#141414"/>
+              <rect x="104" y="112" width="8" height="8" fill="#141414"/>
+              <rect x="136" y="112" width="8" height="8" fill="#141414"/>
+              <rect x="56" y="128" width="8" height="8" fill="#141414"/>
+              <rect x="72" y="128" width="8" height="8" fill="#141414"/>
+              <rect x="96" y="128" width="8" height="8" fill="#141414"/>
+              <rect x="120" y="128" width="8" height="8" fill="#141414"/>
+              <rect x="148" y="128" width="8" height="8" fill="#141414"/>
+              <rect x="56" y="144" width="8" height="8" fill="#141414"/>
+              <rect x="88" y="144" width="8" height="8" fill="#141414"/>
+              <rect x="112" y="144" width="8" height="8" fill="#141414"/>
+              <rect x="136" y="144" width="8" height="8" fill="#141414"/>
+            </svg>
+          </div>
+          <div class="qr-amount">1 500 RUB</div>
+          <div class="qr-hint">Scan with your bank app</div>
+        </div>
+
+        <!-- Requisites -->
+        <div class="req-col">
+          <div class="req-row">
+            <div class="req-left">
+              <span class="req-label">Phone number</span>
+              <span class="req-value" id="val-phone">+7 915 999 88 77</span>
+            </div>
+            <button class="copy-btn" onclick="copyVal(this,'val-phone')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+          <div class="req-row">
+            <div class="req-left">
+              <span class="req-label">Bank</span>
+              <span class="req-value" id="val-bank">Sberbank of Russia</span>
+            </div>
+            <button class="copy-btn" onclick="copyVal(this,'val-bank')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+          <div class="req-row">
+            <div class="req-left">
+              <span class="req-label">Amount</span>
+              <span class="req-value" id="val-amount">1 500 RUB</span>
+            </div>
+            <button class="copy-btn" onclick="copyVal(this,'val-amount')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flow steps -->
+      <div class="flow-steps">
+        Scan the QR code &nbsp;→&nbsp; Confirm in your banking app &nbsp;→&nbsp; Return here and tap I've paid
+      </div>
+
+      <!-- Warning -->
+      <div class="warning-block">
+        <div class="warning-icon-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L3 7v6c0 5.25 3.84 10.15 9 11.35C17.16 23.15 21 18.25 21 13V7l-9-5z" fill="#FFC300"/>
+            <text x="12" y="17" text-anchor="middle" font-size="10" font-weight="600" fill="#000" font-family="-apple-system,sans-serif">!</text>
+          </svg>
+        </div>
+        <span class="warning-text">Before transferring, please check that the amount matches the one indicated.</span>
+      </div>
+
+      <!-- How to pay -->
+      <div class="how-row">
+        <a class="how-link" onclick="openPopup()">How to pay? →</a>
+      </div>
+
+      <!-- CTA -->
+      <div class="swipe-btn" id="swipeBtn">
+        <div class="swipe-fill" id="swipeFill"></div>
+        <span class="swipe-text" id="swipeText">Swipe to confirm →</span>
+        <div class="swipe-handle" id="swipeHandle">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="card-footer">
+        <div class="powered">Powered by <span class="powered-logo">◉ payhost</span></div>
+        <div class="badges">
+          <img src="../img/logo-mastercard.svg" height="20" style="opacity:0.35;filter:grayscale(1);" alt="Mastercard">
+          <img src="../img/logo-visa.svg" height="14" style="opacity:0.35;filter:grayscale(1);" alt="Visa">
+          <img src="../img/logo-mir.svg" height="18" style="opacity:0.35;filter:grayscale(1);" alt="МИР">
+        </div>
+      </div>
+
+    </div><!-- /payment-state -->
+
+    <!-- Expired overlay -->
+    <div class="expired-overlay" id="expiredOverlay">
+      <div class="expired-icon-wrap">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="expired-title">Session expired</div>
+      <div class="expired-desc">Time is up. Return to the merchant to create a new payment request.</div>
+      <div class="expired-actions">
+        <button class="expired-btn-primary" onclick="setState('normal')">New details</button>
+        <button class="expired-btn-secondary" onclick="window.history.back()">Return to merchant</button>
+        <div class="expired-support">Already transferred the money? <a href="#">Contact support</a></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Popup -->
+<div class="overlay" id="overlay" onclick="closePopup(event)">
+  <div class="popup">
+    <div class="popup-handle"></div>
+    <div class="popup-title">How to pay via QR</div>
+    <div class="popup-steps">
+      <div class="popup-step"><div class="step-num">1</div><div class="step-text">Open your bank app and find the QR scanner or СБП section</div></div>
+      <div class="popup-step"><div class="step-num">2</div><div class="step-text">Point the camera at the QR code on screen</div></div>
+      <div class="popup-step"><div class="step-num">3</div><div class="step-text">Confirm the transfer in your bank app</div></div>
+      <div class="popup-step"><div class="step-num">4</div><div class="step-text">Return here and tap <strong>I've paid</strong></div></div>
+    </div>
+    <button class="popup-close" onclick="closePopup()">Got it</button>
+  </div>
+</div>
+
+<script>
+// ── Timer ──
+let totalSeconds = 13 * 60 + 22;
+const pill = document.getElementById('timerPill');
+const timerText = document.getElementById('timerText');
+
+function updateTimer() {
+  if (totalSeconds <= 0) {
+    timerText.textContent = '0:00';
+    pill.className = 'pill timer-pill red';
+    document.getElementById('swipeBtn').classList.add('disabled');
+    document.getElementById('expiredOverlay').classList.add('show');
+    return;
+  }
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  timerText.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  pill.className = totalSeconds > 300 ? 'pill timer-pill green' : totalSeconds > 60 ? 'pill timer-pill yellow' : 'pill timer-pill red';
+  totalSeconds--;
+}
+updateTimer();
+setInterval(updateTimer, 1000);
+
+// ── Copy ──
+function copyVal(btn, id) {
+  const text = document.getElementById(id).textContent.trim();
+  navigator.clipboard.writeText(text).catch(() => {});
+  btn.classList.add('copied');
+  btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  setTimeout(() => {
+    btn.classList.remove('copied');
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+  }, 2000);
+}
+
+// ── State ──
+function setState(state) {
+  ['successState','errorState'].forEach(id => document.getElementById(id).classList.remove('show'));
+  document.getElementById('paymentState').classList.remove('hide');
+  document.getElementById('expiredOverlay').classList.remove('show');
+  document.querySelectorAll('.state-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + state).classList.add('active');
+  if (state === 'success') {
+    document.getElementById('successState').classList.add('show');
+    document.getElementById('paymentState').classList.add('hide');
+  } else if (state === 'error') {
+    document.getElementById('errorState').classList.add('show');
+    document.getElementById('paymentState').classList.add('hide');
+  } else if (state === 'expired') {
+    document.getElementById('expiredOverlay').classList.add('show');
+  } else {
+    // Reset swipe
+    const sb = document.getElementById('swipeBtn');
+    if (sb) {
+      sb.classList.remove('disabled');
+      sb.querySelector('.swipe-fill').style.cssText = 'width:56px;background:#141414;';
+      sb.querySelector('.swipe-handle').style.cssText = '';
+      const st = sb.querySelector('.swipe-text');
+      st.textContent = 'Swipe to confirm →';
+      st.style.cssText = 'color:#aaa;';
+    }
+  }
+}
+
+// ── Retry ──
+function handleRetry() {
+  const btn = document.getElementById('retryBtn');
+  btn.classList.add('loading'); btn.textContent = 'Loading...';
+  setTimeout(() => { btn.classList.remove('loading'); btn.textContent = 'Try again'; setState('normal'); }, 1800);
+}
+
+// ── Popup ──
+const overlay = document.getElementById('overlay');
+function openPopup() { overlay.classList.add('open'); }
+function closePopup(e) { if (!e || e.target === overlay) overlay.classList.remove('open'); }
+
+// ── Swipe to confirm ──
+(function() {
+  const HANDLE_W = 52;
+  let dragging = false;
+  let startX = 0;
+  let posX = 0;
+  let completed = false;
+
+  const btn   = document.getElementById('swipeBtn');
+  const fill  = document.getElementById('swipeFill');
+  const handle = document.getElementById('swipeHandle');
+  const text  = document.getElementById('swipeText');
+
+  function maxX() { return btn.offsetWidth - HANDLE_W - 4; }
+
+  function setPos(x) {
+    x = Math.max(0, Math.min(x, maxX()));
+    posX = x;
+    handle.style.transform = `translateX(${x}px)`;
+    fill.style.width = (x + HANDLE_W) + 'px';
+    const p = x / maxX();
+    text.style.opacity = Math.max(0, 1 - p * 2.5);
+  }
+
+  function onStart(e) {
+    if (completed || btn.classList.contains('disabled')) return;
+    dragging = true;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    startX = clientX - posX;
+    handle.style.transition = 'none';
+    fill.style.transition = 'none';
+    text.style.transition = 'none';
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    setPos(clientX - startX);
+  }
+
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    handle.style.transition = 'transform 0.35s cubic-bezier(0.4,0,0.2,1)';
+    fill.style.transition = 'width 0.35s cubic-bezier(0.4,0,0.2,1)';
+    text.style.transition = 'opacity 0.25s';
+
+    if (posX / maxX() > 0.82) {
+      completed = true;
+      setPos(maxX());
+      setTimeout(() => {
+        fill.style.transition = 'width 0.3s ease, background 0.3s ease';
+        fill.style.width = '100%';
+        fill.style.background = '#22c55e';
+        handle.style.transition = 'opacity 0.2s';
+        handle.style.opacity = '0';
+        text.style.opacity = '0';
+        setTimeout(() => {
+          text.textContent = '✓ Confirmed';
+          text.style.color = '#fff';
+          text.style.opacity = '1';
+          setTimeout(() => { if (typeof handlePaid === 'function') handlePaid(); else setState('success'); }, 600);
+        }, 280);
+      }, 150);
+    } else {
+      setPos(0);
+      text.style.opacity = '1';
+    }
+  }
+
+  handle.addEventListener('mousedown', onStart);
+  handle.addEventListener('touchstart', onStart, { passive: false });
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, { passive: false });
+  window.addEventListener('mouseup', onEnd);
+  window.addEventListener('touchend', onEnd);
+})();
+
+function handlePaid() { setState('success'); }
+</script>
+</body>
+</html>

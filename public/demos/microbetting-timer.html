@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Лига Ставок · Быстрые пари · Demo</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background: #1a1a2e;
+  display: grid;
+  grid-template-columns: 260px auto 260px;
+  grid-template-rows: auto 1fr;
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  padding: 32px 40px 40px;
+  gap: 0 48px;
+}
+
+/* ── Page header ── */
+.page-header {
+  grid-column: 1 / -1;
+  text-align: center;
+  margin-bottom: 36px;
+}
+.page-super {
+  color: rgba(255,255,255,0.28);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.page-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* ── Side captions ── */
+.side-col {
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-self: center;
+}
+.col-label {
+  color: rgba(255,255,255,0.25);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.col-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.col-step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.step-num {
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+  min-width: 12px;
+}
+.step-text {
+  color: rgba(255,255,255,0.55);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.col-note {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 16px;
+}
+.col-note-label {
+  color: rgba(255,255,255,0.25);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.col-note-text {
+  color: rgba(255,255,255,0.4);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ════════ iPhone shell ════════ */
+.iphone {
+  width: 375px;
+  height: 720px;
+  border-radius: 54px;
+  border: 10px solid #2a2a30;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.08),
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 60px 120px rgba(0,0,0,0.9);
+  background: #000;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.island {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 30px;
+  background: #000;
+  border-radius: 20px;
+  z-index: 30;
+}
+
+/* ════════ Screen ════════ */
+.screen {
+  flex: 1;
+  background: #10121a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-top: 52px;
+}
+
+/* ── Status bar ── */
+.statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+.sb-right { display: flex; gap: 5px; align-items: center; font-size: 12px; }
+
+/* ── App nav bar ── */
+.navbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px 8px;
+  background: #10121a;
+  flex-shrink: 0;
+}
+.nav-back {
+  color: #fff;
+  font-size: 24px;
+  line-height: 1;
+  width: 32px;
+  z-index: 1;
+}
+.nav-balance {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.nav-balance .plus { color: #4ade80; font-size: 18px; font-weight: 700; }
+.nav-icons { display: flex; gap: 14px; align-items: center; z-index: 1; }
+.nav-icon-btn {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.65);
+  font-size: 17px;
+}
+
+/* ── Match block ── */
+.match-block {
+  flex-shrink: 0;
+  padding: 0 12px 10px;
+  background: #10121a;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Score plaque (gray bar) */
+.score-plaque {
+  display: flex;
+  align-items: center;
+  background: #1e2030;
+  border-radius: 12px 12px 0 0;
+  padding: 9px 14px;
+}
+.sb-team {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+}
+.sb-team.right { flex-direction: row-reverse; }
+.sb-flag { font-size: 20px; line-height: 1; }
+.sb-name { color: #fff; font-size: 13px; font-weight: 700; }
+.sb-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 12px;
+}
+.sb-score {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+.sb-period {
+  margin-top: 4px;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+/* Stream container with rounded bottom corners */
+.stream-box {
+  height: 164px;
+  position: relative;
+  overflow: hidden;
+  background: #0d1a0e;
+  border-radius: 0 0 16px 16px;
+}
+
+/* Ice rink simulation */
+.ice-rink {
+  position: absolute;
+  inset: 0;
+  background: #b8dde0;
+  overflow: hidden;
+}
+/* ice surface */
+.ice-surface {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(160deg, #cce8eb 0%, #a8d4d8 40%, #8fc5c9 100%);
+}
+/* rink lines */
+.ice-line {
+  position: absolute;
+  background: rgba(255,0,0,0.55);
+}
+.ice-line.center {
+  top: 0; bottom: 0;
+  left: 50%; width: 2px;
+  transform: translateX(-50%);
+  background: rgba(255,40,40,0.6);
+}
+.ice-line.blue-left {
+  top: 0; bottom: 0;
+  left: 28%; width: 2px;
+  background: rgba(30,80,200,0.7);
+}
+.ice-line.blue-right {
+  top: 0; bottom: 0;
+  right: 28%; width: 2px;
+  background: rgba(30,80,200,0.7);
+}
+/* center circle */
+.ice-circle {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px; height: 64px;
+  border: 2px solid rgba(255,40,40,0.55);
+  border-radius: 50%;
+}
+.ice-dot {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px; height: 6px;
+  background: rgba(255,40,40,0.7);
+  border-radius: 50%;
+}
+/* face-off dots */
+.faceoff-dot {
+  position: absolute;
+  width: 5px; height: 5px;
+  background: rgba(255,40,40,0.6);
+  border-radius: 50%;
+}
+/* goal creases */
+.crease {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  width: 24px; height: 36px;
+  border: 2px solid rgba(255,40,40,0.5);
+  border-radius: 0 8px 8px 0;
+}
+.crease.left  { left: 4px;  border-left: none; border-radius: 8px 0 0 8px; }
+.crease.right { right: 4px; border-right: none; }
+
+/* Camera perspective overlay */
+.cam-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 120% 60% at 50% 100%, rgba(0,0,0,0.45) 0%, transparent 70%),
+    radial-gradient(ellipse 80% 40% at 50% 0%,   rgba(0,0,0,0.2)  0%, transparent 60%);
+  /* perspective distortion hint */
+  transform: perspective(200px) rotateX(8deg);
+  transform-origin: bottom center;
+}
+
+/* players silhouettes */
+.player {
+  position: absolute;
+  bottom: 30%;
+  width: 8px;
+  height: 18px;
+  background: rgba(0,0,0,0.55);
+  border-radius: 4px 4px 2px 2px;
+}
+
+/* delay warning */
+.stream-delay {
+  position: absolute;
+  bottom: 8px; left: 10px;
+  z-index: 12;
+  color: rgba(255,255,255,0.7);
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+.stream-delay-icon {
+  width: 18px; height: 14px;
+  border: 1.5px solid rgba(255,255,255,0.6);
+  border-radius: 2px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+}
+
+/* mute icon */
+.stream-mute {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  z-index: 12;
+  background: rgba(0,0,0,0.45);
+  border-radius: 6px;
+  padding: 5px 7px;
+  color: rgba(255,255,255,0.8);
+  font-size: 13px;
+  display: flex; align-items: center; gap: 3px;
+}
+.stream-mute-line {
+  width: 14px; height: 1.5px;
+  background: rgba(255,255,255,0.8);
+  position: absolute;
+  transform: rotate(-45deg);
+}
+
+/* ── Scrollable content ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 16px;
+  scrollbar-width: none;
+}
+.content::-webkit-scrollbar { display: none; }
+
+/* ── Market card (white) ── */
+.market-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+/* Upcoming / disabled state */
+.market-card.upcoming {
+  opacity: 0.5;
+  pointer-events: none;
+  position: relative;
+}
+.upcoming-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px 0;
+  color: #aaa;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.card-header {
+  padding: 12px 14px 10px;
+}
+.card-q { color: #111; font-size: 14px; font-weight: 700; line-height: 1.3; margin-bottom: 3px; }
+.card-sub { color: #aaa; font-size: 12px; }
+
+/* Team picks — horizontal layout, dark tiles */
+.team-picks {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+.team-pick {
+  flex: 1;
+  border-radius: 12px;
+  background: #f0f0f4;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.18s;
+  border: 2px solid transparent;
+}
+.team-pick:hover { background: #e4e4ea; }
+.team-pick.selected { background: #22c55e; border-color: #16a34a; }
+.pick-flag { font-size: 30px; line-height: 1; }
+.pick-odds { color: #111; font-size: 20px; font-weight: 800; }
+.team-pick.selected .pick-odds { color: #fff; }
+
+/* History row */
+.history {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 14px 14px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+  margin-top: -2px;
+}
+.history-label { color: #bbb; font-size: 11px; margin-right: 3px; white-space: nowrap; }
+.history-dot {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Market card dark (the microbetting one) ── */
+.market-card-dark {
+  background: #1e2235;
+  border-radius: 16px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.dark-header {
+  padding: 12px 14px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.dark-q { color: #fff; font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.dark-sub { color: rgba(255,255,255,0.45); font-size: 11px; }
+
+/* Linear progress bar (current design) */
+.progress-wrap { padding: 10px 14px 4px; }
+.progress-track {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: #22c55e;
+  border-radius: 99px;
+  width: 100%;
+  transition: width 1s linear;
+}
+.progress-hint { color: rgba(255,255,255,0.3); font-size: 10px; margin-top: 5px; margin-bottom: 2px; }
+
+/* Да/Нет options */
+.yn-row { display: flex; gap: 8px; padding: 8px 12px 12px; }
+.yn-btn {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 11px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.18s;
+}
+.yn-btn:hover { background: rgba(255,255,255,0.11); }
+.yn-btn.selected { background: #22c55e; border-color: #16a34a; }
+.yn-label { color: rgba(255,255,255,0.75); font-size: 13px; font-weight: 600; }
+.yn-label.selected { color: #fff; }
+.yn-odds { color: #fff; font-size: 17px; font-weight: 800; }
+
+/* ════════════════════════════
+   BET ENTRY PANEL (slides up)
+════════════════════════════ */
+.bet-panel {
+  flex-shrink: 0;
+  background: #1e2235;
+  border-radius: 16px;
+  overflow: hidden;
+  animation: slide-up 0.28s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* amount row */
+.amount-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 12px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.amount-field {
+  flex: 1;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.amount-val { color: #fff; font-size: 16px; font-weight: 700; }
+.amount-clear { color: rgba(255,255,255,0.3); font-size: 14px; cursor: pointer; }
+.amount-win { color: rgba(255,255,255,0.4); font-size: 11px; margin-top: 3px; }
+
+/* ── Ring timer + bet button ── */
+.ring-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 12px 10px;
+}
+.ring-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ring-svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.ring-bg { /* grey track */ }
+.ring-arc {
+  transition: stroke-dashoffset 0.92s linear, stroke 0.35s ease;
+}
+.stavka-btn {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  border: none;
+  background: #22c55e;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 8px 28px rgba(34,197,94,0.4);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+.stavka-btn:active { transform: scale(0.95); }
+.stavka-btn.urgent {
+  background: #ef4444;
+  box-shadow: 0 8px 28px rgba(239,68,68,0.4);
+  animation: stavka-pulse 0.7s ease-in-out infinite;
+}
+@keyframes stavka-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(239,68,68,0.6), 0 8px 28px rgba(239,68,68,0.4); transform: scale(1);    }
+  50%  { box-shadow: 0 0 0 14px rgba(239,68,68,0),  0 8px 28px rgba(239,68,68,0.4); transform: scale(1.04); }
+  100% { box-shadow: 0 0 0 0   rgba(239,68,68,0),   0 8px 28px rgba(239,68,68,0.4); transform: scale(1);    }
+}
+.stavka-cnt  { font-size: 28px; line-height: 1; }
+.stavka-word { font-size: 12px; opacity: 0.9; }
+
+/* ── Locked button ── */
+.stavka-btn.locked {
+  background: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34,197,94,0);
+  cursor: default;
+  animation: btn-squish 0.35s cubic-bezier(0.34,1.4,0.64,1);
+}
+@keyframes btn-squish {
+  0%   { transform: scale(1);    }
+  35%  { transform: scale(0.88); }
+  100% { transform: scale(1);    }
+}
+
+/* Number fade-out */
+.stavka-cnt.fade-out {
+  animation: num-out 0.2s ease forwards;
+}
+@keyframes num-out {
+  to { opacity: 0; transform: scale(0.5); }
+}
+
+/* SVG checkmark draw-on */
+.check-svg {
+  position: absolute;
+  animation: svg-in 0.25s cubic-bezier(0.34,1.3,0.64,1) 0.18s both;
+}
+@keyframes svg-in {
+  from { transform: scale(0.6) rotate(-10deg); opacity: 0; }
+  to   { transform: scale(1)   rotate(0deg);   opacity: 1; }
+}
+.check-path {
+  stroke: #fff;
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  stroke-dasharray: 52;
+  stroke-dashoffset: 52;
+  animation: draw-check 0.38s cubic-bezier(0.4,0,0.2,1) 0.22s forwards;
+}
+@keyframes draw-check {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Ring fill-to-complete */
+.ring-arc-complete {
+  animation: ring-fill 0.35s ease forwards;
+}
+@keyframes ring-fill {
+  to { stroke-dashoffset: 0; stroke: #22c55e; }
+}
+
+/* Glow pulse after success */
+.stavka-btn.success-glow {
+  animation: success-glow 0.6s ease 0.45s forwards;
+}
+@keyframes success-glow {
+  0%   { box-shadow: 0 0 0  0px rgba(34,197,94,0.7); }
+  50%  { box-shadow: 0 0 0 20px rgba(34,197,94,0);   }
+  100% { box-shadow: 0 0 0  0px rgba(34,197,94,0);   }
+}
+
+/* quick amounts */
+.quick-row {
+  display: flex;
+  gap: 6px;
+  padding: 0 12px 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.quick-row::-webkit-scrollbar { display: none; }
+.quick-pill {
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 5px 12px;
+  color: rgba(255,255,255,0.65);
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.quick-pill:hover  { background: rgba(255,255,255,0.12); }
+.quick-pill.active {
+  background: rgba(34,197,94,0.18);
+  border-color: rgba(34,197,94,0.5);
+  color: #22c55e;
+}
+
+/* ════════════════════════════
+   SUCCESS BANNER
+════════════════════════════ */
+.success-banner {
+  flex-shrink: 0;
+  background: #22c55e;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: banner-spring 0.55s cubic-bezier(0.34,1.4,0.64,1);
+  position: relative;
+  overflow: hidden;
+}
+.success-banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+  animation: banner-shine 0.7s ease 0.2s both;
+}
+@keyframes banner-spring {
+  0%   { transform: translateY(-110%); opacity: 0; }
+  60%  { transform: translateY(6px);   opacity: 1; }
+  100% { transform: translateY(0);     opacity: 1; }
+}
+@keyframes banner-shine {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(200%); }
+}
+.banner-check {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.28);
+  border: 2px solid rgba(255,255,255,0.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  animation: check-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.2s both;
+}
+@keyframes check-pop {
+  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+}
+.banner-text .banner-title { color: #fff; font-size: 14px; font-weight: 700; }
+.banner-text .banner-sub   { color: rgba(255,255,255,0.85); font-size: 12px; margin-top: 1px; }
+
+/* ════════════════════════════
+   MISSED BANNER
+════════════════════════════ */
+.missed-banner {
+  flex-shrink: 0;
+  background: #1e2235;
+  border: 1.5px solid rgba(239,68,68,0.4);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: missed-shake 0.5s cubic-bezier(0.36,0.07,0.19,0.97);
+  margin: 0 0 4px;
+}
+@keyframes missed-shake {
+  0%,100% { transform: translateX(0); }
+  15%     { transform: translateX(-8px); }
+  30%     { transform: translateX(7px); }
+  45%     { transform: translateX(-5px); }
+  60%     { transform: translateX(4px); }
+  75%     { transform: translateX(-2px); }
+}
+.missed-icon {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.35);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  animation: missed-icon-in 0.4s cubic-bezier(0.34,1.3,0.64,1) 0.15s both;
+}
+@keyframes missed-icon-in {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.missed-info { flex: 1; }
+.missed-title { color: #ef4444; font-size: 13px; font-weight: 700; }
+.missed-sub   { color: rgba(255,255,255,0.35); font-size: 11px; margin-top: 2px; }
+.missed-retry {
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.35);
+  border-radius: 10px;
+  padding: 8px 14px;
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.missed-retry:hover { background: rgba(239,68,68,0.25); }
+
+/* ── Result row (after bet) ── */
+.result-row {
+  flex-shrink: 0;
+  background: #1e2235;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.result-label { color: rgba(255,255,255,0.4); font-size: 11px; }
+.result-val   { color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600; }
+
+/* ── Missed state ── */
+.missed-bar {
+  flex-shrink: 0;
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: slide-up 0.28s ease;
+}
+.missed-text { color: #ef4444; font-size: 13px; font-weight: 600; }
+.missed-sub  { color: rgba(239,68,68,0.6); font-size: 11px; margin-top: 2px; }
+.btn-retry {
+  background: rgba(239,68,68,0.2);
+  border: 1px solid rgba(239,68,68,0.4);
+  border-radius: 8px;
+  padding: 7px 14px;
+  color: #ef4444;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <p class="page-super">UX-аудит · Лига Ставок</p>
+  <h1 class="page-title">Кольцевой таймер закрытия рынка</h1>
+</div>
+
+<div class="side-col">
+  <div>
+    <p class="col-label">Ставка принята</p>
+    <div class="col-steps">
+      <div class="col-step">
+        <span class="step-num" style="color:#22c55e">1</span>
+        <span class="step-text">Выбери «Да» или «Нет» — появляется кольцевой таймер с кнопкой</span>
+      </div>
+      <div class="col-step">
+        <span class="step-num" style="color:#22c55e">2</span>
+        <span class="step-text">Нажми «Ставка!» — число угасает, кольцо заполняется и появляется галочка</span>
+      </div>
+      <div class="col-step">
+        <span class="step-num" style="color:#22c55e">3</span>
+        <span class="step-text">Кружок взлетает и превращается в баннер подтверждения вверху экрана</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="iphone">
+  <div class="island"></div>
+  <div class="screen">
+
+    <!-- Status bar -->
+    <div class="statusbar">
+      <span>18:00</span>
+      <div class="sb-right"><span>●●●</span><span>WiFi</span><span>▮</span></div>
+    </div>
+
+    <!-- Nav -->
+    <div class="navbar">
+      <span class="nav-back">←</span>
+      <div class="nav-balance">52 914 ₽ <span class="plus">+</span></div>
+      <div class="nav-icons">
+        <div class="nav-icon-btn" style="font-size:15px">⛶</div>
+        <div class="nav-icon-btn" style="font-size:15px">🔔</div>
+      </div>
+    </div>
+
+    <!-- Match block -->
+    <div class="match-block">
+
+      <!-- Score plaque (gray bar on top) -->
+      <div class="score-plaque">
+        <div class="sb-team">
+          <span class="sb-flag">🇺🇸</span>
+          <span class="sb-name">США</span>
+        </div>
+        <div class="sb-center">
+          <span class="sb-score">2:0</span>
+          <span class="sb-period">Перерыв</span>
+        </div>
+        <div class="sb-team right">
+          <span class="sb-flag">🇭🇺</span>
+          <span class="sb-name">Венгрия</span>
+        </div>
+      </div>
+
+      <!-- Stream container (rounded bottom) -->
+      <div class="stream-box">
+        <!-- Ice rink -->
+        <div class="ice-rink">
+          <div class="ice-surface"></div>
+          <div class="ice-line blue-left"></div>
+          <div class="ice-line center"></div>
+          <div class="ice-line blue-right"></div>
+          <div class="ice-circle"></div>
+          <div class="ice-dot"></div>
+          <div class="faceoff-dot" style="left:22%;top:35%"></div>
+          <div class="faceoff-dot" style="left:22%;top:65%"></div>
+          <div class="faceoff-dot" style="right:22%;top:35%"></div>
+          <div class="faceoff-dot" style="right:22%;top:65%"></div>
+          <div class="crease left"></div>
+          <div class="crease right"></div>
+          <div class="player" style="left:38%;bottom:28%"></div>
+          <div class="player" style="left:45%;bottom:40%"></div>
+          <div class="player" style="left:52%;bottom:32%"></div>
+          <div class="player" style="left:60%;bottom:45%"></div>
+          <div class="player" style="left:30%;bottom:50%"></div>
+          <div class="cam-overlay"></div>
+        </div>
+
+        <!-- Mute -->
+        <div class="stream-mute">
+          <span style="position:relative">🔊<span class="stream-mute-line"></span></span>
+        </div>
+
+        <!-- Delay warning -->
+        <div class="stream-delay">
+          <span>Возможна задержка трансляции, можете переключиться на</span>
+          <span class="stream-delay-icon">TV</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Content -->
+    <div class="content" id="mainContent">
+
+      <!-- Market card 1 (active): yes/no with ring timer -->
+      <div class="market-card-dark">
+        <div class="dark-header">
+          <div class="dark-q">Будет вбрасывание в следующие 20 секунд?</div>
+          <div class="dark-sub">19:40 — 19:20</div>
+        </div>
+
+        <!-- Linear progress bar — hidden after selection -->
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-hint">Пауза. После продолжения останется <span id="progressSec">20</span> из 20 секунд</div>
+        </div>
+
+        <div class="yn-row">
+          <div class="yn-btn" id="btnDa"  onclick="selectYN('da')">
+            <span class="yn-label" id="lbDa">Да</span>
+            <span class="yn-odds">3.64</span>
+          </div>
+          <div class="yn-btn" id="btnNet" onclick="selectYN('net')">
+            <span class="yn-label" id="lbNet">Нет</span>
+            <span class="yn-odds">1.23</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bet panel (injected by JS) -->
+      <div id="betPanelSlot"></div>
+
+      <!-- Result row (injected after bet) -->
+      <div id="resultSlot"></div>
+
+      <!-- Market card 2 (upcoming, locked): team pick -->
+      <div class="market-card upcoming">
+        <div class="upcoming-label">🔒 Следующее событие</div>
+        <div class="card-header">
+          <div class="card-q">Кто выиграет следующее вбрасывание?</div>
+          <div class="card-sub">Ожидаем вбрасывание</div>
+        </div>
+        <div class="team-picks">
+          <div class="team-pick">
+            <div class="pick-flag">🇺🇸</div>
+            <div class="pick-odds">1.66</div>
+          </div>
+          <div class="team-pick">
+            <div class="pick-flag">🇭🇺</div>
+            <div class="pick-odds">1.99</div>
+          </div>
+        </div>
+        <div class="history">
+          <span class="history-label">5 последних:</span>
+          <div class="history-dot" style="background:#ef4444">🇭🇺</div>
+          <div class="history-dot" style="background:#ef4444">🇭🇺</div>
+          <div class="history-dot" style="background:#3b82f6">🇺🇸</div>
+          <div class="history-dot" style="background:#ef4444">🇭🇺</div>
+          <div class="history-dot" style="background:#ef4444">🇭🇺</div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+
+  </div><!-- /screen -->
+</div><!-- /iphone -->
+
+<div class="side-col">
+  <div>
+    <p class="col-label">Рынок закрывается</p>
+    <div class="col-steps">
+      <div class="col-step">
+        <span class="step-num" style="color:#ef4444">!</span>
+        <span class="step-text">За 3 секунды до закрытия кольцо краснеет, кнопка начинает пульсировать</span>
+      </div>
+      <div class="col-step">
+        <span class="step-num" style="color:rgba(255,255,255,0.3)">→</span>
+        <span class="step-text">Дай таймеру вытечь — появится «Время вышло» со встряской</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-note">
+    <p class="col-note-label">Концепция</p>
+    <p class="col-note-text">Кольцевой таймер вокруг «Ставка!» объединяет счётчик и кнопку в один элемент — взгляд не уходит на отдельный прогресс-бар.</p>
+  </div>
+</div>
+
+<script>
+/* ════ constants ════ */
+const TOTAL    = 7;
+const PULSE_AT = 3;
+const R  = 58;
+const C  = parseFloat((2 * Math.PI * R).toFixed(3));
+
+let tickInterval = null;
+let timeLeft     = TOTAL;
+let phase        = 'idle'; // idle | ticking | locked | missed
+let selectedYN   = null;
+
+/* ════ team pick ════ */
+function pickTeam(el, team) {
+  document.querySelectorAll('.team-pick').forEach(t => {
+    t.classList.remove('selected');
+    t.querySelector('.pick-odds').classList.remove('selected');
+  });
+  el.classList.add('selected');
+  el.querySelector('.pick-odds').classList.add('selected');
+}
+
+/* ════ yes/no select ════ */
+function selectYN(choice) {
+  if (phase === 'locked') return;
+
+  selectedYN = choice;
+  document.querySelectorAll('.yn-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.querySelector('.yn-label').classList.remove('selected');
+  });
+  const activeBtn = document.getElementById(choice === 'da' ? 'btnDa' : 'btnNet');
+  const activeLabel = document.getElementById(choice === 'da' ? 'lbDa' : 'lbNet');
+  activeBtn.classList.add('selected');
+  activeLabel.classList.add('selected');
+
+  if (phase === 'idle' || phase === 'missed') {
+    startBetTimer();
+  }
+}
+
+/* ════ start timer ════ */
+function startBetTimer() {
+  clearInterval(tickInterval);
+  timeLeft = TOTAL;
+  phase    = 'ticking';
+
+  // hide linear bar
+  document.getElementById('progressWrap').style.display = 'none';
+
+  renderBetPanel();
+
+  tickInterval = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(tickInterval);
+      phase = 'missed';
+      renderMissed();
+      return;
+    }
+    updateRing();
+  }, 1000);
+}
+
+/* ════ bet amount state ════ */
+let betAmount = 100;
+const MAX_BET = 5000;
+
+function setBetAmount(val) {
+  betAmount = val === 'max' ? MAX_BET : val;
+  const odd = parseFloat(selectedYN === 'da' ? '3.64' : '1.23');
+  const win = Math.round(betAmount * odd);
+
+  const amountEl = document.getElementById('betAmountVal');
+  const winEl    = document.getElementById('betWinVal');
+  if (amountEl) amountEl.textContent = betAmount.toLocaleString('ru') + ' ₽';
+  if (winEl)    winEl.textContent    = 'Возможный выигрыш: ' + win.toLocaleString('ru') + ' ₽';
+
+  // highlight active chip
+  document.querySelectorAll('.quick-pill').forEach(p => {
+    p.classList.toggle('active', p.dataset.val === String(val));
+  });
+}
+
+/* ════ render bet panel ════ */
+function renderBetPanel() {
+  betAmount = 100;
+  const slot = document.getElementById('betPanelSlot');
+  const odd  = parseFloat(selectedYN === 'da' ? '3.64' : '1.23');
+  const win  = Math.round(betAmount * odd);
+
+  slot.innerHTML = `
+    <div class="bet-panel">
+      <div class="amount-row">
+        <div style="flex:1">
+          <div class="amount-field">
+            <span class="amount-val" id="betAmountVal">100 ₽</span>
+            <span class="amount-clear" onclick="setBetAmount(0)">✕</span>
+          </div>
+          <div class="amount-win" id="betWinVal">Возможный выигрыш: ${win} ₽</div>
+        </div>
+      </div>
+
+      <div class="ring-cta">
+        <div class="ring-wrap">
+          <svg class="ring-svg" width="140" height="140" viewBox="0 0 140 140">
+            <circle class="ring-bg"
+              cx="70" cy="70" r="${R}"
+              fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4.5"/>
+            <circle class="ring-arc" id="ringArc"
+              cx="70" cy="70" r="${R}"
+              fill="none" stroke="#22c55e" stroke-width="4.5"
+              stroke-linecap="round"
+              stroke-dasharray="${C}"
+              stroke-dashoffset="0"/>
+          </svg>
+          <button class="stavka-btn calm" id="stavkaBtn" onclick="placeBet()">
+            <span class="stavka-cnt" id="stavkaCnt">${timeLeft}</span>
+            <span class="stavka-word">Ставка!</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="quick-row">
+        <button class="quick-pill active" data-val="max"  onclick="setBetAmount('max')">Max</button>
+        <button class="quick-pill active" data-val="100"  onclick="setBetAmount(100)">100 ₽</button>
+        <button class="quick-pill"        data-val="200"  onclick="setBetAmount(200)">200 ₽</button>
+        <button class="quick-pill"        data-val="300"  onclick="setBetAmount(300)">300 ₽</button>
+        <button class="quick-pill"        data-val="500"  onclick="setBetAmount(500)">500 ₽</button>
+        <button class="quick-pill"        data-val="1000" onclick="setBetAmount(1000)">1 000 ₽</button>
+      </div>
+    </div>`;
+
+  // mark 100 as default active
+  setTimeout(() => {
+    document.querySelectorAll('.quick-pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.val === '100');
+    });
+    slot.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+/* ════ update ring each tick ════ */
+function updateRing() {
+  const arc  = document.getElementById('ringArc');
+  const cnt  = document.getElementById('stavkaCnt');
+  const btn  = document.getElementById('stavkaBtn');
+  if (!arc) return;
+
+  const urgent = timeLeft <= PULSE_AT;
+  const offset = C * (1 - timeLeft / TOTAL);
+
+  arc.style.strokeDashoffset = offset;
+  arc.style.stroke = urgent ? '#ef4444' : '#22c55e';
+  cnt.textContent  = timeLeft;
+  btn.className    = 'stavka-btn ' + (urgent ? 'urgent' : 'calm');
+}
+
+/* ════ place bet ════ */
+function placeBet() {
+  clearInterval(tickInterval);
+  phase = 'locked';
+  const odd   = selectedYN === 'da' ? '3.64' : '1.23';
+  const label = selectedYN === 'da' ? 'Да' : 'Нет';
+
+  const btn = document.getElementById('stavkaBtn');
+  const arc = document.getElementById('ringArc');
+  const cnt = document.getElementById('stavkaCnt');
+
+  // 1. Squish + fade out number
+  if (btn) { btn.className = 'stavka-btn locked'; btn.onclick = null; }
+  if (cnt) cnt.classList.add('fade-out');
+
+  // 2. Ring fills to complete
+  if (arc) arc.classList.add('ring-arc-complete');
+
+  // 3. Draw checkmark
+  setTimeout(() => {
+    if (!btn) return;
+    btn.innerHTML = `
+      <svg class="check-svg" width="48" height="48" viewBox="0 0 48 48">
+        <path class="check-path" d="M 10 24 L 20 35 L 38 14"/>
+      </svg>`;
+    btn.classList.add('success-glow');
+  }, 220);
+
+  // 4. Fly: circle → banner  (squash-stretch + FLIP morph)
+  setTimeout(() => {
+    const btnEl      = document.getElementById('stavkaBtn');
+    const screen     = document.querySelector('.screen');
+    const matchBlock = document.querySelector('.match-block');
+    if (!btnEl || !screen) return;
+
+    const btnRect    = btnEl.getBoundingClientRect();
+    const screenRect = screen.getBoundingClientRect();
+    const targetTop  = matchBlock.getBoundingClientRect().bottom;
+    const targetH    = 56;
+    const btnCW      = btnRect.width;
+    const btnCH      = btnRect.height;
+    const btnCX      = btnRect.left + btnCW / 2;
+    const btnCY      = btnRect.top  + btnCH / 2;
+    const tgtCX      = screenRect.left + screenRect.width / 2;
+    const tgtCY      = targetTop + targetH / 2;
+    const dx = tgtCX - btnCX;
+    const dy = tgtCY - btnCY;
+
+    // ── Flyer shell ──
+    const flyer = document.createElement('div');
+    Object.assign(flyer.style, {
+      position: 'fixed',
+      left:     `${btnRect.left}px`,
+      top:      `${btnRect.top}px`,
+      width:    `${btnCW}px`,
+      height:   `${btnCH}px`,
+      borderRadius: '50%',
+      background:   '#22c55e',
+      overflow:     'hidden',
+      zIndex:       '9999',
+      boxShadow:    '0 8px 32px rgba(34,197,94,0.55)',
+    });
+
+    // Check icon — absolutely centered, never moves inside the circle
+    const checkEl = document.createElement('div');
+    checkEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none';
+    checkEl.innerHTML = `<svg width="30" height="30" viewBox="0 0 48 48">
+      <path d="M 10 24 L 20 35 L 38 14" stroke="white" stroke-width="5.5"
+        stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
+
+    // Text panel — revealed only after banner expands
+    const flyerText = document.createElement('div');
+    flyerText.id = 'flyerText';
+    flyerText.style.cssText = 'position:absolute;top:0;bottom:0;left:60px;right:0;display:flex;flex-direction:column;justify-content:center;opacity:0;pointer-events:none';
+    flyerText.innerHTML = `
+      <div style="font-size:14px;font-weight:700;color:#fff;line-height:1.25">Одинар заключён</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.8);margin-top:2px">${betAmount} ₽ · ×${odd} · ${label}</div>`;
+
+    flyer.appendChild(checkEl);
+    flyer.appendChild(flyerText);
+    document.body.appendChild(flyer);
+    btnEl.style.opacity = '0';
+
+    // ── Phase 1: squash-stretch flight ──
+    // Inject dynamic keyframe so squash direction matches actual trajectory
+    const kfName = 'fly_' + Date.now();
+    const kfEl   = document.createElement('style');
+    kfEl.textContent = `@keyframes ${kfName} {
+      0%   { transform: translate(0,0)                     scaleX(1)    scaleY(1);    }
+      40%  { transform: translate(${dx*.40}px,${dy*.60}px) scaleX(0.95) scaleY(1.05); }
+      100% { transform: translate(${dx}px,${dy}px)         scaleX(1)    scaleY(1);    }
+    }`;
+    document.head.appendChild(kfEl);
+
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      flyer.style.animation = `${kfName} 0.54s cubic-bezier(0.25,0.46,0.45,0.94) forwards`;
+
+      // ── Phase 2: FLIP morph to banner after landing ──
+      setTimeout(() => {
+        // Remove flight animation; teleport to equivalent layout position (no visual jump)
+        flyer.style.animation  = 'none';
+        flyer.style.transition = 'none';
+        flyer.style.left       = `${tgtCX - btnCW / 2}px`;
+        flyer.style.top        = `${tgtCY - btnCH / 2}px`;
+
+        // Slide check icon to left as banner opens
+        checkEl.style.transition = 'left 0.44s cubic-bezier(0.34,1.2,0.64,1), transform 0.44s cubic-bezier(0.34,1.2,0.64,1)';
+        checkEl.style.left      = '16px';
+        checkEl.style.transform = 'translateY(-50%)';
+
+        flyer.getBoundingClientRect(); // flush styles before transition
+
+        // Spring-expand to full banner
+        Object.assign(flyer.style, {
+          transition: [
+            'left 0.48s cubic-bezier(0.34,1.3,0.64,1)',
+            'top 0.46s cubic-bezier(0.34,1.3,0.64,1)',
+            'width 0.50s cubic-bezier(0.34,1.3,0.64,1)',
+            'height 0.42s cubic-bezier(0.4,0,0.2,1)',
+            'border-radius 0.44s ease',
+            'box-shadow 0.46s ease',
+          ].join(','),
+          left:         `${screenRect.left}px`,
+          top:          `${targetTop}px`,
+          width:        `${screenRect.width}px`,
+          height:       `${targetH}px`,
+          borderRadius: '0',
+          boxShadow:    '0 3px 18px rgba(34,197,94,0.22)',
+        });
+
+        // Text slides in after banner is wide enough
+        setTimeout(() => {
+          flyerText.style.transition = 'opacity 0.3s ease';
+          flyerText.style.opacity    = '1';
+        }, 230);
+
+        kfEl.remove();
+
+        document.getElementById('betPanelSlot').innerHTML = '';
+        document.getElementById('resultSlot').innerHTML = `
+          <div class="result-row">
+            <div>
+              <div class="result-label">Ждём результат</div>
+              <div class="result-val">${label} · ${betAmount} ₽ · ×${odd}</div>
+            </div>
+            <span style="color:rgba(255,255,255,0.2);font-size:20px">⟳</span>
+          </div>`;
+
+      }, 550);
+    }));
+
+    // Reset after display
+    setTimeout(() => {
+      flyer.remove();
+      document.getElementById('progressWrap').style.display = '';
+      document.getElementById('resultSlot').innerHTML = '';
+      resetYN();
+      phase = 'idle';
+    }, 3500);
+
+  }, 1100);
+}
+
+/* ════ missed ════ */
+function renderMissed() {
+  document.getElementById('betPanelSlot').innerHTML = `
+    <div class="missed-banner">
+      <div class="missed-icon"><span style="filter:brightness(0) invert(1)">⏱</span></div>
+      <div class="missed-info">
+        <div class="missed-title">Время вышло</div>
+        <div class="missed-sub">Рынок закрылся</div>
+      </div>
+      <button class="missed-retry" onclick="retryMissed()">Ещё раз</button>
+    </div>`;
+}
+
+function retryMissed() {
+  document.getElementById('betPanelSlot').innerHTML = '';
+  document.getElementById('progressWrap').style.display = '';
+  resetYN();
+  phase = 'idle';
+}
+
+function resetYN() {
+  document.querySelectorAll('.yn-btn').forEach(b => {
+    b.classList.remove('selected');
+    b.querySelector('.yn-label').classList.remove('selected');
+  });
+  selectedYN = null;
+}
+
+/* ════ linear bar animation (idle state) ════ */
+let barInterval = null;
+let barWidth = 100;
+
+function animateBar() {
+  barInterval = setInterval(() => {
+    if (phase !== 'idle') return;
+    barWidth = barWidth > 0 ? barWidth - 0.5 : 100;
+    const fill = document.getElementById('progressFill');
+    const hint = document.getElementById('progressSec');
+    if (fill) {
+      fill.style.width      = barWidth + '%';
+      fill.style.background = barWidth <= 20 ? '#f97316' : '#22c55e';
+      fill.style.transition = barWidth <= 20 ? 'background 0.4s ease' : '';
+    }
+    if (hint) hint.textContent = Math.round(barWidth / 5);
+  }, 100);
+}
+
+window.addEventListener('load', animateBar);
+</script>
+
+</body>
+</html>

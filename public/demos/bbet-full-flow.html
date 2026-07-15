@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BBET TV · Полный флоу</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0f14;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;color:#fff}
+
+/* ── Phone ── */
+.phone{width:393px;height:852px;background:#000;border-radius:52px;overflow:hidden;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.1);box-shadow:0 48px 120px rgba(0,0,0,0.85),inset 0 0 0 1px rgba(255,255,255,0.04);position:relative}
+
+/* ── Status bar ── */
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:18px 28px 6px;flex-shrink:0}
+.sb-time{font-size:15px;font-weight:600}
+.sb-icons{display:flex;align-items:center;gap:6px}
+
+/* ── TG nav ── */
+.tg-nav{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0}
+.tg-close{font-size:15px;color:#0B9BAF;cursor:pointer;font-weight:400}
+.tg-title{text-align:center}
+.tg-title-main{font-size:15px;font-weight:600}
+.tg-title-sub{font-size:12px;color:rgba(255,255,255,0.4);margin-top:1px}
+.tg-menu{width:32px;height:32px;border:1px solid rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* ── Screen system ── */
+.screens{flex:1;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateX(30px);transition:opacity .28s ease,transform .28s ease}
+.screen.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.screen.exit-left{opacity:0;transform:translateX(-24px)}
+
+/* ── Scroll ── */
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+.scroll-area::-webkit-scrollbar{display:none}
+
+/* ── Screen header ── */
+.screen-header{display:flex;align-items:center;padding:12px 16px 8px;gap:8px;flex-shrink:0}
+.back-btn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#0B9BAF;border-radius:10px;transition:background .15s;flex-shrink:0}
+.back-btn:active{background:rgba(255,255,255,0.06)}
+.screen-title{font-size:17px;font-weight:600;flex:1;text-align:center}
+.screen-header-spacer{width:36px}
+
+/* ── Buttons ── */
+.btn-primary{background:#0B8A9B;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:600;font-family:inherit;padding:14px;cursor:pointer;text-align:center;transition:opacity .15s,transform .1s;width:100%}
+.btn-primary:active{opacity:.8;transform:scale(.98)}
+.btn-secondary{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:14px;color:rgba(255,255,255,0.7);font-size:15px;font-weight:500;font-family:inherit;padding:13px;cursor:pointer;text-align:center;transition:background .15s;width:100%}
+.btn-secondary:active{background:rgba(255,255,255,0.1)}
+
+/* ── Tab bar ── */
+.tabbar{display:flex;justify-content:space-around;align-items:center;padding:8px 0 20px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0;background:#000}
+.tab-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:4px 20px;border-radius:10px;transition:background .15s}
+.tab-item:active{background:rgba(255,255,255,0.05)}
+.tab-icon{color:rgba(255,255,255,0.3)}
+.tab-label{font-size:10px;color:rgba(255,255,255,0.3);font-weight:500}
+.tab-active-bg{background:rgba(11,138,155,0.18)}
+.tab-active-bg .tab-icon,.tab-active-bg .tab-label{color:#0BABB8}
+
+/* ── Section title ── */
+.section-title{font-size:15px;font-weight:600;padding:16px 16px 10px}
+
+/* ═══════════════════════════
+   PROFILE
+═══════════════════════════ */
+.profile-user-row{display:flex;align-items:center;gap:12px;padding:14px 16px 8px}
+.avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#0B8A9B,#0B955D);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0}
+.profile-meta{flex:1}
+.profile-name{font-size:16px;font-weight:600}
+.profile-id{font-size:12px;color:rgba(255,255,255,0.4);margin-top:2px}
+.balance-chip{display:flex;align-items:center;gap:6px;background:rgba(12,139,156,0.22);border:1px solid rgba(12,139,156,0.35);border-radius:20px;padding:6px 12px;cursor:pointer}
+.balance-chip-value{font-size:15px;font-weight:600}
+.balance-chip-label{font-size:11px;color:rgba(255,255,255,0.5)}
+.profile-actions{padding:0 16px;margin-bottom:4px}
+
+.feature-banner{margin:0 16px 10px;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:opacity .15s}
+.feature-banner:active{opacity:.8}
+.banner-shop{background:linear-gradient(135deg,rgba(11,138,155,0.25),rgba(11,149,93,0.2));border:1px solid rgba(11,138,155,0.4)}
+.banner-tasks{background:linear-gradient(135deg,rgba(255,92,0,0.2),rgba(255,140,0,0.15));border:1px solid rgba(255,92,0,0.35)}
+.banner-icon{font-size:28px;flex-shrink:0}
+.banner-text{flex:1}
+.banner-title{font-size:15px;font-weight:600;margin-bottom:2px}
+.banner-sub{font-size:12px;color:rgba(255,255,255,0.5)}
+.banner-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;border-radius:10px;flex-shrink:0;background:rgba(255,92,0,0.3);color:#FF8533;border:1px solid rgba(255,92,0,0.5)}
+.banner-arrow{color:rgba(255,255,255,0.3);flex-shrink:0;margin-left:auto}
+
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px}
+.stat-card{background:rgba(255,255,255,0.04);border-radius:14px;padding:12px 14px}
+.stat-label{font-size:12px;color:rgba(255,255,255,0.45);display:flex;align-items:center;gap:5px;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:600}
+.stat-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.dot-green{background:#0B955D}
+.dot-red{background:#EB0000}
+
+/* ═══════════════════════════
+   PRIZE SHOP
+═══════════════════════════ */
+.shop-balance-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:rgba(12,139,156,0.1);border-bottom:1px solid rgba(12,139,156,0.2);flex-shrink:0}
+.shop-balance-label{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:2px}
+.shop-balance-value{font-size:20px;font-weight:700;display:flex;align-items:center;gap:6px}
+.shop-history-btn{font-size:12px;color:#0BABB8;background:none;border:none;font-family:inherit;cursor:pointer;padding:4px 8px}
+.category-tabs{display:flex;gap:8px;padding:12px 16px;overflow-x:auto;flex-shrink:0}
+.category-tabs::-webkit-scrollbar{display:none}
+.cat-tab{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:7px 16px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);white-space:nowrap;cursor:pointer;font-family:inherit;transition:all .18s}
+.cat-tab.active{background:#0B8A9B;border-color:#0B8A9B;color:#fff}
+.prizes-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 16px 20px}
+.prize-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:14px 12px 12px;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden;transition:opacity .2s}
+.prize-card.locked{opacity:.55}
+.prize-card-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.icon-teal{background:rgba(11,138,155,0.25)}
+.icon-orange{background:rgba(255,140,0,0.2)}
+.icon-purple{background:rgba(120,80,255,0.2)}
+.icon-gold{background:rgba(255,200,0,0.18)}
+.prize-category-tag{font-size:10px;font-weight:500;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:.06em}
+.prize-name{font-size:14px;font-weight:600;line-height:1.3;flex:1}
+.prize-cost{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:600;color:#0BABB8}
+.prize-shortage{font-size:11px;color:rgba(255,255,255,0.3);margin-top:-4px}
+.btn-exchange{background:#0B8A9B;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;font-family:inherit;padding:10px;cursor:pointer;transition:opacity .15s,transform .1s;width:100%}
+.btn-exchange:active{opacity:.8;transform:scale(.97)}
+.btn-exchange.disabled{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.3);cursor:not-allowed}
+.lock-icon{position:absolute;top:10px;right:10px;font-size:13px;opacity:.35}
+
+/* ═══════════════════════════
+   1WIN TASKS
+═══════════════════════════ */
+.tasks-header-bar{padding:12px 16px 14px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.tasks-earn-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tasks-earn-label{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:3px}
+.tasks-earn-value{font-size:18px;font-weight:700;display:flex;align-items:center;gap:6px;color:#FF8533}
+.win-logo{background:#FF5C00;border-radius:8px;padding:5px 10px;font-size:14px;font-weight:900;color:#fff;letter-spacing:-.5px}
+.tasks-progress-row{display:flex;align-items:center;gap:8px}
+.tasks-progress-wrap{flex:1;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden}
+.tasks-progress-fill{height:100%;background:#FF5C00;border-radius:2px;transition:width .4s ease}
+.tasks-progress-label{font-size:11px;color:rgba(255,255,255,0.4);white-space:nowrap}
+
+.task-filter-tabs{display:flex;gap:6px;padding:10px 16px;flex-shrink:0}
+.task-tab{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);white-space:nowrap;cursor:pointer;font-family:inherit;transition:all .18s}
+.task-tab.active{background:#FF5C00;border-color:#FF5C00;color:#fff}
+
+.tasks-list{padding:0 16px 20px;display:flex;flex-direction:column;gap:10px}
+.task-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:14px 14px 12px;transition:background .15s}
+.task-card.completed{border-color:rgba(11,149,93,0.2)}
+.task-card-top{display:flex;align-items:flex-start;gap:12px}
+.task-icon-wrap{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.icon-orange-bg{background:rgba(255,92,0,0.2)}
+.icon-blue-bg{background:rgba(11,138,155,0.2)}
+.icon-green-bg{background:rgba(11,149,93,0.2)}
+.task-info{flex:1;min-width:0}
+.task-partner-row{font-size:10px;font-weight:600;color:#FF8533;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.win-badge{background:#FF5C00;border-radius:4px;padding:1px 5px;font-size:9px;color:#fff;font-weight:900;letter-spacing:0}
+.task-name{font-size:14px;font-weight:600;margin-bottom:3px;line-height:1.3}
+.task-desc{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.4}
+.task-reward-chip{display:flex;align-items:center;gap:4px;background:rgba(255,92,0,0.15);border:1px solid rgba(255,92,0,0.3);border-radius:12px;padding:4px 10px;flex-shrink:0;font-size:13px;font-weight:600;color:#FF8533;white-space:nowrap}
+.task-reward-chip.earned{background:rgba(11,149,93,0.15);border-color:rgba(11,149,93,0.3);color:#34d399}
+
+.task-card-bottom{margin-top:12px}
+.task-progress-section{margin-bottom:10px}
+.task-prog-track{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin-bottom:5px}
+.task-prog-fill{height:100%;border-radius:2px;background:#FF5C00}
+.task-prog-meta{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.4)}
+
+.task-action-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.task-status-chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:10px;white-space:nowrap}
+.status-available{background:rgba(11,149,93,0.15);color:#34d399}
+.status-progress{background:rgba(255,140,0,0.15);color:#FF8533}
+.status-done{background:rgba(11,149,93,0.12);color:rgba(52,211,153,0.7)}
+.btn-task{background:#FF5C00;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;font-family:inherit;padding:9px 16px;cursor:pointer;transition:opacity .15s,transform .1s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-task:active{opacity:.8;transform:scale(.97)}
+.btn-task-done{background:rgba(255,255,255,0.05);border:none;border-radius:10px;color:rgba(255,255,255,0.3);font-size:13px;font-weight:600;font-family:inherit;padding:9px 16px;white-space:nowrap}
+.btn-task-locked{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:rgba(255,255,255,0.2);font-size:13px;font-weight:600;font-family:inherit;padding:9px 16px;white-space:nowrap;cursor:not-allowed;display:flex;align-items:center;gap:6px}
+
+.task-card[data-status="locked"]{opacity:.45;pointer-events:none}
+.task-card[data-status="locked"] .task-reward-chip{opacity:.6}
+.task-lock-hint{font-size:11px;color:rgba(255,255,255,0.28);display:flex;align-items:center;gap:5px;margin-top:8px}
+
+@keyframes task-unlock{
+  0%{opacity:.45;transform:scale(.99)}
+  40%{opacity:1;transform:scale(1.015);border-color:rgba(11,149,93,0.6);background:rgba(11,149,93,0.06)}
+  100%{opacity:1;transform:scale(1);border-color:rgba(255,255,255,0.07);background:rgba(255,255,255,0.04)}
+}
+.task-card.unlocking{pointer-events:none;animation:task-unlock .55s cubic-bezier(.34,1.2,.64,1) forwards}
+
+/* ═══════════════════════════
+   МОИ ПРИЗЫ
+═══════════════════════════ */
+.mypf-tabs{display:flex;gap:6px;padding:10px 16px;flex-shrink:0;overflow-x:auto}
+.mypf-tabs::-webkit-scrollbar{display:none}
+.mypf-tab{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);white-space:nowrap;cursor:pointer;font-family:inherit;transition:all .18s}
+.mypf-tab.active{background:#0B8A9B;border-color:#0B8A9B;color:#fff}
+
+.my-prizes-list{padding:0 16px 20px;display:flex;flex-direction:column;gap:10px}
+
+.mpc{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:14px 14px 12px}
+.mpc.mpc-active{border-color:rgba(11,138,155,0.3)}
+.mpc.mpc-transit{border-color:rgba(11,138,155,0.25)}
+.mpc.mpc-used{opacity:.55}
+.mpc.mpc-new{border-color:rgba(11,149,93,0.4);animation:prize-in .4s cubic-bezier(.34,1.4,.64,1)}
+@keyframes prize-in{0%{opacity:0;transform:translateY(-8px) scale(.97)}100%{opacity:1;transform:none}}
+
+.mpc-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.mpc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;background:rgba(11,138,155,0.2)}
+.mpc-body{flex:1;min-width:0}
+.mpc-name{font-size:15px;font-weight:600;margin-bottom:2px}
+.mpc-meta{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.4}
+.mpc-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:10px;flex-shrink:0;white-space:nowrap}
+.badge-active{background:rgba(11,149,93,0.2);color:#34d399;border:1px solid rgba(11,149,93,0.3)}
+.badge-transit{background:rgba(11,138,155,0.2);color:#0BABB8;border:1px solid rgba(11,138,155,0.3)}
+.badge-used{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.1)}
+
+.expiry-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.expiry-label{font-size:11px;color:rgba(255,255,255,0.4)}
+.expiry-val{font-size:11px;font-weight:600;color:#34d399}
+.expiry-track{height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;margin-bottom:10px}
+.expiry-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#0B955D,#0BABB8)}
+
+.delivery-steps{display:flex;align-items:flex-start;margin-bottom:12px}
+.dstep{display:flex;flex-direction:column;align-items:center;flex:1}
+.dstep-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.dstep-dot.done{background:#0B955D}
+.dstep-dot.current{background:#0BABB8;box-shadow:0 0 0 3px rgba(11,138,155,0.25)}
+.dstep-dot.pending{background:rgba(255,255,255,0.15)}
+.dstep-label{font-size:9px;color:rgba(255,255,255,0.4);margin-top:4px;text-align:center;line-height:1.3}
+.dstep-label.done{color:rgba(255,255,255,0.6)}
+.dstep-label.current{color:#0BABB8}
+.dline{flex:1;height:1px;margin-top:4px;align-self:flex-start;margin-top:4px}
+.dline.done{background:#0B955D}
+.dline.pending{background:rgba(255,255,255,0.1)}
+
+.mpc-cta{background:#0B8A9B;border:none;border-radius:10px;color:#fff;font-size:13px;font-weight:600;font-family:inherit;padding:10px;cursor:pointer;width:100%;transition:opacity .15s,transform .1s}
+.mpc-cta:active{opacity:.8;transform:scale(.98)}
+.mpc-cta-ghost{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:rgba(255,255,255,0.65);font-size:13px;font-weight:500;font-family:inherit;padding:9px;cursor:pointer;width:100%;transition:background .15s}
+.mpc-cta-ghost:active{background:rgba(255,255,255,0.1)}
+
+.prizes-empty{text-align:center;padding:40px 20px;color:rgba(255,255,255,0.3)}
+.prizes-empty-icon{font-size:40px;margin-bottom:12px;opacity:.5}
+.prizes-empty-text{font-size:14px;line-height:1.5}
+
+/* ═══════════════════════════
+   BETTING PROMO MODAL
+═══════════════════════════ */
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.75);z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s ease;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.modal-backdrop.visible{opacity:1;pointer-events:all}
+.promo-modal{background:#0f1a22;border:1px solid rgba(255,255,255,0.1);border-radius:24px;width:100%;max-width:353px;overflow:hidden;transform:scale(.92) translateY(20px);transition:transform .34s cubic-bezier(.32,.72,0,1)}
+.modal-backdrop.visible .promo-modal{transform:scale(1) translateY(0)}
+
+.promo-hero{background:linear-gradient(160deg,#081420 0%,#0d2030 60%,#0a1c28 100%);padding:28px 24px 22px;text-align:center;position:relative;overflow:hidden}
+.promo-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(11,138,155,0.35) 0%,transparent 65%)}
+.promo-hero::after{content:'';position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);width:200px;height:60px;background:rgba(11,138,155,0.15);border-radius:50%;filter:blur(20px)}
+.promo-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(11,149,93,0.2);border:1px solid rgba(11,149,93,0.4);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;color:#34d399;text-transform:uppercase;letter-spacing:.08em;margin-bottom:18px;position:relative;z-index:1}
+.promo-badge-dot{width:6px;height:6px;border-radius:50%;background:#34d399;animation:pdot 1.6s ease-in-out infinite}
+@keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.6)}}
+.promo-sports{font-size:38px;margin-bottom:14px;position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:10px;filter:drop-shadow(0 4px 12px rgba(11,138,155,0.4))}
+.promo-title{font-size:22px;font-weight:800;line-height:1.2;margin-bottom:8px;position:relative;z-index:1}
+.promo-sub{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5;position:relative;z-index:1}
+
+.promo-features{padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.promo-feat{display:flex;align-items:center;gap:12px}
+.promo-feat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.fi-teal{background:rgba(11,138,155,0.2)}
+.fi-green{background:rgba(11,149,93,0.2)}
+.fi-orange{background:rgba(255,140,0,0.2)}
+.promo-feat-title{font-size:13px;font-weight:600;margin-bottom:1px}
+.promo-feat-desc{font-size:12px;color:rgba(255,255,255,0.45)}
+
+.promo-actions{padding:4px 20px 22px;display:flex;flex-direction:column;gap:8px}
+.btn-promo{background:#0B8A9B;border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:600;font-family:inherit;padding:14px;cursor:pointer;text-align:center;transition:opacity .15s,transform .1s;width:100%}
+.btn-promo:active{opacity:.8;transform:scale(.98)}
+.btn-promo-later{background:none;border:none;color:rgba(255,255,255,0.4);font-size:14px;font-family:inherit;padding:10px;cursor:pointer;width:100%;transition:color .15s}
+.btn-promo-later:active{color:rgba(255,255,255,0.7)}
+
+/* ═══════════════════════════
+   SUCCESS + DELIVERY SHEETS
+═══════════════════════════ */
+.overlay2{position:absolute;inset:0;background:rgba(0,0,0,0.6);opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:52;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.overlay2.visible{opacity:1;pointer-events:all}
+.bottom-sheet2{position:absolute;left:0;right:0;bottom:0;background:#0f1a22;border-radius:24px 24px 0 0;border-top:1px solid rgba(255,255,255,0.1);padding:12px 20px 36px;z-index:53;transform:translateY(100%);transition:transform .34s cubic-bezier(.32,.72,0,1)}
+.bottom-sheet2.open{transform:translateY(0)}
+
+.success-body{text-align:center;padding:4px 0 20px}
+.success-circle{width:72px;height:72px;border-radius:50%;background:rgba(11,149,93,0.2);border:2px solid rgba(11,149,93,0.5);display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 16px;animation:success-pop .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes success-pop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+.success-prize-name{font-size:18px;font-weight:700;margin-bottom:6px}
+.success-desc{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5;margin-bottom:20px;padding:0 8px}
+.success-info-card{background:rgba(255,255,255,0.04);border-radius:14px;padding:12px 14px;margin-bottom:20px;text-align:left}
+.success-info-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.success-info-row:last-child{border-bottom:none}
+.success-info-label{font-size:13px;color:rgba(255,255,255,0.5)}
+.success-info-value{font-size:13px;font-weight:600}
+.tag-active{background:rgba(11,149,93,0.2);color:#34d399;padding:2px 8px;border-radius:8px;font-size:12px;font-weight:600}
+
+.delivery-section{margin-bottom:16px}
+.delivery-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.delivery-sub{font-size:12px;color:rgba(255,255,255,0.45);margin-bottom:16px}
+.form-field{margin-bottom:12px}
+.form-label{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:6px;display:block}
+.form-input{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit;color:#fff;outline:none;transition:border-color .2s}
+.form-input:focus{border-color:rgba(11,138,155,0.6)}
+.form-input::placeholder{color:rgba(255,255,255,0.25)}
+.order-success{text-align:center;padding:8px 0 12px}
+.order-icon{font-size:36px;margin-bottom:12px}
+.order-num{font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:4px}
+.order-num-value{font-size:17px;font-weight:700;color:#0BABB8;margin-bottom:10px}
+.order-msg{font-size:13px;color:rgba(255,255,255,0.5);line-height:1.5}
+
+/* ═══════════════════════════
+   EXCHANGE SHEET
+═══════════════════════════ */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);opacity:0;pointer-events:none;transition:opacity .3s ease;z-index:50;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.overlay.visible{opacity:1;pointer-events:all}
+.bottom-sheet{position:absolute;left:0;right:0;bottom:0;background:#0f1a22;border-radius:24px 24px 0 0;border-top:1px solid rgba(255,255,255,0.1);padding:12px 20px 36px;z-index:51;transform:translateY(100%);transition:transform .34s cubic-bezier(.32,.72,0,1)}
+.bottom-sheet.open{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:rgba(255,255,255,0.2);border-radius:2px;margin:0 auto 20px}
+.sheet-prize-preview{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px;background:rgba(255,255,255,0.04);border-radius:14px}
+.sheet-prize-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(11,138,155,0.25);flex-shrink:0}
+.sheet-prize-name{font-size:16px;font-weight:600;margin-bottom:3px}
+.sheet-prize-cat{font-size:12px;color:rgba(255,255,255,0.4)}
+.sheet-rows{display:flex;flex-direction:column;margin-bottom:20px}
+.sheet-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid rgba(255,255,255,0.06)}
+.sheet-row:last-child{border-bottom:none}
+.sheet-row-label{font-size:14px;color:rgba(255,255,255,0.5)}
+.sheet-row-value{font-size:14px;font-weight:600}
+.sheet-row-value.negative{color:#f87171}
+.sheet-row-value.positive{color:#0BABB8}
+.btn-confirm{background:#0B8A9B;border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:600;font-family:inherit;padding:15px;cursor:pointer;width:100%;margin-bottom:10px;transition:opacity .15s,transform .1s}
+.btn-confirm:active{opacity:.85;transform:scale(.99)}
+.btn-cancel{background:none;border:none;color:rgba(255,255,255,0.4);font-size:14px;font-family:inherit;padding:10px;cursor:pointer;width:100%}
+
+/* ═══════════════════════════
+   TOAST
+═══════════════════════════ */
+.toast{position:absolute;top:16px;left:16px;right:16px;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;z-index:100;opacity:0;transform:translateY(-8px);transition:opacity .25s ease,transform .25s ease;pointer-events:none;backdrop-filter:blur(12px)}
+.toast.visible{opacity:1;transform:translateY(0);pointer-events:all}
+.toast-success{background:rgba(15,26,34,0.95);border:1px solid rgba(11,149,93,0.45)}
+.toast-info{background:rgba(15,26,34,0.95);border:1px solid rgba(11,138,155,0.4)}
+.toast-earn{background:rgba(15,26,34,0.95);border:1px solid rgba(255,92,0,0.4)}
+.toast-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ti-green{background:rgba(11,149,93,0.25)}
+.ti-teal{background:rgba(11,138,155,0.25)}
+.ti-orange{background:rgba(255,92,0,0.25)}
+.toast-title{font-size:14px;font-weight:600;margin-bottom:1px}
+.toast-sub{font-size:12px;color:rgba(255,255,255,0.5)}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- Status bar -->
+  <div class="statusbar">
+    <span class="sb-time">9:41</span>
+    <div class="sb-icons">
+      <svg width="17" height="12" viewBox="0 0 17 12" fill="white"><rect x="0" y="3" width="3" height="9" rx="1" opacity=".3"/><rect x="4.5" y="2" width="3" height="10" rx="1" opacity=".5"/><rect x="9" y=".5" width="3" height="11.5" rx="1" opacity=".7"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg>
+      <svg width="16" height="12" viewBox="0 0 16 12" fill="white"><path d="M8 2.4C10.6 2.4 12.9 3.5 14.5 5.3L16 3.7C14 1.4 11.2 0 8 0S2 1.4 0 3.7L1.5 5.3C3.1 3.5 5.4 2.4 8 2.4Z" opacity=".3"/><path d="M8 5.6C9.8 5.6 11.4 6.4 12.5 7.7L14 6.1C12.6 4.5 10.4 3.5 8 3.5S3.4 4.5 2 6.1L3.5 7.7C4.6 6.4 6.2 5.6 8 5.6Z" opacity=".6"/><circle cx="8" cy="10.5" r="1.5"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="white"><rect x="0" y="1" width="22" height="10" rx="2.5" stroke="white" stroke-opacity=".35" stroke-width="1" fill="none"/><rect x="1.5" y="2.5" width="17" height="7" rx="1.5"/><path d="M23 4.5v3a1.5 1.5 0 000-3z" opacity=".4"/></svg>
+    </div>
+  </div>
+
+  <!-- TG nav -->
+  <div class="tg-nav">
+    <span class="tg-close">Закрыть</span>
+    <div class="tg-title">
+      <div class="tg-title-main">BBET TV</div>
+      <div class="tg-title-sub">мини-приложение</div>
+    </div>
+    <div class="tg-menu">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="white" opacity=".6"><circle cx="8" cy="2" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="8" cy="14" r="1.5"/></svg>
+    </div>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="screens">
+
+    <!-- ── PROFILE ── -->
+    <div class="screen active" id="screen-profile">
+      <div class="scroll-area">
+        <div style="padding:14px 16px 4px;font-size:20px;font-weight:700">Профиль</div>
+
+        <div class="profile-user-row">
+          <div class="avatar">ВА</div>
+          <div class="profile-meta">
+            <div class="profile-name">Виктор Акашев</div>
+            <div class="profile-id">id 384792</div>
+          </div>
+          <div class="balance-chip" onclick="goToShop()">
+            <span style="font-size:14px">🪙</span>
+            <div>
+              <div class="balance-chip-value" id="profile-balance">3 000</div>
+              <div class="balance-chip-label">бонусов</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-actions" style="margin-bottom:12px">
+          <button class="btn-secondary">Пополнить баланс</button>
+        </div>
+
+        <div class="feature-banner banner-shop" onclick="goToShop()">
+          <div class="banner-icon">🎁</div>
+          <div class="banner-text">
+            <div class="banner-title">Магазин призов</div>
+            <div class="banner-sub">Обменяй бонусы на награды</div>
+          </div>
+          <div class="banner-arrow"><svg width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l6 6-6 6"/></svg></div>
+        </div>
+
+        <div class="feature-banner" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)" onclick="navigate('screen-profile','screen-prizes')" id="profile-prizes-banner">
+          <div class="banner-icon">🏅</div>
+          <div class="banner-text">
+            <div class="banner-title">Мои призы</div>
+            <div class="banner-sub" id="profile-prizes-sub">2 активных · 1 в доставке</div>
+          </div>
+          <div class="banner-arrow"><svg width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l6 6-6 6"/></svg></div>
+        </div>
+
+        <div class="feature-banner banner-tasks" onclick="goToTasks()">
+          <div class="banner-icon">⚔️</div>
+          <div class="banner-text">
+            <div class="banner-title">Задания 1WIN</div>
+            <div class="banner-sub">Выполняй — получай баллы</div>
+          </div>
+          <div class="banner-badge">Новое</div>
+        </div>
+
+        <div class="section-title">Статистика ставок</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Всего</div>
+            <div class="stat-value">25</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round"><circle cx="6" cy="6" r="5"/><path d="M6 3v3.5l2 1.5"/></svg>
+              Ожидают
+            </div>
+            <div class="stat-value">5</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><span class="stat-dot dot-green"></span>Выиграно</div>
+            <div class="stat-value">12</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><span class="stat-dot dot-red"></span>Проиграно</div>
+            <div class="stat-value">8</div>
+          </div>
+        </div>
+        <div style="height:16px"></div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tab-item">
+          <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="16" height="15" rx="2"/><path d="M8 4V3a3 3 0 016 0v1"/><path d="M3 9h16"/></svg></div>
+          <div class="tab-label">Календарь</div>
+        </div>
+        <div class="tab-item" onclick="showPromo()">
+          <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 11L11 4l8 7"/><path d="M5 9v9a1 1 0 001 1h4v-5h2v5h4a1 1 0 001-1V9"/></svg></div>
+          <div class="tab-label">Главная</div>
+        </div>
+        <div class="tab-item tab-active-bg">
+          <div class="tab-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="8" r="3.5"/><path d="M4 19c0-3.866 3.134-7 7-7h0c3.866 0 7 3.134 7 7"/></svg></div>
+          <div class="tab-label">Профиль</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRIZE SHOP ── -->
+    <div class="screen" id="screen-shop">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack('screen-profile')">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 1L1 9l8 8"/></svg>
+        </div>
+        <div class="screen-title">Магазин призов</div>
+        <div class="screen-header-spacer"></div>
+      </div>
+
+      <div class="shop-balance-bar">
+        <div>
+          <div class="shop-balance-label">Ваш баланс</div>
+          <div class="shop-balance-value">
+            <span>🪙</span>
+            <span id="shop-balance">3 000</span>
+            <span style="font-size:13px;font-weight:400;color:rgba(255,255,255,0.45)">бонусов</span>
+          </div>
+        </div>
+        <button class="shop-history-btn" onclick="navigate('screen-shop','screen-prizes')">Мои призы →</button>
+      </div>
+
+      <div class="category-tabs">
+        <button class="cat-tab active" onclick="filterCat(this,'all')">Все</button>
+        <button class="cat-tab" onclick="filterCat(this,'freebets')">Фрибеты</button>
+        <button class="cat-tab" onclick="filterCat(this,'boost')">Буст коэф.</button>
+        <button class="cat-tab" onclick="filterCat(this,'merch')">Мерч</button>
+        <button class="cat-tab" onclick="filterCat(this,'vip')">VIP</button>
+      </div>
+
+      <div class="scroll-area">
+        <div class="prizes-grid" id="prizes-grid">
+          <div class="prize-card" data-cat="freebets" data-cost="500" data-name="Фрибет ₽100" data-icon="🎯" data-emoji-cat="Фрибет">
+            <div class="prize-card-icon icon-teal">🎯</div>
+            <div class="prize-category-tag">Фрибет</div>
+            <div class="prize-name">Фрибет ₽100</div>
+            <div class="prize-cost"><span>🪙</span> 500</div>
+            <button class="btn-exchange" onclick="openSheet(this)">Обменять</button>
+          </div>
+          <div class="prize-card" data-cat="boost" data-cost="1000" data-name="Буст коэф. ×1.1" data-icon="⚡" data-emoji-cat="Буст">
+            <div class="prize-card-icon icon-orange">⚡</div>
+            <div class="prize-category-tag">Буст</div>
+            <div class="prize-name">Буст коэф. ×1.1</div>
+            <div class="prize-cost"><span>🪙</span> 1 000</div>
+            <button class="btn-exchange" onclick="openSheet(this)">Обменять</button>
+          </div>
+          <div class="prize-card" data-cat="freebets" data-cost="2000" data-name="Фрибет ₽500" data-icon="🎯" data-emoji-cat="Фрибет">
+            <div class="prize-card-icon icon-teal">🎯</div>
+            <div class="prize-category-tag">Фрибет</div>
+            <div class="prize-name">Фрибет ₽500</div>
+            <div class="prize-cost"><span>🪙</span> 2 000</div>
+            <button class="btn-exchange" onclick="openSheet(this)">Обменять</button>
+          </div>
+          <div class="prize-card locked" data-cat="boost" data-cost="3500" data-name="Буст коэф. ×1.25" data-icon="🔥" data-emoji-cat="Буст">
+            <div class="lock-icon">🔒</div>
+            <div class="prize-card-icon icon-orange">🔥</div>
+            <div class="prize-category-tag">Буст</div>
+            <div class="prize-name">Буст коэф. ×1.25</div>
+            <div class="prize-cost"><span>🪙</span> 3 500</div>
+            <div class="prize-shortage">Не хватает 500</div>
+            <button class="btn-exchange disabled" disabled>Обменять</button>
+          </div>
+          <div class="prize-card locked" data-cat="freebets" data-cost="5000" data-name="Фрибет ₽1 000" data-icon="🎯" data-emoji-cat="Фрибет">
+            <div class="lock-icon">🔒</div>
+            <div class="prize-card-icon icon-teal">🎯</div>
+            <div class="prize-category-tag">Фрибет</div>
+            <div class="prize-name">Фрибет ₽1 000</div>
+            <div class="prize-cost"><span>🪙</span> 5 000</div>
+            <div class="prize-shortage">Не хватает 2 000</div>
+            <button class="btn-exchange disabled" disabled>Обменять</button>
+          </div>
+          <div class="prize-card locked" data-cat="merch" data-cost="8000" data-name="Кепка BBET" data-icon="🧢" data-emoji-cat="Мерч">
+            <div class="lock-icon">🔒</div>
+            <div class="prize-card-icon icon-purple">🧢</div>
+            <div class="prize-category-tag">Мерч</div>
+            <div class="prize-name">Кепка BBET</div>
+            <div class="prize-cost"><span>🪙</span> 8 000</div>
+            <div class="prize-shortage">Не хватает 5 000</div>
+            <button class="btn-exchange disabled" disabled>Обменять</button>
+          </div>
+          <div class="prize-card locked" data-cat="freebets" data-cost="12000" data-name="Фрибет ₽3 000" data-icon="🎯" data-emoji-cat="Фрибет">
+            <div class="lock-icon">🔒</div>
+            <div class="prize-card-icon icon-teal">🎯</div>
+            <div class="prize-category-tag">Фрибет</div>
+            <div class="prize-name">Фрибет ₽3 000</div>
+            <div class="prize-cost"><span>🪙</span> 12 000</div>
+            <div class="prize-shortage">Не хватает 9 000</div>
+            <button class="btn-exchange disabled" disabled>Обменять</button>
+          </div>
+          <div class="prize-card locked" data-cat="vip" data-cost="25000" data-name="VIP-билет на матч" data-icon="🎫" data-emoji-cat="VIP">
+            <div class="lock-icon">🔒</div>
+            <div class="prize-card-icon icon-gold">🎫</div>
+            <div class="prize-category-tag">VIP</div>
+            <div class="prize-name">VIP-билет на матч</div>
+            <div class="prize-cost"><span>🪙</span> 25 000</div>
+            <div class="prize-shortage">Не хватает 22 000</div>
+            <button class="btn-exchange disabled" disabled>Обменять</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 1WIN TASKS ── -->
+    <div class="screen" id="screen-tasks">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack('screen-profile')">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 1L1 9l8 8"/></svg>
+        </div>
+        <div class="screen-title">Задания 1WIN</div>
+        <div class="screen-header-spacer"></div>
+      </div>
+
+      <div class="tasks-header-bar">
+        <div class="tasks-earn-row">
+          <div>
+            <div class="tasks-earn-label">Всего можно заработать</div>
+            <div class="tasks-earn-value"><span>🪙</span> 8 750 бонусов</div>
+          </div>
+          <div class="win-logo">1WIN</div>
+        </div>
+        <div class="tasks-progress-row">
+          <div class="tasks-progress-wrap">
+            <div class="tasks-progress-fill" id="tasks-prog-fill" style="width:16.7%"></div>
+          </div>
+          <div class="tasks-progress-label" id="tasks-prog-label">1 из 6 выполнено</div>
+        </div>
+      </div>
+
+      <div class="task-filter-tabs">
+        <button class="task-tab active" onclick="filterTasks(this,'all')">Все</button>
+        <button class="task-tab" onclick="filterTasks(this,'active')">Активные</button>
+        <button class="task-tab" onclick="filterTasks(this,'done')">Выполнено</button>
+      </div>
+
+      <div class="scroll-area">
+        <div class="tasks-list" id="tasks-list">
+
+          <!-- ШАГ 1: Выполнено -->
+          <div class="task-card completed" data-status="done" data-order="1" data-reward="500" data-task-name="Регистрация в 1WIN">
+            <div class="task-card-top">
+              <div class="task-icon-wrap icon-green-bg">✅</div>
+              <div class="task-info">
+                <div class="task-partner-row"><span class="win-badge">1WIN</span> Шаг 1 из 6</div>
+                <div class="task-name">Регистрация в 1WIN</div>
+                <div class="task-desc">Создай аккаунт на платформе</div>
+              </div>
+              <div class="task-reward-chip earned">+500 🪙</div>
+            </div>
+            <div class="task-card-bottom">
+              <div class="task-action-row">
+                <div class="task-status-chip status-done">✓ Выполнено</div>
+                <button class="btn-task-done">Получено</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ШАГ 2: Доступно -->
+          <div class="task-card" data-status="active" data-order="2" data-reward="1500" data-task-name="Первый депозит">
+            <div class="task-card-top">
+              <div class="task-icon-wrap icon-orange-bg">💳</div>
+              <div class="task-info">
+                <div class="task-partner-row"><span class="win-badge">1WIN</span> Шаг 2 из 6</div>
+                <div class="task-name">Первый депозит</div>
+                <div class="task-desc">Внеси первый депозит на платформу</div>
+              </div>
+              <div class="task-reward-chip">+1 500 🪙</div>
+            </div>
+            <div class="task-card-bottom">
+              <div class="task-action-row">
+                <div class="task-status-chip status-available">● Доступно</div>
+                <button class="btn-task" onclick="doTask(event,this)">
+                  Выполнить
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ШАГ 3: Заблокировано -->
+          <div class="task-card" data-status="locked" data-order="3" data-reward="750" data-task-name="Первая ставка">
+            <div class="task-card-top">
+              <div class="task-icon-wrap icon-blue-bg">🎯</div>
+              <div class="task-info">
+                <div class="task-partner-row"><span class="win-badge">1WIN</span> Шаг 3 из 6</div>
+                <div class="task-name">Первая ставка</div>
+                <div class="task-desc">Сделай первую ставку в 1WIN</div>
+              </div>
+              <div class="task-reward-chip">+750 🪙</div>
+            </div>
+            <div class="task-card-bottom">
+              <div class="task-action-row">
+                <div class="task-status-chip" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.3)">🔒 Заблокировано</div>
+                <button class="btn-task-locked">🔒 Недоступно</button>
+              </div>
+              <div class="task-lock-hint">Сначала выполни предыдущее задание</div>
+            </div>
+          </div>
+
+          <!-- ШАГ 4: Заблокировано -->
+          <div class="task-card" data-status="locked" data-order="4" data-reward="1000" data-task-name="Верификация аккаунта">
+            <div class="task-card-top">
+              <div class="task-icon-wrap icon-blue-bg">🔐</div>
+              <div class="task-info">
+                <div class="task-partner-row"><span class="win-badge">1WIN</span> Шаг 4 из 6</div>
+                <div class="task-name">Верификация аккаунта</div>
+                <div class="task-desc">Подтверди личность в 1WIN</div>
+              </div>
+              <div class="task-reward-chip">+1 000 🪙</div>
+            </div>
+            <div class="task-card-bottom">
+              <div class="task-action-row">
+                <div class="task-status-chip" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.3)">🔒 Заблокировано</div>
+                <button class="btn-task-locked">🔒 Недоступно</button>
+              </div>
+              <div class="task-lock-hint">Сначала выполни предыдущее задание</div>
+            </div>
+          </div>
+
+          <!-- ШАГ 5: Заблокировано -->
+          <div class="task-card" data-status="locked" data-order="5" data-reward="3000" data-task-name="Депозит от ₽5 000">
+            <div class="task-card-top">
+              <div class="task-icon-wrap icon-orange-bg">💰</div>
+              <div class="task-info">
+                <div class="task-partner-row"><span class="win-badge">1WIN</span> Шаг 5 из 6</div>
+                <div class="task-name">Депозит от ₽5 000</div>
+                <div class="task-desc">Пополни счёт на сумму от ₽5 000</div>
+              </div>
+              <div class="task-reward-chip">+3 000 🪙</div>
+            </div>
+            <div class="task-card-bottom">
+              <div class="task-action-row">
+                <div class="task-status-chip" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.3)">🔒 Заблокировано</div>
+                <button class="btn-task-locked">🔒 Недоступно</button>
+              </div>
+              <div class="task-lock-hint">Сначала выполни предыдущее задание</div>
+            </div>
+          </div>
+
+          <!-- ШАГ 6: Заблокировано -->
+          <div class="task-card" data-status="locked" data-order="6" data-reward="2000" data-task-name="Сыграть 10 ставок">
+            <div class="task-card-top">
+              <div class="task-icon-wrap icon-orange-bg">🏆</div>
+              <div class="task-info">
+                <div class="task-partner-row"><span class="win-badge">1WIN</span> Шаг 6 из 6</div>
+                <div class="task-name">Сыграть 10 ставок</div>
+                <div class="task-desc">Сделай 10 ставок на любые события</div>
+              </div>
+              <div class="task-reward-chip">+2 000 🪙</div>
+            </div>
+            <div class="task-card-bottom">
+              <div class="task-action-row">
+                <div class="task-status-chip" style="background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.3)">🔒 Заблокировано</div>
+                <button class="btn-task-locked">🔒 Недоступно</button>
+              </div>
+              <div class="task-lock-hint">Сначала выполни предыдущее задание</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── МОИ ПРИЗЫ ── -->
+    <div class="screen" id="screen-prizes">
+      <div class="screen-header">
+        <div class="back-btn" onclick="goBack('screen-profile')">
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 1L1 9l8 8"/></svg>
+        </div>
+        <div class="screen-title">Мои призы</div>
+        <div class="screen-header-spacer"></div>
+      </div>
+
+      <div class="mypf-tabs">
+        <button class="mypf-tab active" onclick="filterMyPrizes(this,'all')">Все</button>
+        <button class="mypf-tab" onclick="filterMyPrizes(this,'active')">Активные</button>
+        <button class="mypf-tab" onclick="filterMyPrizes(this,'transit')">В доставке</button>
+        <button class="mypf-tab" onclick="filterMyPrizes(this,'used')">История</button>
+      </div>
+
+      <div class="scroll-area">
+        <div class="my-prizes-list" id="my-prizes-list">
+
+          <!-- АКТИВНЫЙ: Фрибет ₽100 -->
+          <div class="mpc mpc-active" data-mstatus="active">
+            <div class="mpc-top">
+              <div class="mpc-icon icon-teal">🎯</div>
+              <div class="mpc-body">
+                <div class="mpc-name">Фрибет ₽100</div>
+                <div class="mpc-meta">Фрибет · Получен 22 июня 2026</div>
+              </div>
+              <div class="mpc-badge badge-active">● Активен</div>
+            </div>
+            <div class="expiry-row">
+              <span class="expiry-label">Истекает</span>
+              <span class="expiry-val">через 7 дней</span>
+            </div>
+            <div class="expiry-track"><div class="expiry-fill" style="width:100%"></div></div>
+            <button class="mpc-cta">Использовать в ставке →</button>
+          </div>
+
+          <!-- АКТИВНЫЙ: Буст ×1.1 -->
+          <div class="mpc mpc-active" data-mstatus="active">
+            <div class="mpc-top">
+              <div class="mpc-icon icon-orange">⚡</div>
+              <div class="mpc-body">
+                <div class="mpc-name">Буст коэф. ×1.1</div>
+                <div class="mpc-meta">Буст · Получен 22 июня 2026</div>
+              </div>
+              <div class="mpc-badge badge-active">● Активен</div>
+            </div>
+            <div class="expiry-row">
+              <span class="expiry-label">Применится автоматически</span>
+              <span class="expiry-val">до конца дня</span>
+            </div>
+            <div class="expiry-track"><div class="expiry-fill" style="width:80%"></div></div>
+            <button class="mpc-cta">Перейти к ставке →</button>
+          </div>
+
+          <!-- В ДОСТАВКЕ: Кепка BBET -->
+          <div class="mpc mpc-transit" data-mstatus="transit">
+            <div class="mpc-top">
+              <div class="mpc-icon icon-purple">🧢</div>
+              <div class="mpc-body">
+                <div class="mpc-name">Кепка BBET</div>
+                <div class="mpc-meta">Мерч · Заказ BB-29471 · 21 июня</div>
+              </div>
+              <div class="mpc-badge badge-transit">✈ В пути</div>
+            </div>
+            <!-- Delivery stepper -->
+            <div class="delivery-steps">
+              <div class="dstep">
+                <div class="dstep-dot done"></div>
+                <div class="dstep-label done">Принят</div>
+              </div>
+              <div class="dline done"></div>
+              <div class="dstep">
+                <div class="dstep-dot done"></div>
+                <div class="dstep-label done">Собран</div>
+              </div>
+              <div class="dline done"></div>
+              <div class="dstep">
+                <div class="dstep-dot current"></div>
+                <div class="dstep-label current">Отправлен</div>
+              </div>
+              <div class="dline pending"></div>
+              <div class="dstep">
+                <div class="dstep-dot pending"></div>
+                <div class="dstep-label">Доставлен</div>
+              </div>
+            </div>
+            <button class="mpc-cta-ghost" onclick="showToast('📦','ti-teal','toast-info','СДЭК · 123456789','Ожидаемая дата: 28 июня')">Трек СДЭК · 123456789 →</button>
+          </div>
+
+          <!-- ИСТОРИЯ: Фрибет ₽500 -->
+          <div class="mpc mpc-used" data-mstatus="used">
+            <div class="mpc-top">
+              <div class="mpc-icon icon-teal" style="opacity:.5">🎯</div>
+              <div class="mpc-body">
+                <div class="mpc-name">Фрибет ₽500</div>
+                <div class="mpc-meta">Фрибет · Использован 18 июня<br>Ставка #4821 · Россия – Аргентина</div>
+              </div>
+              <div class="mpc-badge badge-used">Использован</div>
+            </div>
+          </div>
+
+          <!-- ИСТОРИЯ: Буст ×1.1 -->
+          <div class="mpc mpc-used" data-mstatus="used">
+            <div class="mpc-top">
+              <div class="mpc-icon icon-orange" style="opacity:.5">⚡</div>
+              <div class="mpc-body">
+                <div class="mpc-name">Буст коэф. ×1.1</div>
+                <div class="mpc-meta">Буст · Использован 15 июня<br>Ставка #4790 · Манчестер – Реал</div>
+              </div>
+              <div class="mpc-badge badge-used">Использован</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <!-- ── BETTING PROMO MODAL ── -->
+  <div class="modal-backdrop" id="modal-promo" onclick="closePromo()">
+    <div class="promo-modal" onclick="event.stopPropagation()">
+      <div class="promo-hero">
+        <div class="promo-badge"><div class="promo-badge-dot"></div>Новая функция</div>
+        <div class="promo-sports">⚽ 🏀 🎾</div>
+        <div class="promo-title">Ставки теперь<br>в BBET TV</div>
+        <div class="promo-sub">Делай ставки прямо в приложении —<br>без переходов на сторонние сайты</div>
+      </div>
+      <div class="promo-features">
+        <div class="promo-feat">
+          <div class="promo-feat-icon fi-teal">⚡</div>
+          <div>
+            <div class="promo-feat-title">Котировки в реальном времени</div>
+            <div class="promo-feat-desc">Актуальные коэффициенты на все матчи</div>
+          </div>
+        </div>
+        <div class="promo-feat">
+          <div class="promo-feat-icon fi-green">🪙</div>
+          <div>
+            <div class="promo-feat-title">Баллы за каждую ставку</div>
+            <div class="promo-feat-desc">Накапливай бонусы и меняй на призы</div>
+          </div>
+        </div>
+        <div class="promo-feat">
+          <div class="promo-feat-icon fi-orange">🎁</div>
+          <div>
+            <div class="promo-feat-title">Фрибет ₽100 для старта</div>
+            <div class="promo-feat-desc">Бесплатная ставка для новых игроков</div>
+          </div>
+        </div>
+      </div>
+      <div class="promo-actions">
+        <button class="btn-promo" onclick="closePromoGo()">Перейти к ставкам →</button>
+        <button class="btn-promo-later" onclick="closePromo()">Напомнить позже</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EXCHANGE OVERLAY ── -->
+  <div class="overlay" id="overlay" onclick="closeSheet()">
+    <div class="bottom-sheet" id="bottom-sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="sheet-prize-preview">
+        <div class="sheet-prize-icon" id="sheet-icon">🎯</div>
+        <div>
+          <div class="sheet-prize-name" id="sheet-name">Фрибет ₽100</div>
+          <div class="sheet-prize-cat" id="sheet-cat">Фрибет</div>
+        </div>
+      </div>
+      <div class="sheet-rows">
+        <div class="sheet-row">
+          <span class="sheet-row-label">Стоимость обмена</span>
+          <span class="sheet-row-value negative" id="sheet-cost">− 500 🪙</span>
+        </div>
+        <div class="sheet-row">
+          <span class="sheet-row-label">Текущий баланс</span>
+          <span class="sheet-row-value" id="sheet-current">3 000 🪙</span>
+        </div>
+        <div class="sheet-row">
+          <span class="sheet-row-label">Баланс после</span>
+          <span class="sheet-row-value positive" id="sheet-after">2 500 🪙</span>
+        </div>
+      </div>
+      <button class="btn-confirm" onclick="confirmExchange()">Подтвердить обмен</button>
+      <button class="btn-cancel" onclick="closeSheet()">Отмена</button>
+    </div>
+  </div>
+
+  <!-- ── SUCCESS SHEET ── -->
+  <div class="overlay2" id="overlay2" onclick="closeSuccess()">
+    <div class="bottom-sheet2" id="sheet-success" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="success-body">
+        <div class="success-circle" id="suc-circle">✓</div>
+        <div class="success-prize-name" id="suc-name">Фрибет ₽100</div>
+        <div class="success-desc" id="suc-desc">Фрибет активирован и доступен в разделе ставок</div>
+        <div class="success-info-card" id="suc-info">
+          <div class="success-info-row">
+            <span class="success-info-label">Статус</span>
+            <span class="success-info-value"><span class="tag-active" id="suc-status">Активен</span></span>
+          </div>
+          <div class="success-info-row" id="suc-row-expires">
+            <span class="success-info-label">Истекает</span>
+            <span class="success-info-value" id="suc-expires">через 7 дней</span>
+          </div>
+          <div class="success-info-row" id="suc-row-where">
+            <span class="success-info-label">Где использовать</span>
+            <span class="success-info-value" id="suc-where">Раздел ставок</span>
+          </div>
+        </div>
+        <button class="btn-confirm" id="suc-cta" onclick="closeSuccessAndGo()">Перейти к ставкам</button>
+        <button class="btn-cancel" onclick="closeSuccess()">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DELIVERY SHEET ── -->
+  <div class="overlay2" id="overlay3" onclick="">
+    <div class="bottom-sheet2" id="sheet-delivery" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div id="delivery-form-view">
+        <div class="delivery-section">
+          <div class="delivery-title">Адрес доставки</div>
+          <div class="delivery-sub" id="delivery-sub">Укажи данные — отправим кепку BBET в течение 7–14 дней</div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Имя и фамилия</label>
+          <input class="form-input" type="text" placeholder="Иван Иванов" id="inp-name">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Город</label>
+          <input class="form-input" type="text" placeholder="Москва" id="inp-city">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Адрес и индекс</label>
+          <input class="form-input" type="text" placeholder="ул. Пушкина, д.1, кв.2, 101000" id="inp-addr">
+        </div>
+        <button class="btn-confirm" onclick="submitDelivery()" style="margin-top:4px">Подтвердить заказ</button>
+        <button class="btn-cancel" onclick="closeDelivery()">Отмена</button>
+      </div>
+      <div id="delivery-success-view" style="display:none">
+        <div class="order-success">
+          <div class="order-icon">📦</div>
+          <div class="order-num">Номер заказа</div>
+          <div class="order-num-value" id="order-num-val">BB-29471</div>
+          <div class="order-msg">Мы получили твой заказ. Статус доставки появится<br>в разделе «История призов» в течение 24 часов.</div>
+          <button class="btn-confirm" onclick="closeDeliveryAndGo()" style="margin-top:20px">Смотреть в «Мои призы»</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div class="toast toast-success" id="toast">
+    <div class="toast-icon ti-green" id="toast-icon-wrap">
+      <span id="toast-icon">✓</span>
+    </div>
+    <div>
+      <div class="toast-title" id="toast-title">Получено!</div>
+      <div class="toast-sub" id="toast-sub">Фрибет активирован</div>
+    </div>
+  </div>
+
+</div><!-- /phone -->
+
+<script>
+let currentBalance = 3000;
+let pendingCost = 0;
+let pendingName = '';
+let tasksCompleted = 1;
+const totalTasks = 6;
+
+// ── Navigation ──
+function navigate(fromId, toId) {
+  const from = document.getElementById(fromId);
+  const to   = document.getElementById(toId);
+  from.classList.add('exit-left');
+  setTimeout(() => {
+    from.classList.remove('active','exit-left');
+    to.classList.add('active');
+  }, 60);
+}
+
+function goBack(targetId) {
+  const cur = document.querySelector('.screen.active');
+  if (!cur) return;
+  cur.classList.remove('active');
+  cur.style.transform = 'translateX(30px)';
+  const target = document.getElementById(targetId);
+  target.classList.add('active');
+  target.style.transform = 'translateX(-24px)';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    cur.style.transform = '';
+    target.style.transform = '';
+  }));
+}
+
+function goToShop()  { navigate('screen-profile','screen-shop'); }
+function goToTasks() { navigate('screen-profile','screen-tasks'); }
+
+// ── Promo ──
+function showPromo() { document.getElementById('modal-promo').classList.add('visible'); }
+function closePromo() { document.getElementById('modal-promo').classList.remove('visible'); }
+function closePromoGo() {
+  closePromo();
+  setTimeout(() => showToast('⚡','ti-teal','toast-info','Раздел ставок','Скоро будет доступен'), 250);
+}
+setTimeout(showPromo, 1600);
+
+// ── Prize shop ──
+function filterCat(btn, cat) {
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.prize-card').forEach(card => {
+    card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+  });
+}
+
+function openSheet(btn) {
+  const card = btn.closest('.prize-card');
+  const cost = parseInt(card.dataset.cost);
+  pendingCost = cost;
+  pendingName = card.dataset.name;
+
+  document.getElementById('sheet-icon').textContent   = card.dataset.icon;
+  document.getElementById('sheet-name').textContent   = card.dataset.name;
+  document.getElementById('sheet-cat').textContent    = card.dataset.emojiCat;
+  document.getElementById('sheet-cost').textContent   = `− ${cost.toLocaleString('ru')} 🪙`;
+  document.getElementById('sheet-current').textContent = `${currentBalance.toLocaleString('ru')} 🪙`;
+  document.getElementById('sheet-after').textContent  = `${(currentBalance - cost).toLocaleString('ru')} 🪙`;
+
+  document.getElementById('overlay').classList.add('visible');
+  requestAnimationFrame(() => document.getElementById('bottom-sheet').classList.add('open'));
+}
+
+function closeSheet() {
+  document.getElementById('bottom-sheet').classList.remove('open');
+  setTimeout(() => document.getElementById('overlay').classList.remove('visible'), 300);
+}
+
+function confirmExchange() {
+  closeSheet();
+  currentBalance -= pendingCost;
+  syncBalances();
+  document.querySelectorAll('.prize-card').forEach(card => {
+    const cost = parseInt(card.dataset.cost);
+    const btn  = card.querySelector('.btn-exchange');
+    const shortage = card.querySelector('.prize-shortage');
+    const lock = card.querySelector('.lock-icon');
+    if (cost <= currentBalance) {
+      card.classList.remove('locked');
+      btn.classList.remove('disabled'); btn.disabled = false;
+      if (shortage) shortage.style.display = 'none';
+      if (lock) lock.style.display = 'none';
+    } else {
+      card.classList.add('locked');
+      btn.classList.add('disabled'); btn.disabled = true;
+      if (shortage) { shortage.style.display=''; shortage.textContent=`Не хватает ${(cost-currentBalance).toLocaleString('ru')}`; }
+    }
+  });
+
+  // determine prize category from pending card
+  const card = document.querySelector(`.prize-card[data-name="${pendingName}"]`);
+  const cat  = card ? card.dataset.cat : 'freebets';
+
+  // add to Мои призы immediately
+  addToPrizes(pendingName, cat);
+
+  setTimeout(() => {
+    if (cat === 'merch' || cat === 'vip') {
+      openDelivery(pendingName, cat);
+    } else {
+      openSuccess(pendingName, cat);
+    }
+  }, 250);
+}
+
+// ── Success sheet ──
+function openSuccess(name, cat) {
+  const descMap = {
+    freebets: 'Фрибет активирован и доступен в разделе ставок',
+    boost:    'Буст активирован — применится автоматически к следующей ставке',
+    vip:      'VIP-билет зарезервирован. Инструкции придут в Telegram',
+  };
+  const whereMap = {
+    freebets: 'Раздел ставок',
+    boost:    'Следующая ставка',
+    vip:      'Telegram-уведомление',
+  };
+  const expiresMap = {
+    freebets: 'через 7 дней',
+    boost:    'до конца дня',
+    vip:      'до матча',
+  };
+  const iconMap = { freebets:'🎯', boost:'⚡', vip:'🎫', merch:'🧢' };
+
+  document.getElementById('suc-circle').textContent     = iconMap[cat] || '✓';
+  document.getElementById('suc-name').textContent       = name;
+  document.getElementById('suc-desc').textContent       = descMap[cat] || descMap.freebets;
+  document.getElementById('suc-expires').textContent    = expiresMap[cat] || 'через 7 дней';
+  document.getElementById('suc-where').textContent      = whereMap[cat] || 'Раздел ставок';
+  document.getElementById('suc-cta').textContent        = cat === 'vip' ? 'Понятно' : 'Перейти к ставкам';
+
+  document.getElementById('overlay2').classList.add('visible');
+  requestAnimationFrame(() => document.getElementById('sheet-success').classList.add('open'));
+}
+function closeSuccess() {
+  document.getElementById('sheet-success').classList.remove('open');
+  setTimeout(() => document.getElementById('overlay2').classList.remove('visible'), 300);
+}
+function closeSuccessAndGo() {
+  const cat = document.getElementById('suc-cta').dataset.cat || 'freebets';
+  closeSuccess();
+  setTimeout(() => {
+    if (cat === 'merch' || cat === 'vip') {
+      navigate('screen-shop','screen-prizes');
+    } else {
+      navigate('screen-shop','screen-prizes');
+    }
+  }, 320);
+}
+
+// ── Delivery sheet ──
+function openDelivery(name, cat) {
+  document.getElementById('delivery-sub').textContent =
+    cat === 'vip'
+      ? `Укажи контактные данные — вышлем VIP-билет и детали в Telegram`
+      : `Укажи данные — отправим ${name} в течение 7–14 дней`;
+  document.getElementById('delivery-form-view').style.display  = '';
+  document.getElementById('delivery-success-view').style.display = 'none';
+  document.getElementById('inp-name').value = '';
+  document.getElementById('inp-city').value = '';
+  document.getElementById('inp-addr').value = '';
+
+  document.getElementById('overlay3').classList.add('visible');
+  requestAnimationFrame(() => document.getElementById('sheet-delivery').classList.add('open'));
+}
+function submitDelivery() {
+  const num = 'BB-' + Math.floor(10000 + Math.random() * 89999);
+  document.getElementById('order-num-val').textContent = num;
+  document.getElementById('delivery-form-view').style.display   = 'none';
+  document.getElementById('delivery-success-view').style.display = '';
+}
+function closeDelivery() {
+  document.getElementById('sheet-delivery').classList.remove('open');
+  setTimeout(() => document.getElementById('overlay3').classList.remove('visible'), 300);
+}
+function closeDeliveryAndGo() {
+  closeDelivery();
+  setTimeout(() => navigate('screen-shop','screen-prizes'), 320);
+}
+
+// ── Tasks ──
+function filterTasks(btn, filter) {
+  document.querySelectorAll('.task-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.task-card').forEach(card => {
+    if (filter === 'all') card.style.display = '';
+    else if (filter === 'active') card.style.display = (card.dataset.status === 'active' || card.dataset.status === 'locked') ? '' : 'none';
+    else card.style.display = card.dataset.status === 'done' ? '' : 'none';
+  });
+}
+
+function doTask(e, btn) {
+  e.stopPropagation();
+  const card = btn.closest('.task-card');
+  const reward = parseInt(card.dataset.reward);
+  const name   = card.dataset.taskName;
+
+  // mark done
+  card.dataset.status = 'done';
+  card.classList.add('completed');
+  card.querySelector('.task-reward-chip').classList.add('earned');
+  const statusEl = card.querySelector('.task-status-chip');
+  statusEl.className = 'task-status-chip status-done';
+  statusEl.textContent = '✓ Выполнено';
+  const doneBtn = document.createElement('button');
+  doneBtn.className = 'btn-task-done';
+  doneBtn.textContent = 'Получено';
+  btn.replaceWith(doneBtn);
+
+  tasksCompleted++;
+  updateTasksProgress();
+  currentBalance += reward;
+  syncBalances();
+
+  // unlock next task after short delay
+  setTimeout(unlockNextTask, 350);
+  setTimeout(() => showToast('🪙','ti-orange','toast-earn',`+${reward.toLocaleString('ru')} бонусов`,`${name} — выполнено`), 200);
+}
+
+function unlockNextTask() {
+  const next = document.querySelector('.task-card[data-status="locked"]');
+  if (!next) return;
+
+  next.classList.add('unlocking');
+  setTimeout(() => {
+    next.classList.remove('unlocking');
+    next.dataset.status = 'active';
+
+    // update status chip
+    const statusEl = next.querySelector('.task-status-chip');
+    statusEl.removeAttribute('style');
+    statusEl.className = 'task-status-chip status-available';
+    statusEl.textContent = '● Доступно';
+
+    // replace locked button with active button
+    const lockedBtn = next.querySelector('.btn-task-locked');
+    const activeBtn = document.createElement('button');
+    activeBtn.className = 'btn-task';
+    activeBtn.innerHTML = `Выполнить <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 6h8M6 2l4 4-4 4"/></svg>`;
+    activeBtn.onclick = (e) => doTask(e, activeBtn);
+    lockedBtn.replaceWith(activeBtn);
+
+    // remove lock hint
+    const hint = next.querySelector('.task-lock-hint');
+    if (hint) hint.remove();
+  }, 550);
+}
+
+function updateTasksProgress() {
+  const pct = (tasksCompleted / totalTasks) * 100;
+  document.getElementById('tasks-prog-fill').style.width = pct + '%';
+  document.getElementById('tasks-prog-label').textContent = `${tasksCompleted} из ${totalTasks} выполнено`;
+}
+
+// ── Balance sync ──
+function syncBalances() {
+  const fmt = currentBalance.toLocaleString('ru');
+  document.getElementById('shop-balance').textContent    = fmt;
+  document.getElementById('profile-balance').textContent = fmt;
+}
+
+// ── Toast ──
+let toastTimer;
+function showToast(icon, iconClass, cardClass, title, sub) {
+  clearTimeout(toastTimer);
+  const toast = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast-icon-wrap').className = `toast-icon ${iconClass}`;
+  toast.className = `toast ${cardClass} visible`;
+  document.getElementById('toast-title').textContent = title;
+  document.getElementById('toast-sub').textContent   = sub;
+  toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
+}
+
+// ── Мои призы ──
+function goToPrizes() { navigate('screen-profile','screen-prizes'); }
+
+function filterMyPrizes(btn, filter) {
+  document.querySelectorAll('.mypf-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.mpc').forEach(card => {
+    const s = card.dataset.mstatus;
+    card.style.display = (filter === 'all' || s === filter) ? '' : 'none';
+  });
+}
+
+let activePrizesCount = 2;
+let transitPrizesCount = 1;
+
+function addToPrizes(name, cat) {
+  const iconMap = { freebets:'🎯', boost:'⚡', merch:'🧢', vip:'🎫' };
+  const bgMap   = { freebets:'icon-teal', boost:'icon-orange', merch:'icon-purple', vip:'icon-gold' };
+  const isPhysical = cat === 'merch' || cat === 'vip';
+  const status = isPhysical ? 'transit' : 'active';
+  const badge  = isPhysical
+    ? '<div class="mpc-badge badge-transit">✈ В пути</div>'
+    : '<div class="mpc-badge badge-active">● Активен</div>';
+  const now = new Date().toLocaleDateString('ru', {day:'numeric',month:'long'});
+
+  let body = '';
+  if (!isPhysical) {
+    const expire = cat === 'boost' ? 'до конца дня' : 'через 7 дней';
+    body = `
+      <div class="expiry-row">
+        <span class="expiry-label">Истекает</span>
+        <span class="expiry-val">${expire}</span>
+      </div>
+      <div class="expiry-track"><div class="expiry-fill" style="width:100%"></div></div>
+      <button class="mpc-cta">${cat === 'boost' ? 'Перейти к ставке' : 'Использовать в ставке'} →</button>`;
+  } else {
+    body = `
+      <div class="delivery-steps">
+        <div class="dstep"><div class="dstep-dot current"></div><div class="dstep-label current">Принят</div></div>
+        <div class="dline pending"></div>
+        <div class="dstep"><div class="dstep-dot pending"></div><div class="dstep-label">Собран</div></div>
+        <div class="dline pending"></div>
+        <div class="dstep"><div class="dstep-dot pending"></div><div class="dstep-label">Отправлен</div></div>
+        <div class="dline pending"></div>
+        <div class="dstep"><div class="dstep-dot pending"></div><div class="dstep-label">Доставлен</div></div>
+      </div>
+      <button class="mpc-cta-ghost">Трек появится в течение 24 ч.</button>`;
+  }
+
+  const card = document.createElement('div');
+  card.className = `mpc mpc-${status} mpc-new`;
+  card.dataset.mstatus = status;
+  card.innerHTML = `
+    <div class="mpc-top">
+      <div class="mpc-icon ${bgMap[cat]}">${iconMap[cat]}</div>
+      <div class="mpc-body">
+        <div class="mpc-name">${name}</div>
+        <div class="mpc-meta">${cat === 'freebets' ? 'Фрибет' : cat === 'boost' ? 'Буст' : cat === 'merch' ? 'Мерч' : 'VIP'} · Получен ${now}</div>
+      </div>
+      ${badge}
+    </div>${body}`;
+
+  const list = document.getElementById('my-prizes-list');
+  list.insertBefore(card, list.firstChild);
+
+  // update profile badge counter
+  if (!isPhysical) activePrizesCount++;
+  else transitPrizesCount++;
+  document.getElementById('profile-prizes-sub').textContent =
+    `${activePrizesCount} активных · ${transitPrizesCount} в доставке`;
+}
+
+// Update confirmExchange to also call addToPrizes
+const _origConfirm = confirmExchange;
+
+// hash nav
+if (location.hash === '#shop')   setTimeout(goToShop, 50);
+if (location.hash === '#tasks')  setTimeout(goToTasks, 50);
+if (location.hash === '#prizes') setTimeout(goToPrizes, 50);
+</script>
+</body>
+</html>

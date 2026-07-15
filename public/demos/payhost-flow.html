@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payhost · User Flow · Реквизиты</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  height: 100vh;
+  background: #0d0d0d;
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Top bar ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.topbar-super {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+}
+.topbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+.topbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.06); color: #fff; }
+.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.nav-btn.primary { background: #fff; color: #111; border-color: #fff; }
+.nav-btn.primary:hover { background: #e8e8e8; }
+.step-counter {
+  font-size: 12px;
+  color: rgba(255,255,255,0.3);
+  padding: 0 8px;
+}
+
+/* ── Main layout ── */
+.main {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── Flow sidebar ── */
+.sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+.sidebar-section {
+  margin-bottom: 8px;
+}
+.sidebar-section-title {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  padding: 4px 10px 8px;
+}
+
+.flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.flow-step:hover { background: rgba(255,255,255,0.04); }
+.flow-step.active { background: rgba(255,255,255,0.08); }
+
+.step-icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  margin-top: 1px;
+}
+.flow-step.active .step-icon {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.15);
+}
+.step-icon.error { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); }
+.step-icon.success { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.2); }
+.step-icon.warn { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2); }
+
+.step-content { flex: 1; min-width: 0; }
+.step-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.6);
+  line-height: 1.3;
+}
+.flow-step.active .step-name { color: #fff; }
+.step-desc {
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* connector line between steps */
+.step-connector {
+  width: 1px;
+  height: 12px;
+  background: rgba(255,255,255,0.08);
+  margin-left: 23px;
+}
+.step-connector.branch {
+  border-left: 1px dashed rgba(255,255,255,0.08);
+  background: transparent;
+  margin-left: 23px;
+}
+
+/* ── Screen area ── */
+.screen-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.screen-header {
+  padding: 14px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.screen-step-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+}
+.screen-step-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+.screen-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.screen-tag.normal { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); }
+.screen-tag.error  { background: rgba(239,68,68,0.1); color: #ef4444; }
+.screen-tag.success{ background: rgba(34,197,94,0.1); color: #22c55e; }
+.screen-tag.warn   { background: rgba(245,158,11,0.1); color: #f59e0b; }
+
+/* ── iFrame wrapper ── */
+.iframe-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #0d0d0d;
+  padding: 24px;
+}
+
+.browser-shell {
+  width: 480px;
+  max-height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+}
+.browser-bar {
+  background: #2a2a2a;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.browser-dots { display: flex; gap: 6px; }
+.browser-dot { width: 11px; height: 11px; border-radius: 50%; }
+.browser-dot.r { background: #ff5f57; }
+.browser-dot.y { background: #ffbd2e; }
+.browser-dot.g { background: #28c840; }
+.browser-url {
+  flex: 1;
+  background: #3a3a3a;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: #888;
+  font-family: monospace;
+}
+.browser-iframe-wrap {
+  flex: 1;
+  overflow: hidden;
+  background: #fff;
+  height: 600px;
+}
+.browser-iframe-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* ── Annotation panel ── */
+.annotation {
+  width: 240px;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  padding: 20px 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.annotation-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.2);
+  margin-bottom: 4px;
+}
+.annotation-text {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.6;
+}
+.annotation-points {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.annotation-point {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.4;
+}
+.point-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.point-dot.green { background: #22c55e; }
+.point-dot.red { background: #ef4444; }
+.point-dot.amber { background: #f59e0b; }
+
+.annotation-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="topbar-super">Payhost · User Flow</div>
+    <div class="topbar-title">Оплата по реквизитам (СБП)</div>
+  </div>
+  <div class="topbar-nav">
+    <button class="nav-btn" id="btn-prev" onclick="navigate(-1)" disabled>← Назад</button>
+    <span class="step-counter" id="counter">1 / 6</span>
+    <button class="nav-btn primary" id="btn-next" onclick="navigate(1)">Далее →</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Flow sidebar -->
+  <div class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Happy path</div>
+
+      <div class="flow-step active" id="step-0" onclick="goTo(0)">
+        <div class="step-icon">🔗</div>
+        <div class="step-content">
+          <div class="step-name">Страница оплаты</div>
+          <div class="step-desc">Мерчант редиректит пользователя</div>
+        </div>
+      </div>
+
+      <div class="step-connector"></div>
+
+      <div class="flow-step" id="step-1" onclick="goTo(1)">
+        <div class="step-icon">📋</div>
+        <div class="step-content">
+          <div class="step-name">Копирует реквизиты</div>
+          <div class="step-desc">Номер, банк, сумму по одному</div>
+        </div>
+      </div>
+
+      <div class="step-connector"></div>
+
+      <div class="flow-step" id="step-2" onclick="goTo(2)">
+        <div class="step-icon">🏦</div>
+        <div class="step-content">
+          <div class="step-name">Переводит в банке</div>
+          <div class="step-desc">Уходит в банк-приложение</div>
+        </div>
+      </div>
+
+      <div class="step-connector"></div>
+
+      <div class="flow-step" id="step-3" onclick="goTo(3)">
+        <div class="step-icon success">✓</div>
+        <div class="step-content">
+          <div class="step-name">Я оплатил → Успех</div>
+          <div class="step-desc">Мерчант получает уведомление</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Ошибки сервиса</div>
+
+      <div class="flow-step" id="step-4" onclick="goTo(4)">
+        <div class="step-icon error">!</div>
+        <div class="step-content">
+          <div class="step-name">Ошибка загрузки</div>
+          <div class="step-desc">Сервис недоступен или таймаут</div>
+        </div>
+      </div>
+
+      <div class="step-connector branch"></div>
+
+      <div class="flow-step" id="step-5" onclick="goTo(5)">
+        <div class="step-icon warn">⏱</div>
+        <div class="step-content">
+          <div class="step-name">Таймер истёк</div>
+          <div class="step-desc">Пользователь не успел перевести</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Screen area -->
+  <div class="screen-area">
+    <div class="screen-header">
+      <div>
+        <div class="screen-step-title" id="screen-title">Страница оплаты</div>
+        <div class="screen-step-desc" id="screen-desc">Пользователь видит реквизиты и таймер</div>
+      </div>
+      <div class="screen-tag normal" id="screen-tag">Normal</div>
+    </div>
+
+    <div class="iframe-wrap">
+      <div class="browser-shell">
+        <div class="browser-bar">
+          <div class="browser-dots">
+            <div class="browser-dot r"></div>
+            <div class="browser-dot y"></div>
+            <div class="browser-dot g"></div>
+          </div>
+          <div class="browser-url">pay.payhost.io/r/xK92m</div>
+        </div>
+        <div class="browser-iframe-wrap">
+          <iframe src="payhost-requisites.html" id="main-iframe"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Annotation panel -->
+  <div class="annotation" id="annotation-panel">
+    <div>
+      <div class="annotation-title">Что происходит</div>
+      <div class="annotation-text" id="ann-what">Мерчант редиректит пользователя на страницу оплаты. Сервис загружает реквизиты и запускает таймер сессии.</div>
+    </div>
+    <div class="annotation-divider"></div>
+    <div>
+      <div class="annotation-title">UX-детали</div>
+      <div class="annotation-points" id="ann-points">
+        <div class="annotation-point"><div class="point-dot green"></div>Таймер зелёный — времени достаточно</div>
+        <div class="annotation-point"><div class="point-dot"></div>Реквизиты сгруппированы — каждое поле копируется отдельно</div>
+        <div class="annotation-point"><div class="point-dot"></div>Предупреждение о точной сумме всегда видно</div>
+        <div class="annotation-point"><div class="point-dot"></div>«How to pay?» — поп-ап с инструкцией без загрузки страницы</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const steps = [
+  {
+    id: 0,
+    name: 'Страница оплаты',
+    desc: 'Пользователь видит реквизиты и таймер',
+    tag: 'Normal', tagType: 'normal',
+    state: 'normal',
+    what: 'Мерчант редиректит пользователя на страницу оплаты. Сервис загружает реквизиты и запускает таймер сессии.',
+    points: [
+      {color:'green', text:'Таймер зелёный — времени достаточно'},
+      {color:'', text:'Реквизиты сгруппированы — каждое поле копируется отдельно'},
+      {color:'', text:'Предупреждение о точной сумме всегда видно'},
+      {color:'', text:'«How to pay?» — попап с инструкцией без перехода'},
+    ]
+  },
+  {
+    id: 1,
+    name: 'Копирует реквизиты',
+    desc: 'Номер телефона, банк и сумму по одному',
+    tag: 'Normal', tagType: 'normal',
+    state: 'normal',
+    what: 'Пользователь поочерёдно копирует три поля: номер телефона СБП, название банка и сумму. Каждое поле вставляется отдельно в форму банк-приложения.',
+    points: [
+      {color:'', text:'Нажмите на иконку копирования у каждого поля — галочка подтверждает'},
+      {color:'', text:'Сумму нельзя изменить — это критично для идентификации платежа'},
+      {color:'amber', text:'Если таймер желтеет — пользователь задерживается'},
+    ]
+  },
+  {
+    id: 2,
+    name: 'Возврат в сервис',
+    desc: 'Пользователь перевёл деньги и вернулся',
+    tag: 'Normal', tagType: 'normal',
+    state: 'normal',
+    what: 'После перевода в банке пользователь возвращается на страницу сервиса. Таймер продолжает идти — важно нажать «I\'ve paid» до истечения.',
+    points: [
+      {color:'', text:'Страница не перезагружалась — состояние сохранено'},
+      {color:'', text:'Нажмите «I\'ve paid» — кнопка покажет «Sending...»'},
+      {color:'green', text:'Сервис отправляет уведомление мерчанту'},
+    ]
+  },
+  {
+    id: 3,
+    name: 'Экран успеха',
+    desc: 'Мерчант получил уведомление о платеже',
+    tag: 'Success', tagType: 'success',
+    state: 'success',
+    what: 'Сервис зафиксировал нажатие «I\'ve paid» и отправил уведомление мерчанту. Статус — «Awaiting merchant», так как сервис не обрабатывает подтверждение.',
+    points: [
+      {color:'green', text:'«Payment in progress» — честный статус без ложного "Confirmed"'},
+      {color:'', text:'Показаны сумма, получатель и статус'},
+      {color:'', text:'Единственная кнопка — «Return to merchant»'},
+    ]
+  },
+  {
+    id: 4,
+    name: 'Ошибка загрузки',
+    desc: 'Сервис недоступен или данные не загрузились',
+    tag: 'Error', tagType: 'error',
+    state: 'error',
+    what: 'При открытии страницы сервис не смог загрузить реквизиты платежа — 500 или таймаут. Пользователю показывается экран ошибки.',
+    points: [
+      {color:'red', text:'Ошибка не раскрывает технических деталей'},
+      {color:'', text:'«Try again» делает повторный запрос — анимация загрузки'},
+      {color:'', text:'«Contact support» — запасной выход'},
+    ]
+  },
+  {
+    id: 5,
+    name: 'Таймер истёк',
+    desc: 'Сессия устарела — пользователь не успел',
+    tag: 'Expired', tagType: 'warn',
+    state: 'expired',
+    what: 'Таймер сессии дошёл до нуля пока пользователь не завершил перевод. Сессия заблокирована — новые реквизиты нужно запросить у мерчанта.',
+    points: [
+      {color:'amber', text:'3 варианта действий — не тупик'},
+      {color:'', text:'«New details» — запрашивает новую сессию'},
+      {color:'', text:'«Return to merchant» — возврат на сайт'},
+      {color:'red', text:'«Contact support» — для тех кто уже перевёл деньги'},
+    ]
+  },
+];
+
+let current = 0;
+const iframe = document.getElementById('main-iframe');
+
+function goTo(index) {
+  current = index;
+  const step = steps[index];
+
+  // Update sidebar active
+  document.querySelectorAll('.flow-step').forEach(el => el.classList.remove('active'));
+  document.getElementById('step-' + index).classList.add('active');
+
+  // Update screen header
+  document.getElementById('screen-title').textContent = step.name;
+  document.getElementById('screen-desc').textContent = step.desc;
+  const tag = document.getElementById('screen-tag');
+  tag.textContent = step.tag;
+  tag.className = 'screen-tag ' + step.tagType;
+
+  // Update annotation
+  document.getElementById('ann-what').textContent = step.what;
+  const pts = document.getElementById('ann-points');
+  pts.innerHTML = step.points.map(p =>
+    `<div class="annotation-point"><div class="point-dot ${p.color}"></div>${p.text}</div>`
+  ).join('');
+
+  // Set iframe state
+  try { iframe.contentWindow.setState(step.state); } catch(e) {}
+
+  // Update nav buttons
+  document.getElementById('btn-prev').disabled = index === 0;
+  document.getElementById('btn-next').disabled = index === steps.length - 1;
+  document.getElementById('counter').textContent = `${index + 1} / ${steps.length}`;
+}
+
+function navigate(dir) {
+  const next = current + dir;
+  if (next >= 0 && next < steps.length) goTo(next);
+}
+
+// Init after iframe loads
+iframe.addEventListener('load', function() {
+  try { iframe.contentWindow.setState('normal'); } catch(e) {}
+});
+</script>
+</body>
+</html>

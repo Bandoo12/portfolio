@@ -21,21 +21,9 @@ const CARD_W = 314;
 const GAP = 8;
 const STEP = CARD_W + GAP;
 
-const PENALTY_SERIES = [
-  { player: 'Смолов',  team: 'Зенит',   oddsYes: '1.30', oddsNo: '3.80', pct: '77%', scored: true  },
-  { player: 'Промес',  team: 'Спартак',  oddsYes: '1.45', oddsNo: '2.70', pct: '69%', scored: true  },
-  { player: 'Дзюба',   team: 'Зенит',   oddsYes: '1.20', oddsNo: '4.50', pct: '83%', scored: false },
-  { player: 'Соболев', team: 'Спартак',  oddsYes: '1.60', oddsNo: '2.35', pct: '63%', scored: false },
-  { player: 'Малком',  team: 'Зенит',   oddsYes: '1.35', oddsNo: '3.40', pct: '74%', scored: true  },
-] as const;
-
 const CARDS = [
-  { id: 1, type: 'yesno'    as const, question: 'Будет угловой\nследующие',        timer: 30, start: 30, unit: 'секунд', period: 'в период 34:00–34:30', logo1: IMG.zenit, logo2: IMG.spartak, odds1: '1.55', odds2: '2.40', pct1: '62%', pct2: '38%', label1: 'Да',    label2: 'Нет',     hint1: 'угловой каждые ~6 мин',  hint2: '2 угловых в тайме',     question2nd: '' },
-  { id: 2, type: 'team'     as const, question: 'Кто дольше будет\nвладеть мячом', timer: 30, start: 20, unit: 'секунд', period: 'в период 34:00–34:30', logo1: IMG.zenit, logo2: IMG.spartak, odds1: '1.70', odds2: '3.20', pct1: '67%', pct2: '33%', label1: 'Зенит', label2: 'Спартак', hint1: '67% владения за 10 мин',  hint2: 'потерял мяч 3 раза',    question2nd: '' },
-  { id: 3, type: 'yesno'    as const, question: 'Будет отбор мяча\nследующие',     timer: 30, start: 24, unit: 'секунд', period: 'в период 34:00–34:30', logo1: IMG.zenit, logo2: IMG.spartak, odds1: '2.05', odds2: '1.85', pct1: '50%', pct2: '50%', label1: 'Да',    label2: 'Нет',     hint1: 'отбор раз в ~2 мин',     hint2: '5 отборов в тайме',     question2nd: 'Ещё один отбор\nв 10 секунд?' },
-  { id: 4, type: 'penalty'  as const, question: 'Забьёт Смолов?',                  timer:  8, start:  8, unit: 'секунд', period: '2 тайм. 118:20',        logo1: IMG.zenit, logo2: IMG.spartak, odds1: '1.30', odds2: '3.80', pct1: '77%', pct2: '23%', label1: 'Да',    label2: 'Нет',     hint1: '',                        hint2: '',                      question2nd: '' },
-  { id: 5, type: 'line'     as const, question: '',                                 timer: 999999, start: 999999, unit: '', period: '',                    logo1: IMG.zenit, logo2: IMG.spartak, odds1: '', odds2: '', pct1: '', pct2: '', label1: '', label2: '', hint1: '', hint2: '', question2nd: '' },
-  { id: 6, type: 'lineevent' as const, question: '',                                timer: 999999, start: 999999, unit: '', period: '',                    logo1: IMG.zenit, logo2: IMG.spartak, odds1: '', odds2: '', pct1: '', pct2: '', label1: '', label2: '', hint1: '', hint2: '', question2nd: '' },
+  { id: 1, type: 'line'   as const, question: '', timer: 999999, start: 999999, unit: '', period: '', logo1: IMG.zenit, logo2: IMG.spartak, odds1: '', odds2: '', pct1: '', pct2: '', label1: '', label2: '', hint1: '', hint2: '', question2nd: '' },
+  { id: 2, type: 'window' as const, question: '', timer: 999999, start: 999999, unit: '', period: 'с 48:00 по 58:00', logo1: IMG.zenit, logo2: IMG.spartak, odds1: '', odds2: '', pct1: '', pct2: '', label1: '', label2: '', hint1: '', hint2: '', question2nd: '' },
 ];
 
 const N = CARDS.length;
@@ -131,7 +119,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     return () => document.removeEventListener('visibilitychange', h);
   }, []);
 
-  // Penalty series state (used only for card.type === 'penalty')
+  // Penalty series state (used only for (card.type as string) === 'penalty')
   const [penaltyRoundIdx, setPenaltyRoundIdx] = useState(0);
   const [penaltyScore, setPenaltyScore] = useState({ z: 0, s: 0 });
   const [penaltySeriesOver, setPenaltySeriesOver] = useState(false);
@@ -140,7 +128,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
 
   // Reset per-round state when penalty round advances
   useEffect(() => {
-    if (card.type !== 'penalty') return;
+    if ((card.type as string) !== 'penalty') return;
     if (penaltyRoundInitRef.current) { penaltyRoundInitRef.current = false; return; }
     setTimeLeft(card.timer);
     setBetPlaced(false);
@@ -184,7 +172,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
 
   // Round result countdown (penalty only — shows time pressure on the "next kick" button)
   useEffect(() => {
-    if (!betResult || penaltySeriesOver || card.type !== 'penalty') { setRoundResultTimer(0); return; }
+    if (!betResult || penaltySeriesOver || (card.type as string) !== 'penalty') { setRoundResultTimer(0); return; }
     setRoundResultTimer(card.timer);
   }, [betResult, penaltySeriesOver]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -250,7 +238,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   }, [betPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!betPlaced || card.type === 'penalty') return;
+    if (!betPlaced || (card.type as string) === 'penalty') return;
     const won = card.id !== 3;
     const delay = 6000;
     const t = setTimeout(() => {
@@ -264,21 +252,6 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     return () => clearTimeout(t);
   }, [betPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Penalty: bet result based on actual round outcome
-  useEffect(() => {
-    if (!betPlaced || card.type !== 'penalty') return;
-    const round = PENALTY_SERIES[penaltyRoundIdx];
-    const userBetYes = placedBetRef.current.label === 'Да';
-    const won = round.scored ? userBetYes : !userBetYes;
-    const t = setTimeout(() => {
-      setBetWon(won);
-      setBetPlaced(false);
-      setBetResult(true);
-      if (won) onBetWon();
-      onBetResult?.(won, placedBetRef.current.label, placedBetRef.current.odds, placedBetRef.current.amount, `Забьёт ${round.player}?`);
-    }, 5000);
-    return () => clearTimeout(t);
-  }, [betPlaced, penaltyRoundIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!scActive || scBetPlaced || scBetWon !== null || !tabVisible) return;
@@ -294,7 +267,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   }, [scBetPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (betResult && !isActive && !isGhost && card.type !== 'line' && card.type !== 'lineevent' && card.type !== 'penalty') onExpireInactive(i);
+    if (betResult && !isActive && !isGhost && card.type !== 'line' && (card.type as string) !== 'lineevent' && (card.type as string) !== 'penalty') onExpireInactive(i);
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -308,7 +281,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   useEffect(() => {
     if (!isExpired || !isActive || isGhost || betPlaced || betResult) return;
     onClearBet();
-    if (card.type === 'penalty') {
+    if ((card.type as string) === 'penalty') {
       // Auto-reveal round result when time runs out
       const t = setTimeout(() => setBetResult(true), 800);
       return () => clearTimeout(t);
@@ -318,7 +291,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   }, [isExpired, isActive, betPlaced, betResult]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!isExpired || isActive || isGhost || card.type === 'penalty') return;
+    if (!isExpired || isActive || isGhost || (card.type as string) === 'penalty') return;
     onExpireInactive(i);
   }, [isExpired]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -339,7 +312,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   }, [showTracker]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (!showTracker || card.type === 'penalty') return;
+    if (!showTracker || (card.type as string) === 'penalty') return;
     let alive = true;
     let tid: ReturnType<typeof setTimeout>;
     const CORNERS = [{ x: 18, y: 18 }, { x: 296, y: 18 }, { x: 18, y: 157 }, { x: 296, y: 157 }];
@@ -354,7 +327,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
       if (!alive) return;
       const mom = momentumRef.current;
       const isCornerMkt = card.question.includes('угловой');
-      const isPossessionMkt = card.type === 'team';
+      const isPossessionMkt = (card.type as string) === 'team';
       let tx: number, ty: number;
 
       if (isCornerMkt) {
@@ -378,7 +351,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
         ty = 20 + Math.random() * 135;
         if (goLeft && mom > 70) flash(`${card.label1} давит`);
         else if (!goLeft && mom < 30) flash(`${card.label2} давит`);
-      } else if (card.type === 'line' || card.type === 'lineevent') {
+      } else if (card.type === 'line' || (card.type as string) === 'lineevent') {
         tx = 20 + Math.random() * 274;
         ty = 14 + Math.random() * 147;
         const lineFlashes = ['⚽ Атака', '⚡ Единоборство', '↗ Прострел', '→ Зенит давит', '← Спартак давит'];
@@ -406,7 +379,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
 
   const pct = timeLeft / card.timer;
   const [r, g, b] = glowColorAt(pct);
-  const timerColor = card.type === 'penalty' ? timerColorAt(0) : timerColorAt(pct);
+  const timerColor = (card.type as string) === 'penalty' ? timerColorAt(0) : timerColorAt(pct);
   const pulseDuration = pulseDurationAt(pct);
 
   const progress = useTransform(x, (xVal: number) => {
@@ -419,17 +392,13 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
 
   const origin = i < vIdx ? 'right center' : 'left center';
 
-  const initPct = card.type === 'penalty' ? 0 : card.start / card.timer;
-  const [initR, initG, initB] = glowColorAt(initPct);
+  const initColor: [number, number, number] = card.type === 'window' ? [245, 158, 11] : [59, 130, 246];
+  const [initR, initG, initB] = initColor;
   const rMV = useMotionValue(initR);
   const gMV = useMotionValue(initG);
   const bMV = useMotionValue(initB);
-  useEffect(() => {
-    if (card.type === 'line' || card.type === 'penalty') return;
-    animate(rMV, r, { duration: 0.9, ease: 'easeOut' });
-    animate(gMV, g, { duration: 0.9, ease: 'easeOut' });
-    animate(bMV, b, { duration: 0.9, ease: 'easeOut' });
-  }, [r, g, b]); // eslint-disable-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { /* static accent colors — no animation */ }, []);
 
   const pulseDurationRef = useRef(pulseDuration);
   pulseDurationRef.current = pulseDuration;
@@ -441,29 +410,17 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     pulseAlive.current = true;
     stepCtrlRef.current?.stop();
 
-    if (card.type === 'line') {
-      const ctrl = animate(intensityMV, 0.45, { duration: 0.3 });
-      stepCtrlRef.current = ctrl;
-      return () => { pulseAlive.current = false; ctrl.stop(); };
-    }
-
-    if (isExpired || !isActive) {
-      const ctrl = animate(intensityMV, isExpired ? 0 : 0.35, { duration: 0.7, ease: 'easeOut' });
-      stepCtrlRef.current = ctrl;
-      return () => { pulseAlive.current = false; ctrl.stop(); };
-    }
-
+    // Both permanent markets: slow calm pulse
     const step = (toMax: boolean) => {
       if (!pulseAlive.current) return;
-      const dur = pulseDurationRef.current / 2;
-      const ctrl = animate(intensityMV, toMax ? 0.86 : 0.48, { duration: dur, ease: 'easeInOut' });
+      const ctrl = animate(intensityMV, toMax ? 0.68 : 0.28, { duration: 2.0, ease: 'easeInOut' });
       stepCtrlRef.current = ctrl;
       ctrl.then(() => step(!toMax));
     };
     step(true);
 
     return () => { pulseAlive.current = false; stepCtrlRef.current?.stop(); };
-  }, [isActive, isExpired]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const glowBoxShadow = useTransform(
     [rMV, gMV, bMV, intensityMV] as MotionValue<number>[],
@@ -577,7 +534,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   );
 
   const handleNextMarket = () => {
-    if (card.type === 'line' || card.type === 'lineevent') {
+    if (card.type === 'line' || (card.type as string) === 'lineevent') {
       setBetPlaced(false); setBetResult(false); setBetWon(true);
       setScActive(false); setScTimeLeft(10); setScLabel(null); setScBetPlaced(false); setScBetWon(null);
     } else { setIsExiting(true); }
@@ -645,7 +602,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
           )}
           {(scBetWon !== null || (scActive && scTimeLeft <= 0)) && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} onClick={handleNextMarket} onPointerDown={e => e.stopPropagation()} style={{ height: 56, background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer' }}>
-              <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{(card.type === 'line' || card.type === 'lineevent') ? 'Поставить ещё раз' : 'Следующий маркет'}</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>{(card.type === 'line' || (card.type as string) === 'lineevent') ? 'Поставить ещё раз' : 'Следующий маркет'}</span>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </motion.div>
           )}
@@ -677,7 +634,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
               <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="11" fill="#00a344"/><path d="M6.5 11L9.5 14L15.5 8" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
           </div>}
-          {betResult && <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.3 }} onClick={handleNextMarket} onPointerDown={e => e.stopPropagation()} style={{ marginTop: 8, height: 56, background: 'transparent', border: '1px solid rgba(255,255,255,0.7)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer', pointerEvents: 'auto' }}><span style={{ fontSize: 16, fontWeight: 700, color: '#ffffff' }}>{(card.type === 'line' || card.type === 'lineevent') ? 'Поставить ещё раз' : 'Следующий маркет'}</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></motion.div>}
+          {betResult && <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.3 }} onClick={handleNextMarket} onPointerDown={e => e.stopPropagation()} style={{ marginTop: 8, height: 56, background: 'transparent', border: '1px solid rgba(255,255,255,0.7)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer', pointerEvents: 'auto' }}><span style={{ fontSize: 16, fontWeight: 700, color: '#ffffff' }}>{(card.type === 'line' || (card.type as string) === 'lineevent') ? 'Поставить ещё раз' : 'Следующий маркет'}</span><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></motion.div>}
         </div>
       </>
     );
@@ -709,7 +666,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
   const MediaSlot = ({ collapse }: { collapse?: boolean }) => {
     const trackerState = betResult ? (betWon ? 'win' : 'loss') : betPlaced ? 'live' : 'setup';
     const isCornerMkt = card.question.includes('угловой');
-    const isPossessionMkt = card.type === 'team';
+    const isPossessionMkt = (card.type as string) === 'team';
     const cornerGlow = Math.max(0, (momentumPct - 50) / 40);
     const leftAlpha = isPossessionMkt ? (momentumPct / 100) * 0.32 : 0;
     const rightAlpha = isPossessionMkt ? ((100 - momentumPct) / 100) * 0.32 : 0;
@@ -930,13 +887,94 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     </motion.div>
   );
 
+  if (card.type === 'window') {
+    const windowEvents = [
+      { label: 'Гол или Аут',     odds: '1.69', pct: 59, full: true  },
+      { label: 'Фол или Угловой', odds: '1.98', pct: 41, full: true  },
+    ];
+    return (
+      <motion.div
+        initial={false}
+        animate={activeBet
+          ? { width: isActive ? 328 : CARD_W, opacity: isActive ? 1 : 0, background: isActive ? '#171C1F' : 'rgba(0,0,0,0)', borderRadius: isActive ? '32px 32px 24px 24px' : 32 }
+          : { width: CARD_W, opacity: 1, background: 'rgba(0,0,0,0)', borderRadius: 32 }
+        }
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        style={{ flexShrink: 0, overflow: 'visible' }}
+      >
+        <motion.div
+          animate={isExiting ? { y: -600, opacity: 0 } : { y: 0, opacity: 1 }}
+          transition={isExiting ? { duration: 0.38, ease: [0.4, 0, 1, 1] } : { duration: 0 }}
+          onAnimationComplete={() => { if (isExiting) onExpire(); }}
+        >
+        <motion.div
+          animate={{ borderRadius: sheetOpen ? '32px 32px 0 0' : 32, background: '#121214' }}
+          transition={{ duration: 0.25 }}
+          style={{ width: '100%', borderRadius: 32, background: '#121214', position: 'relative', overflow: 'hidden', scale: activeBet ? 1 : cardScale, opacity: activeBet ? 1 : cardOpacity, filter: activeBet ? 'grayscale(0)' : cardFilter, transformOrigin: origin }}
+        >
+          <div style={{ position: 'relative', isolation: 'isolate' }}>
+            <TeamHeader />
+            <MediaSlot />
+            <div style={{ background: sheetOpen ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: (sheetOpen && !betPlaced && !betResult) ? 0 : '0 0 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 8px 8px', minHeight: (sheetOpen && !betPlaced && !betResult) ? 0 : 268 }}>
+              {(betPlaced || betResult) ? BetResultArea() : (
+                <>
+                  {/* Market label */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginBottom: 10 }}>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', lineHeight: '22px', textAlign: 'center', margin: 0 }}>Что произойдет в интервале?</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 20, padding: '4px 12px' }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(245,158,11,0.9)' }}>🕐 {card.period}</span>
+                    </div>
+                  </div>
+                  <div style={{ width: '100%', marginTop: 'auto', paddingTop: 0, position: 'relative', zIndex: 11 }}>
+                    <AnimatePresence mode="wait" initial={false}>
+                      {activeBet ? (
+                        <motion.div key="selected" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} onPointerDown={e => e.stopPropagation()} style={{ position: 'relative', borderRadius: 24, height: 60, border: '1px solid rgba(255,255,255,0.35)', background: 'transparent', display: 'flex', alignItems: 'center', padding: '0 14px', justifyContent: 'space-between', overflow: 'hidden', pointerEvents: 'auto' }}>
+                          <span style={{ fontSize: 18, fontWeight: 700, color: '#ffffff' }}>{activeBet.label}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: '#ffffff', opacity: 0.8 }}>{activeBet.odds}</span>
+                            <div onPointerDown={e => e.stopPropagation()} onClick={onClearBet} style={{ cursor: 'pointer', flexShrink: 0, pointerEvents: 'auto' }}>
+                              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="rgba(255,255,255,0.15)"/><path d="M7 7L13 13M13 7L7 13" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <motion.div key="grid" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {windowEvents.map((btn, bi) => (
+                              <div key={bi} style={{ width: '100%', height: 62, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer', backdropFilter: 'blur(27px)', WebkitBackdropFilter: 'blur(27px)', position: 'relative', overflow: 'hidden' }} onClick={() => onBet(btn.label, btn.odds)}>
+                                <div style={{ position: 'absolute', inset: 0, borderRadius: 24, background: 'linear-gradient(225deg, rgba(255,255,255,0.07) 0%, transparent 40%)', pointerEvents: 'none' }} />
+                                <div style={{ position: 'absolute', bottom: 0, left: 0, width: `${btn.pct}%`, height: 3, background: 'rgba(245,158,11,0.55)', borderRadius: '0 2px 0 0' }} />
+                                <span style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', position: 'relative' }}>{btn.label}</span>
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', position: 'relative' }}>
+                                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.4)' }}>{btn.odds}</span>
+                                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>{btn.pct}%</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
+              )}
+            </div>
+            <motion.div animate={{ opacity: (betPlaced || betResult) ? 0 : 1 }} transition={{ duration: 0.3 }} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10, borderRadius: 32, boxShadow: glowBoxShadow }} />
+            {(betPlaced || betResult) && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 11, borderRadius: 32, boxShadow: 'inset 0px 0px 18px 0px rgba(255,255,255,0.18), inset 0px 8px 30px 2px rgba(7,113,48,0.38)' }} />}
+          </div>
+        </motion.div>
+        <BetSheetContent />
+        </motion.div>
+      </motion.div>
+    );
+  }
+
   if (card.type === 'line') {
     const lineEvents = [
-      { label: 'Гол',            odds: '1.65', full: false },
-      { label: 'Угловой',        odds: '3.55', full: false },
-      { label: 'Фол',            odds: '1.65', full: false },
-      { label: 'Аут',            odds: '3.55', full: false },
-      { label: 'Удары от ворот', odds: '3.55', full: true  },
+      { label: 'Гол',     odds: '14.94', pct: 7,  full: false },
+      { label: 'Угловой', odds: '8.34',  pct: 12, full: false },
+      { label: 'Фол',     odds: '2.21',  pct: 45, full: false },
+      { label: 'Аут',     odds: '1.75',  pct: 36, full: false },
     ];
     return (
       <motion.div
@@ -964,7 +1002,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
             <div style={{ background: sheetOpen ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: (sheetOpen && !betPlaced && !betResult) ? 0 : '0 0 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 8px 8px', minHeight: (sheetOpen && !betPlaced && !betResult) ? 0 : 268 }}>
               {(betPlaced || betResult) ? BetResultArea() : (
                 <>
-                  <p style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', lineHeight: '22px', textAlign: 'center', margin: 0, whiteSpace: 'nowrap' }}>Что произойдет следующим?</p>
+                  <p style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', lineHeight: '22px', textAlign: 'center', margin: 0, whiteSpace: 'nowrap' }}>Что произойдет раньше?</p>
                   <div style={{ width: '100%', marginTop: sheetOpen ? 12 : 'auto', paddingTop: sheetOpen ? 0 : 16, position: 'relative', zIndex: 11 }}>
                     <AnimatePresence mode="wait" initial={false}>
                       {activeBet ? (
@@ -981,10 +1019,12 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                         <motion.div key="grid" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }}>
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                             {lineEvents.map((btn, bi) => (
-                              <div key={bi} style={{ width: btn.full ? '100%' : 'calc(50% - 4px)', height: 62, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer', backdropFilter: 'blur(27px)', WebkitBackdropFilter: 'blur(27px)', position: 'relative', overflow: 'hidden' }} onClick={() => onBet(btn.label, btn.odds)}>
+                              <div key={bi} style={{ width: 'calc(50% - 4px)', height: 62, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 10, paddingBottom: 8, gap: 2, cursor: 'pointer', backdropFilter: 'blur(27px)', WebkitBackdropFilter: 'blur(27px)', position: 'relative', overflow: 'hidden' }} onClick={() => onBet(btn.label, btn.odds)}>
                                 <div style={{ position: 'absolute', inset: 0, borderRadius: 24, background: 'linear-gradient(225deg, rgba(255,255,255,0.07) 0%, transparent 40%)', pointerEvents: 'none' }} />
+                                <div style={{ position: 'absolute', bottom: 0, left: 0, width: `${btn.pct}%`, height: 3, background: 'rgba(59,130,246,0.55)', borderRadius: '0 2px 0 0' }} />
                                 <span style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', position: 'relative' }}>{btn.label}</span>
                                 <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.4)', position: 'relative' }}>{btn.odds}</span>
+                                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)', position: 'relative' }}>{btn.pct}%</span>
                               </div>
                             ))}
                           </div>
@@ -995,7 +1035,8 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
                 </>
               )}
             </div>
-            <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10, borderRadius: 32, boxShadow: (betPlaced || betResult) ? 'inset 0px 0px 18px 0px rgba(255,255,255,0.18), inset 0px 8px 30px 2px rgba(7,113,48,0.38)' : 'inset 0px 0px 20px 1px rgba(180,194,255,0.45), inset 0px 10px 40px 4px rgba(14,34,51,0.7)' }} />
+            <motion.div animate={{ opacity: (betPlaced || betResult) ? 0 : 1 }} transition={{ duration: 0.3 }} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10, borderRadius: 32, boxShadow: glowBoxShadow }} />
+            {(betPlaced || betResult) && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 11, borderRadius: 32, boxShadow: 'inset 0px 0px 18px 0px rgba(255,255,255,0.18), inset 0px 8px 30px 2px rgba(7,113,48,0.38)' }} />}
           </div>
         </motion.div>
         <BetSheetContent />
@@ -1004,7 +1045,7 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     );
   }
 
-  if (card.type === 'lineevent') {
+  if (false as never) { // dead: lineevent removed
     const STATIC_GLOW = 'inset 0px 0px 20px 1px rgba(180,194,255,0.45), inset 0px 10px 40px 4px rgba(14,34,51,0.7)';
     const btns = [
       { l: 'П1', o: '1.65' }, { l: 'X', o: '3.55' }, { l: 'П2', o: '3.55' },
@@ -1081,385 +1122,8 @@ function VirtualCard({ card, i, x, vIdx, onCanvasRef, onBet, activeBet, onClearB
     );
   }
 
-  // penalty card — серия пенальти
-  if (card.type === 'penalty') {
-    const round = PENALTY_SERIES[penaltyRoundIdx];
-    const isLastRound = penaltyRoundIdx >= PENALTY_SERIES.length - 1;
-    const penaltyColor = timerColorAt(0);
-    const resultScoreZ = penaltyScore.z + (round.team === 'Зенит' && round.scored ? 1 : 0);
-    const resultScoreS = penaltyScore.s + (round.team === 'Спартак' && round.scored ? 1 : 0);
-    const betWasPlaced = !!placedBetRef.current.label;
-
-    const PenaltyTracker = ({ isResult }: { isResult?: boolean }) => {
-      const zenitKicks   = PENALTY_SERIES.map((r, i) => ({ ...r, i })).filter(r => r.team === 'Зенит');
-      const spartakKicks = PENALTY_SERIES.map((r, i) => ({ ...r, i })).filter(r => r.team === 'Спартак');
-      const currentIdx = isResult ? penaltyRoundIdx + 1 : penaltyRoundIdx;
-
-      const Dot = ({ kick }: { kick: { i: number; scored: boolean } }) => {
-        const done = kick.i < currentIdx;
-        const current = kick.i === penaltyRoundIdx && !isResult;
-        const color = done ? (kick.scored ? '#27db55' : '#ff4444') : 'rgba(255,255,255,0.12)';
-        if (current) return <div style={{ width: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><SoccerBallSVG size={18} /></div>;
-        return (
-          <div style={{ width: 16, height: 16, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'background 0.3s' }}>
-            {done && <span style={{ fontSize: 8, fontWeight: 800, color: '#fff' }}>{kick.scored ? '✓' : '✗'}</span>}
-          </div>
-        );
-      };
-
-      return (
-        <div style={{ width: '100%', background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '6px 12px', display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 6 }}>
-          {[{ team: 'Зенит', logo: card.logo1, kicks: zenitKicks }, { team: 'Спартак', logo: card.logo2, kicks: spartakKicks }].map(({ team, logo, kicks }) => (
-            <div key={team} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {/* Logo + name */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, width: 72, flexShrink: 0 }}>
-                <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                </div>
-                <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.55)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{team}</span>
-              </div>
-              {/* Dots */}
-              <div style={{ display: 'flex', gap: 4, flex: 1, alignItems: 'center' }}>
-                {kicks.map(kick => <Dot key={kick.i} kick={kick} />)}
-              </div>
-              {/* Score */}
-              <span style={{ fontSize: 14, fontWeight: 800, color: '#fff', minWidth: 14, textAlign: 'right', flexShrink: 0 }}>
-                {isResult ? (team === 'Зенит' ? resultScoreZ : resultScoreS) : (team === 'Зенит' ? penaltyScore.z : penaltyScore.s)}
-              </span>
-            </div>
-          ))}
-        </div>
-      );
-    };
-
-    const handleNextRound = () => {
-      setRoundResultTimer(0);
-      const newZ = penaltyScore.z + (round.team === 'Зенит' && round.scored ? 1 : 0);
-      const newS = penaltyScore.s + (round.team === 'Спартак' && round.scored ? 1 : 0);
-      setPenaltyScore({ z: newZ, s: newS });
-      if (isLastRound) { setPenaltySeriesOver(true); return; }
-      placedBetRef.current = { label: '', odds: '', amount: 0 };
-      onClearBet();
-      setPenaltyRoundIdx(r => r + 1);
-    };
-
-    return (
-      <motion.div
-        initial={false}
-        animate={activeBet
-          ? { width: isActive ? 328 : CARD_W, opacity: isActive ? 1 : 0, background: isActive ? '#171C1F' : 'rgba(0,0,0,0)', borderRadius: isActive ? '32px 32px 24px 24px' : 32 }
-          : { width: CARD_W, opacity: 1, background: 'rgba(0,0,0,0)', borderRadius: 32 }
-        }
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        style={{ flexShrink: 0, overflow: 'visible' }}
-      >
-        <motion.div
-          animate={isExiting ? { y: -600, opacity: 0 } : { y: 0, opacity: 1 }}
-          transition={isExiting ? { duration: 0.38, ease: [0.4, 0, 1, 1] } : { duration: 0 }}
-          onAnimationComplete={() => { if (isExiting) onExpire(); }}
-        >
-        <motion.div
-          animate={{ borderRadius: sheetOpen ? '32px 32px 24px 24px' : 32, background: sheetOpen ? '#171C1F' : '#121214' }}
-          transition={{ duration: 0.25 }}
-          style={{ width: '100%', borderRadius: 32, background: '#121214', position: 'relative', overflow: 'hidden', scale: activeBet ? 1 : cardScale, opacity: activeBet ? 1 : cardOpacity, filter: activeBet ? 'grayscale(0)' : cardFilter, transformOrigin: origin }}
-        >
-          <div style={{ position: 'relative', isolation: 'isolate' }}>
-            <TeamHeader />
-            <VideoBlock collapse />
-            <div style={{ background: sheetOpen ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: sheetOpen ? 0 : '0 0 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 8px 8px', minHeight: 268 }}>
-
-              {penaltySeriesOver ? (
-                // ── SERIES OVER ──
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#ff6b6b', background: 'rgba(220,50,50,0.15)', border: '1px solid rgba(220,50,50,0.3)', borderRadius: 20, padding: '3px 12px', letterSpacing: 0.6 }}>⚽ СЕРИЯ ЗАВЕРШЕНА</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={card.logo1} alt="" style={{ width: 32, height: 32, objectFit: 'contain' }} />
-                      <span style={{ fontSize: 34, fontWeight: 800, color: '#fff', letterSpacing: -1 }}>{penaltyScore.z} : {penaltyScore.s}</span>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={card.logo2} alt="" style={{ width: 32, height: 32, objectFit: 'contain' }} />
-                    </div>
-                    <p style={{ fontSize: 20, fontWeight: 800, color: '#00c958', margin: 0, textAlign: 'center' }}>
-                      {penaltyScore.z > penaltyScore.s ? 'Зенит' : 'Спартак'} выигрывает серию!
-                    </p>
-                  </div>
-                  <div style={{ width: '100%', paddingTop: 8 }}>
-                    <div onClick={() => setIsExiting(true)} onPointerDown={e => e.stopPropagation()} style={{ height: 56, background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer' }}>
-                      <span style={{ fontSize: 16, fontWeight: 700, color: '#fff' }}>Следующий маркет</span>
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </div>
-                  </div>
-                </div>
-
-              ) : betPlaced ? (
-                // ── WAITING FOR RESULT ──
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, width: '100%' }}>
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                    <motion.div style={{ x: ballX, y: ballY, rotate: ballRotate, scale: ballScale }}>
-                      <SoccerBallSVG size={56} />
-                    </motion.div>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0 }}>Ожидаем результат...</p>
-                  </div>
-                  <div style={{ width: '100%', borderRadius: 24, height: 60, border: '1px solid rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', padding: '0 14px', justifyContent: 'space-between', overflow: 'hidden', flexShrink: 0 }}>
-                    <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>{placedBetRef.current.label}</span>
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#fff', opacity: 0.7 }}>{placedBetRef.current.odds}</span>
-                  </div>
-                </motion.div>
-
-              ) : betResult ? (
-                // ── ROUND RESULT ──
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ width: '100%', flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  <PenaltyTracker isResult />
-                  {/* Ball + text centered in remaining space */}
-                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                    <div style={{ width: 60, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      {round.scored ? <SoccerBallSVG size={60} /> : (
-                        <svg width="60" height="60" viewBox="0 0 88 88" fill="none"><circle cx="44" cy="44" r="37" fill="rgba(220,50,50,0.18)" stroke="rgba(220,50,50,0.35)" strokeWidth="1.5"/><path d="M30 30L58 58M58 30L30 58" stroke="#e04444" strokeWidth="3.5" strokeLinecap="round"/></svg>
-                      )}
-                    </div>
-                    <p style={{ fontSize: 16, fontWeight: 700, color: '#fff', margin: 0, textAlign: 'center' }}>
-                      {round.scored ? `${round.player} забил! ⚽` : `${round.player} не забил`}
-                    </p>
-                    {betWasPlaced && (
-                      <div style={{ fontSize: 13, color: betWon ? '#00c958' : 'rgba(238,239,243,0.45)' }}>
-                        {betWon ? '✓ Ставка выиграла!' : 'Ставка не зашла'}
-                      </div>
-                    )}
-                  </div>
-                  {/* Button pinned to bottom */}
-                  <div style={{ width: '100%', paddingTop: 6 }} onPointerDown={e => e.stopPropagation()}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}
-                      onClick={handleNextRound}
-                      style={{ height: 56, background: 'transparent', border: '1px solid rgba(255,255,255,0.45)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer' }}
-                    >
-                      <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>
-                        {isLastRound ? 'Результат серии'
-                          : roundResultTimer > 0 ? `Следующий удар через ${roundResultTimer}с`
-                          : `Следующий удар · ${penaltyRoundIdx + 2}/${PENALTY_SERIES.length}`}
-                      </span>
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </motion.div>
-                  </div>
-                </motion.div>
-
-              ) : (
-                // ── ACTIVE BETTING ──
-                <>
-                  <PenaltyTracker />
-                  {/* Question */}
-                  <p style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0, marginTop: 4, textAlign: 'center', lineHeight: '22px' }}>Забьёт пенальти?</p>
-                  {/* Who kicks */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4 }}>
-                    <div style={{ width: 15, height: 15, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={round.team === 'Зенит' ? card.logo1 : card.logo2} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                    </div>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{round.team} бьёт · {round.player}</span>
-                  </div>
-                  {/* Timer */}
-                  <motion.span animate={{ color: penaltyColor }} style={{ fontSize: 40, fontWeight: 700, lineHeight: '44px', marginTop: 2 }}>
-                    {timeLeft}
-                  </motion.span>
-                  <div style={{ width: '100%', marginTop: 'auto', paddingTop: 7, position: 'relative', zIndex: 11 }}>
-                    <AnimatePresence mode="wait" initial={false}>
-                      {activeBet ? (
-                        <motion.div key="selected" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} onPointerDown={e => e.stopPropagation()} style={{ position: 'relative', borderRadius: 24, height: 60, border: '1px solid rgba(255,255,255,0.35)', background: 'transparent', display: 'flex', alignItems: 'center', padding: '0 14px', justifyContent: 'space-between', overflow: 'hidden', pointerEvents: 'auto' }}>
-                          <span style={{ fontSize: 18, fontWeight: 700, color: '#fff' }}>{activeBet.label}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: '#fff', opacity: 0.8 }}>{activeBet.odds}</span>
-                            <div onPointerDown={e => e.stopPropagation()} onClick={onClearBet} style={{ cursor: 'pointer' }}>
-                              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="rgba(255,255,255,0.15)"/><path d="M7 7L13 13M13 7L7 13" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ) : (
-                        <motion.div key="buttons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} style={{ display: 'flex', gap: 8 }}>
-                          {[{ label: 'Да', odds: round.oddsYes, pct: round.pct }, { label: 'Нет', odds: round.oddsNo, pct: '' }].map((btn, bi) => (
-                            <div key={bi} onClick={() => onBet(btn.label, btn.odds)} onPointerDown={e => e.stopPropagation()}
-                              style={{ flex: 1, height: 92, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 14, paddingBottom: 10, gap: 4, position: 'relative', cursor: 'pointer', backdropFilter: 'blur(27px)', WebkitBackdropFilter: 'blur(27px)' }}>
-                              <div style={{ position: 'absolute', inset: 0, borderRadius: 28, overflow: 'hidden', background: 'linear-gradient(225deg, rgba(255,255,255,0.09) 0%, transparent 40%)', pointerEvents: 'none' }} />
-                              {btn.pct && <div style={{ position: 'absolute', top: -7, left: '50%', transform: 'translateX(-50%)', background: '#262a33', borderRadius: 16, height: 14, padding: '0 5px', display: 'flex', alignItems: 'center' }}>
-                                <span style={{ fontSize: 10, fontWeight: 600, color: '#929bae' }}>{btn.pct}</span>
-                              </div>}
-                              <div style={{ height: 34, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                                <span style={{ fontSize: 24, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{btn.label}</span>
-                              </div>
-                              <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(238,239,243,0.65)', lineHeight: '16px' }}>{btn.odds}</span>
-                            </div>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </>
-              )}
-            </div>
-            <motion.div animate={{ borderRadius: 32, opacity: (betResult || penaltySeriesOver) ? 0 : 1 }} transition={{ duration: 0.25 }} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10, boxShadow: glowBoxShadow }} />
-            {betResult && betWasPlaced && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 11, borderRadius: 32, boxShadow: betWon ? 'inset 0px 0px 18px 0px rgba(255,255,255,0.18), inset 0px 8px 30px 2px rgba(7,113,48,0.38)' : 'inset 0px 0px 18px 0px rgba(255,255,255,0.12), inset 0px 8px 30px 2px rgba(200,50,50,0.3)' }} />}
-          </div>
-        </motion.div>
-        <BetSheetContent />
-        </motion.div>
-      </motion.div>
-    );
-  }
-
-  // yesno / team cards
-  const buttons = [
-    { logo: card.logo1, odds: card.odds1, pct: card.pct1, label: card.label1, hint: card.hint1 },
-    { logo: card.logo2, odds: card.odds2, pct: card.pct2, label: card.label2, hint: card.hint2 },
-  ];
-
-  return (
-    <motion.div
-      initial={false}
-      animate={activeBet
-        ? { width: isActive ? 328 : CARD_W, opacity: isActive ? 1 : 0, background: isActive ? '#171C1F' : 'rgba(0,0,0,0)', borderRadius: isActive ? '32px 32px 24px 24px' : 32 }
-        : { width: CARD_W, opacity: 1, background: 'rgba(0,0,0,0)', borderRadius: 32 }
-      }
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      style={{ flexShrink: 0, overflow: 'visible' }}
-    >
-      <motion.div
-        animate={isExiting ? { y: -600, opacity: 0 } : { y: 0, opacity: 1 }}
-        transition={isExiting ? { duration: 0.38, ease: [0.4, 0, 1, 1] } : { duration: 0 }}
-        onAnimationComplete={() => { if (isExiting) onExpire(); }}
-      >
-      <motion.div
-        animate={{ borderRadius: sheetOpen ? '32px 32px 24px 24px' : 32, background: sheetOpen ? '#171C1F' : '#121214' }}
-        transition={{ duration: 0.25 }}
-        style={{ width: '100%', borderRadius: 32, background: '#121214', position: 'relative', overflow: 'hidden', scale: activeBet ? 1 : cardScale, opacity: activeBet ? 1 : cardOpacity, filter: activeBet ? 'grayscale(0)' : cardFilter, transformOrigin: origin }}
-      >
-        <div style={{ position: 'relative', isolation: 'isolate' }}>
-          <TeamHeader />
-          <MediaSlot collapse />
-
-          <div style={{ background: sheetOpen ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: sheetOpen ? 0 : '0 0 32px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 8px 8px', minHeight: (betPlaced || betResult) ? 268 : sheetOpen ? 260 : 268 }}>
-            {(betPlaced || betResult) ? BetResultArea() : isExpired ? (
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0 8px' }}>
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
-                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M33.998 20.2841V14C33.998 8.486 29.512 4 23.998 4C18.484 4 13.998 8.486 13.998 14V20.2841C10.556 21.1781 7.99805 24.284 7.99805 28V36C7.99805 40.412 11.586 44 15.998 44H31.998C36.41 44 39.998 40.412 39.998 36V28C39.998 24.284 37.44 21.1781 33.998 20.2841ZM17.998 14C17.998 10.692 20.69 8 23.998 8C27.306 8 29.998 10.692 29.998 14V20H17.998V14ZM35.998 36C35.998 38.206 34.204 40 31.998 40H15.998C13.792 40 11.998 38.206 11.998 36V28C11.998 25.794 13.792 24 15.998 24H31.998C34.204 24 35.998 25.794 35.998 28V36ZM22.696 35.938H25.306L26.668 27.938H21.3361L22.696 35.938Z" fill="#EEEFF3" fillOpacity={0.5}/>
-                  </svg>
-                  <span style={{ fontSize: 16, fontWeight: 400, color: 'rgba(238,239,243,0.5)' }}>Время вышло</span>
-                </div>
-                <div onClick={() => setIsExiting(true)} onPointerDown={e => e.stopPropagation()} style={{ width: '100%', height: 48, background: 'transparent', border: '1px solid rgba(255,255,255,0.4)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 18px', cursor: 'pointer', flexShrink: 0 }}>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: '#ffffff' }}>Следующий маркет</span>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#ffffff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-              </div>
-            ) : <>
-              <p style={{ fontSize: 18, fontWeight: 700, color: '#ffffff', lineHeight: '22px', textAlign: 'center', margin: 0, padding: '0 16px', whiteSpace: 'pre-line' }}>
-                {card.question}
-              </p>
-              <motion.span animate={{ color: timerColor }} transition={{ duration: 0.6 }} style={{ fontSize: 40, fontWeight: 400, lineHeight: '48px', marginTop: 8, display: 'inline-block' }}>
-                {timeLeft}
-              </motion.span>
-              <motion.span animate={{ color: timerColor }} transition={{ duration: 0.6 }} style={{ fontSize: 16, fontWeight: 400, lineHeight: '20px' }}>
-                {card.unit}
-              </motion.span>
-              <span style={{ fontSize: 10, fontWeight: 500, color: '#929bae', lineHeight: '12px', marginTop: 5 }}>{card.period}</span>
-
-
-              <div style={{ width: '100%', marginTop: 'auto', paddingTop: 7, position: 'relative', zIndex: 11 }}>
-                <AnimatePresence mode="wait" initial={false}>
-                  {activeBet ? (
-                    <motion.div key="selected" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} onPointerDown={e => e.stopPropagation()} style={{ position: 'relative', borderRadius: 24, height: 60, border: '1px solid rgba(255,255,255,0.35)', background: 'transparent', display: 'flex', alignItems: 'center', padding: '0 14px', justifyContent: 'space-between', overflow: 'hidden', pointerEvents: 'auto' }}>
-                      <motion.div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', bottom: -119, width: 200, height: 100, borderRadius: '50%', background: chipEllipseColor, filter: 'blur(32px)', pointerEvents: 'none' }} />
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
-                        {activeBet.logo && <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}><img src={activeBet.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /></div>}
-                        <span style={{ fontSize: 18, fontWeight: 700, color: '#ffffff' }}>{activeBet.label}</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, position: 'relative' }}>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: '#ffffff', opacity: 0.8 }}>{activeBet.odds}</span>
-                        <div onPointerDown={e => e.stopPropagation()} onClick={onClearBet} style={{ cursor: 'pointer', flexShrink: 0 }}>
-                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="rgba(255,255,255,0.15)"/><path d="M7 7L13 13M13 7L7 13" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                        </div>
-                      </div>
-                    </motion.div>
-                  ) : (
-                    <motion.div key="buttons" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} style={{ display: 'flex', gap: 8 }}>
-                      {buttons.map((btn, bi) => (
-                        <div
-                          key={bi}
-                          onClick={() => onBet(btn.label, btn.odds, card.type === 'team' ? btn.logo : undefined)}
-                          onPointerDown={e => e.stopPropagation()}
-                          style={{ flex: 1, height: 92, background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 28, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: 14, paddingBottom: 10, gap: 4, position: 'relative', backdropFilter: 'blur(27px)', WebkitBackdropFilter: 'blur(27px)', cursor: 'pointer' }}
-                        >
-                          <div style={{ position: 'absolute', inset: 0, borderRadius: 28, overflow: 'hidden', background: 'linear-gradient(225deg, rgba(255,255,255,0.09) 0%, transparent 40%)', pointerEvents: 'none' }} />
-                          {/* pct badge */}
-                          <div style={{ position: 'absolute', top: -7, left: '50%', transform: 'translateX(-50%)', background: '#262a33', borderRadius: 16, height: 14, padding: '0 5px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }}>
-                            <span style={{ fontSize: 10, fontWeight: 600, color: '#929bae' }}>{btn.pct}</span>
-                          </div>
-                          {card.type === 'team' ? (
-                            <div style={{ width: 34, height: 34, borderRadius: '50%', background: '#fff', overflow: 'hidden', flexShrink: 0 }}>
-                              <img src={btn.logo} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                            </div>
-                          ) : (
-                            <div style={{ height: 34, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                              <span style={{ fontSize: 24, fontWeight: 700, color: '#ffffff', lineHeight: 1 }}>{btn.label}</span>
-                            </div>
-                          )}
-                          <span style={{ fontSize: 14, fontWeight: 600, color: 'rgba(238,239,243,0.65)', lineHeight: '16px' }}>{btn.odds}</span>
-                          {btn.hint && (
-                            <span style={{ fontSize: 9, fontWeight: 400, color: 'rgba(145,250,186,0.55)', lineHeight: '12px', textAlign: 'center', padding: '0 6px' }}>{btn.hint}</span>
-                          )}
-                        </div>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </> }
-          </div>
-
-          <motion.div animate={{ borderRadius: sheetOpen ? '32px 32px 24px 24px' : 32, opacity: (betPlaced || betResult) ? 0 : 1 }} transition={{ duration: 0.25 }} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10, boxShadow: glowBoxShadow }} />
-          {(betPlaced || betResult) && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 11, borderRadius: 32, boxShadow: 'inset 0px 0px 18px 0px rgba(255,255,255,0.18), inset 0px 8px 30px 2px rgba(7,113,48,0.38)' }} />}
-          <motion.div animate={{ opacity: isExpired ? 1 : 0 }} transition={{ duration: 0.6 }} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 11, borderRadius: 32, boxShadow: 'inset 0px 20px 80px 8px rgba(38,38,38,1), inset 0px 0px 40px 1px rgba(63,63,63,1)' }} />
-        </div>
-      </motion.div>
-
-      <BetSheetContent />
-      </motion.div>
-    </motion.div>
-  );
+  return null;
 }
-
-const SCENARIOS = [
-  {
-    id: 1, label: 'Интервальный маркет', title: 'Будет угловой?', badge: null,
-    steps: ['Нажмите «Да» или «Нет»', 'Выберите сумму ставки из чипов или введите вручную', 'Нажмите «Сделать ставку»', 'Дождитесь результата (~15 сек)', 'Ставка выигрывает ✓'],
-    note: 'Базовый сценарий — да/нет на игровое событие. Оцените: насколько понятен маркет без объяснений?',
-  },
-  {
-    id: 2, label: 'Командный маркет', title: 'Кто владеет мячом?', badge: null,
-    steps: ['Выберите команду — Зенит или Спартак', 'Обратите внимание на % вероятности и хинт под коэфом', 'Введите сумму и нажмите «Сделать ставку»', 'Дождитесь результата'],
-    note: 'Вместо Да/Нет — логотипы команд. Оцените: помогает ли аналитика (% и хинт) принять решение быстрее?',
-  },
-  {
-    id: 3, label: '2-й шанс', title: 'Будет отбор мяча?', badge: '⚡',
-    steps: ['Сделайте ставку как обычно', 'Ставка не заходит — появляется «⚡ 2-й шанс»', 'У вас 10 секунд на новую ставку', 'Нажмите «Да» или «Нет» в блоке 2-го шанса', '2-й шанс выигрывает ✓'],
-    note: 'Механика удержания после проигрыша. Оцените: хочется ли воспользоваться шансом? Не раздражает ли?',
-  },
-  {
-    id: 4, label: 'Серия пенальти', title: 'Серия пенальти', badge: '⚽',
-    steps: ['Карточка остаётся до конца серии (5 ударов)', 'На каждый удар — 8 секунд, действуйте быстро!', 'Нажмите «Да» (забьёт) или «Нет»', 'Введите сумму и сделайте ставку', 'Карточка показывает счёт серии и переходит к следующему удару'],
-    note: 'Серия из 5 пенальти (Смолов, Промес, Дзюба, Соболев, Малком). Оцените: передаёт ли интерфейс напряжение и счёт серии?',
-  },
-  {
-    id: 5, label: 'Ситуативный маркет', title: 'Следующее событие', badge: null,
-    steps: ['Выберите одно из событий: Гол, Угловой, Фол, Аут...', 'Нажмите на исход', 'Введите сумму и подтвердите ставку'],
-    note: 'Мультиисходный маркет. Оцените: понятно ли какой из исходов выбрать? Не слишком ли много вариантов?',
-  },
-  {
-    id: 6, label: 'Обычная линия', title: 'Исход матча', badge: null,
-    steps: ['Выберите исход: П1, X или П2', 'Или комбинированный: 1X, 12, 2X', 'Введите сумму и сделайте ставку'],
-    note: 'Стандартная ставка на матч внутри микробета. Оцените: органично ли она вписывается в поток микробетинга?',
-  },
-];
 
 
 export default function MicrobetLiveV2() {
@@ -1493,10 +1157,6 @@ export default function MicrobetLiveV2() {
   }, []);
 
   const [selectedBet, setSelectedBet] = useState<{ label: string; odds: string; logo?: string } | null>(null);
-  const [betsInPlay, setBetsInPlay] = useState(2);
-  const [sessionPnL, setSessionPnL] = useState(850);
-  const [sessionWins, setSessionWins] = useState(3);
-  const [totalBets, setTotalBets] = useState(5);
   const [bottomTab, setBottomTab] = useState<'stats' | 'history'>('stats');
 
   type BetHistoryItem = { id: number; won: boolean; label: string; odds: string; amount: number; market: string; pnl: number };
@@ -1508,7 +1168,6 @@ export default function MicrobetLiveV2() {
     { id: 5, won: false, label: 'Нет',   odds: '2.35', amount: 200,  market: 'Забьёт Соболев?',            pnl: -200 },
   ]);
   const historyIdRef = useRef(6);
-  const [lockedIdx, setLockedIdx] = useState(-1);
 
   const [resetKey, setResetKey] = useState(0);
   const [liveCards, setLiveCards] = useState<CardData[]>(() => [...CARDS]);
@@ -1678,98 +1337,11 @@ export default function MicrobetLiveV2() {
   };
 
   const realIdx = liveN > 0 ? ((vIdx - 1) % liveN + liveN) % liveN : 0;
-  const handleScenarioClick = (scenarioIdx: number) => {
-    const targetCard = CARDS[scenarioIdx];
-    if (!targetCard) return;
-    stopShift();
-    if (animCtrl.current) { animCtrl.current.stop(); animCtrl.current = null; }
-    // Penalty series: show only the penalty card (no other cards in carousel)
-    if (scenarioIdx === 3) {
-      const penaltyOnly = [targetCard];
-      liveCardsRef.current = penaltyOnly;
-      vIdxRef.current = 1;
-      flushSync(() => { setLiveCards(penaltyOnly); setVIdx(1); });
-      x.set(getX(1));
-    } else {
-      const currentCards = liveCardsRef.current;
-      const existingPos = currentCards.findIndex(c => c.id === targetCard.id);
-      if (existingPos >= 0) {
-        const newVIdx = existingPos + 1;
-        vIdxRef.current = newVIdx;
-        x.set(getX(newVIdx));
-        setVIdx(newVIdx);
-      } else {
-        const newCards = [...currentCards, targetCard].sort((a, b) => a.id - b.id);
-        const newPos = newCards.findIndex(c => c.id === targetCard.id);
-        const newVIdx = newPos + 1;
-        liveCardsRef.current = newCards;
-        vIdxRef.current = newVIdx;
-        flushSync(() => { setLiveCards(newCards); setVIdx(newVIdx); });
-        x.set(getX(newVIdx));
-      }
-    }
-    setLockedIdx(scenarioIdx);
-    setSelectedBet(null);
-    setResetKey(k => k + 1);
-  };
-
-  const currentCard = liveCards[realIdx];
-  const scenarioIndex = currentCard ? currentCard.id - 1 : 0;
-  const displayIdx = lockedIdx >= 0 ? lockedIdx : scenarioIndex;
-  const scenario = SCENARIOS[Math.min(displayIdx, SCENARIOS.length - 1)];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#111214', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28, padding: '24px 16px', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", boxSizing: 'border-box' }}>
-      <style>{`
-        @keyframes cursor-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
-        @media (max-width: 900px) { .sp { display: none !important; } }
-      `}</style>
+    <div style={{ minHeight: '100vh', background: '#111214', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", boxSizing: 'border-box' }}>
+      <style>{`@keyframes cursor-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }`}</style>
       <video ref={sharedVideoRef} src={`${BASE}/img/microbet-match.mp4`} autoPlay muted loop playsInline style={{ position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }} />
-
-      {/* Left panel */}
-      <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
-        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 20, overflow: 'hidden' }}>
-          <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.09em', textTransform: 'uppercase' }}>Режим</div>
-          </div>
-          <div
-            onClick={() => { setLockedIdx(-1); }}
-            style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 18px', cursor: 'pointer', background: lockedIdx === -1 ? 'rgba(255,255,255,0.06)' : 'transparent', borderLeft: `3px solid ${lockedIdx === -1 ? '#00c958' : 'transparent'}`, borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-          >
-            <div style={{ width: 24, height: 24, minWidth: 24, borderRadius: 7, background: lockedIdx === -1 ? 'rgba(0,201,88,0.2)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>
-              🔓
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: lockedIdx === -1 ? '#eeeff3' : 'rgba(255,255,255,0.5)', lineHeight: '15px' }}>Свободный просмотр</div>
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', marginTop: 1 }}>Без инструкций</div>
-            </div>
-          </div>
-          <div style={{ padding: '10px 18px 6px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.09em', textTransform: 'uppercase' }}>Сценарии</div>
-          </div>
-          {SCENARIOS.map((sc, i) => {
-            const isActive = lockedIdx === i;
-            return (
-              <div
-                key={sc.id}
-                onClick={() => handleScenarioClick(i)}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 18px', cursor: 'pointer', background: isActive ? 'rgba(255,255,255,0.06)' : 'transparent', borderLeft: `3px solid ${isActive ? '#00c958' : 'transparent'}` }}
-              >
-                <div style={{ width: 24, height: 24, minWidth: 24, borderRadius: 7, background: isActive ? 'rgba(0,201,88,0.2)' : 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: isActive ? '#00c958' : 'rgba(255,255,255,0.35)' }}>
-                  {i + 1}
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: isActive ? '#eeeff3' : 'rgba(255,255,255,0.5)', lineHeight: '15px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.title}</div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', marginTop: 1 }}>{sc.badge ? `${sc.badge} ` : ''}{sc.label}</div>
-                </div>
-              </div>
-            );
-          })}
-          <div style={{ padding: '10px 18px 14px', borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: 4 }}>
-            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)', lineHeight: '14px' }}>Нажмите сценарий чтобы перейти на нужную карточку</div>
-          </div>
-        </div>
-      </div>
 
       {/* Phone mockup */}
       <div style={{ width: 360, height: 800, position: 'relative', overflow: 'hidden', borderRadius: 40, flexShrink: 0 }}>
@@ -1804,13 +1376,11 @@ export default function MicrobetLiveV2() {
                     onExpire={handleExpire}
                     isGhost={isGhost}
                     onExpireInactive={handleExpireInactive}
-                    onBetPlaced={() => { setBetsInPlay(n => n + 1); setTotalBets(n => n + 1); }}
-                    onBetWon={() => { setBetsInPlay(n => Math.max(0, n - 1)); setSessionWins(n => n + 1); setSessionPnL(n => n + Math.floor(Math.random() * 300 + 150)); }}
+                    onBetPlaced={() => {}}
+                    onBetWon={() => {}}
                     onBetResult={(won, label, odds, amount, market) => {
                       const pnl = won ? Math.round(amount * (parseFloat(odds) - 1)) : -amount;
                       setBetHistory(h => [{ id: historyIdRef.current++, won, label, odds, amount, market, pnl }, ...h]);
-                      if (!won) setBetsInPlay(n => Math.max(0, n - 1));
-                      setSessionPnL(n => n + pnl);
                       setBottomTab('history');
                     }}
                     showTracker={showTracker}
@@ -1925,92 +1495,6 @@ export default function MicrobetLiveV2() {
 
           <div style={{ height: 32, flexShrink: 0 }} />
 
-        </div>
-      </div>
-
-      {/* Right panel */}
-      <div className="sp" style={{ width: 232, flexShrink: 0, alignSelf: 'center' }}>
-        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: 20, overflow: 'hidden' }}>
-          {lockedIdx === -1 ? (
-            <>
-              <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ fontSize: 18, lineHeight: 1 }}>🔓</div>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3', lineHeight: '15px' }}>Свободный просмотр</div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>Режим без ограничений</div>
-                </div>
-              </div>
-              <div style={{ padding: '10px 18px' }}>
-                {[
-                  { icon: '👆', text: 'Свайпайте карточки влево/вправо чтобы переключать маркеты' },
-                  { icon: '🎯', text: 'Нажмите Да/Нет или выберите исход — ставка зафиксируется' },
-                  { icon: '💰', text: 'Введите сумму и нажмите «Сделать ставку»' },
-                  { icon: '⏱', text: 'Дождитесь результата — он придёт автоматически' },
-                  { icon: '⚡', text: 'На пенальти — всего 8 секунд, действуйте быстро!' },
-                  { icon: '2️⃣', text: 'Если ставка не зашла — появится «2-й шанс»' },
-                ].map((item, si) => (
-                  <div key={si} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '7px 0', borderBottom: si < 5 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                    <span style={{ fontSize: 14, lineHeight: '17px', flexShrink: 0 }}>{item.icon}</span>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', lineHeight: '17px' }}>{item.text}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ margin: '0 18px 16px', padding: '10px 12px', background: 'rgba(100,100,255,0.07)', border: '1px solid rgba(100,100,255,0.18)', borderRadius: 10 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(150,150,255,0.8)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Подсказка</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', lineHeight: '15px' }}>Выберите конкретный сценарий слева — я проведу тебя через него с пошаговыми инструкциями</div>
-              </div>
-              <div style={{ margin: '0 18px 16px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.4)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Индикатор рамки</div>
-                {[
-                  { dot: '#00cc66', text: 'Много времени — спокойный медленный пульс' },
-                  { dot: '#ffcc00', text: 'Мало времени — пульс быстрее, цвет янтарный' },
-                  { dot: '#ff4444', text: 'Критично — красный, быстро мигает' },
-                  { dot: '#ff4444', text: 'Пенальти — всегда красный (экстренный режим)' },
-                ].map((item, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: i < 3 ? 5 : 0 }}>
-                    <div style={{ width: 8, height: 8, minWidth: 8, borderRadius: '50%', background: item.dot, boxShadow: `0 0 6px ${item.dot}` }} />
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', lineHeight: '14px' }}>{item.text}</div>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(0,201,88,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, color: '#00c958', flexShrink: 0 }}>{lockedIdx + 1}</div>
-                <div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#eeeff3', lineHeight: '15px' }}>{scenario.title}</div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginTop: 1 }}>{scenario.label}</div>
-                </div>
-              </div>
-              <div style={{ padding: '8px 18px 4px' }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>Как пройти</div>
-                {scenario.steps.map((step, si) => (
-                  <div key={si} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '8px 0', borderBottom: si < scenario.steps.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
-                    <div style={{ width: 20, height: 20, minWidth: 20, borderRadius: '50%', background: 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginTop: 1 }}>{si + 1}</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', lineHeight: '17px' }}>{step}</div>
-                  </div>
-                ))}
-              </div>
-              {scenario.note && (
-                <div style={{ margin: '8px 18px 8px', padding: '10px 12px', background: 'rgba(255,200,0,0.07)', border: '1px solid rgba(255,200,0,0.15)', borderRadius: 10 }}>
-                  <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,200,0,0.7)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Что оцениваем</div>
-                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: '15px' }}>{scenario.note}</div>
-                </div>
-              )}
-              <div style={{ margin: '4px 18px 16px', padding: '10px 12px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10 }}>
-                <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.35)', marginBottom: 5, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Рамка карточки</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {[['#00cc66','Зелёная — много времени'],['#ffcc00','Жёлтая — мало времени'],['#ff4444','Красная — критично / пенальти']].map(([c,t]) => (
-                    <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <div style={{ width: 7, height: 7, minWidth: 7, borderRadius: '50%', background: c, boxShadow: `0 0 5px ${c}` }} />
-                      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)', lineHeight: '13px' }}>{t}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
         </div>
       </div>
     </div>

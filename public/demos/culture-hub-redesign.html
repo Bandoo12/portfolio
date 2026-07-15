@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Culture Bento — 01.tech Redesign</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #111111;
+    font-family: -apple-system, 'SF Pro Display', 'Inter', sans-serif;
+    color: #fff;
+    min-height: 100vh;
+  }
+
+  /* ─── NAV ─────────────────────────────────────────────── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 10;
+  }
+  .logo { font-size: 17px; font-weight: 600; letter-spacing: -0.3px; }
+  .logo span { color: #E8580A; }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    font-size: 14px; color: rgba(255,255,255,0.55);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a.active { color: #fff; }
+  .nav-links a:hover { color: rgba(255,255,255,0.85); }
+  .nav-cta {
+    font-size: 14px; color: #fff;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 8px 18px; border-radius: 20px;
+    cursor: pointer; text-decoration: none;
+    backdrop-filter: blur(10px);
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: rgba(255,255,255,0.17); }
+
+  /* ─── PAGE WRAPPER ────────────────────────────────────── */
+  .page {
+    padding: 100px 40px 60px;
+    max-width: 1440px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: clamp(28px, 3vw, 40px);
+    font-weight: 600;
+    letter-spacing: -0.8px;
+    line-height: 1.15;
+    margin-bottom: 40px;
+    max-width: 520px;
+  }
+
+  /* ─── BENTO GRID ──────────────────────────────────────── */
+  /*
+   * СЕТКА: 4 колонки × 3 строки
+   * Модульный размер: 1fr = ~270px @ 1280px viewport
+   *
+   * Логика расположения:
+   *  Строка 1 (Лидерские ценности): featured[2×2] | photo-car[2×1] | text[1×1] | text[1×1]
+   *                                               | text[1×1]       | text[1×1] |
+   *  Строка 2 (Культурные ценности): photo-people[2×1] | text[1×1] | text[1×1]
+   *  Строка 3: text[1×1] | text[1×1] | photo-final[2×1]
+   *
+   * Proximity: featured ячейка занимает 2 строки — она "якорь" системы ценностей
+   * Контраст:  только featured = orange; фото-ячейки = gradient overlay; text = #1e1e1e
+   */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(3, 240px);
+    gap: 10px;
+  }
+
+  /* ─── BASE CELL ───────────────────────────────────────── */
+  .cell {
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 24px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    cursor: default;
+  }
+  .cell:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+
+  /* ─── CELL TYPES ──────────────────────────────────────── */
+  .cell-dark {
+    background: #1e1e1e;
+  }
+  .cell-dark-mid {
+    background: #242424;
+  }
+
+  /* Featured — единственный оранжевый, 2×2 */
+  .cell-featured {
+    background: #E8580A;
+    grid-column: 1 / 3;
+    grid-row: 1 / 3;
+    justify-content: space-between;
+    padding: 32px;
+  }
+
+  /* Photo cells */
+  .cell-photo {
+    position: relative;
+  }
+  .cell-photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 0;
+  }
+  .cell-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+    z-index: 1;
+  }
+  .cell-photo .cell-content { position: relative; z-index: 2; }
+
+  /* Car — строка 1, col 3, row 1 */
+  .cell-car {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a1800 100%);
+  }
+
+  /* People photo — строка 2 */
+  .cell-people {
+    grid-column: 1 / 3;
+    grid-row: 3 / 4;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  }
+
+  /* Bottom wide photo */
+  .cell-wide {
+    grid-column: 3 / 5;
+    grid-row: 3 / 4;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%);
+  }
+
+  /* ─── CELL CONTENT ────────────────────────────────────── */
+  .cell-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 4px 10px;
+    width: fit-content;
+    margin-bottom: 12px;
+  }
+  .cell-featured .cell-tag {
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.15);
+  }
+
+  .cell-number {
+    font-size: 64px;
+    font-weight: 700;
+    letter-spacing: -3px;
+    line-height: 1;
+    color: rgba(255,255,255,0.12);
+    font-variant-numeric: tabular-nums;
+  }
+  .cell-featured .cell-number {
+    color: rgba(255,255,255,0.2);
+  }
+
+  .cell-title {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+    margin-bottom: 8px;
+  }
+  .cell-featured .cell-title {
+    font-size: 26px;
+    letter-spacing: -0.5px;
+    margin-bottom: 10px;
+  }
+
+  .cell-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.55);
+    max-width: 240px;
+  }
+  .cell-featured .cell-desc {
+    color: rgba(255,255,255,0.75);
+    font-size: 14px;
+    max-width: 280px;
+  }
+
+  /* Иконка в маленькой ячейке */
+  .cell-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+    font-size: 18px;
+  }
+
+  /* Business badge в right-bottom cell */
+  .business-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    width: fit-content;
+    margin-bottom: 14px;
+  }
+  .business-badge-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #4ADE80;
+  }
+
+  /* Divider между группами строк */
+  .bento-divider {
+    grid-column: 1 / -1;
+    height: 0; /* Нет визуального элемента — только смысловой gap больше за счёт margin */
+  }
+
+  /* ─── REVIEW ANNOTATION (для демо) ───────────────────── */
+  .annotations {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .annotation {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 3px solid #E8580A;
+  }
+  .annotation h4 {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #E8580A;
+    margin-bottom: 8px;
+  }
+  .annotation p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.6);
+  }
+  .annotation strong { color: rgba(255,255,255,0.9); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">01<span>.</span>tech</div>
+  <div class="nav-links">
+    <a href="#">Главная</a>
+    <a href="#">Твоя роль</a>
+    <a href="#">90 дней</a>
+    <a href="#" class="active">Культура</a>
+  </div>
+  <a href="#" class="nav-cta">Личный кабинет</a>
+</nav>
+
+<!-- PAGE -->
+<div class="page">
+  <div class="section-label">Культура компании</div>
+  <h1 class="section-title">Как мы работаем<br>и что нас объединяет</h1>
+
+  <!-- BENTO -->
+  <div class="bento">
+
+    <!-- ① FEATURED 2×2: главная ценность, оранжевая, якорь системы -->
+    <!-- Обоснование: занимает 2×2, потому что "лидерство" — фундамент всего.
+         Оранжевый = единственный акцент, чтобы взгляд фиксировался здесь первым -->
+    <div class="cell cell-featured">
+      <div>
+        <div class="cell-tag">⬛ Ключевая ценность</div>
+        <div class="cell-number">01</div>
+      </div>
+      <div>
+        <div class="cell-title">Лидеры<br>на деле,<br>а не на словах</div>
+        <div class="cell-desc">Своим примером показываем, как здесь принято работать. Не ждём решений — принимаем их.</div>
+      </div>
+    </div>
+
+    <!-- ② Драйв и скорость — col 3, row 1 -->
+    <!-- Обоснование: photo cell рядом с featured — визуальный "ответ" на слова -->
+    <div class="cell cell-dark cell-photo cell-car" style="grid-column: 3/4; grid-row: 1/2;">
+      <!-- SVG-placeholder вместо фото (нет доступа к ассету) -->
+      <svg style="position:absolute;inset:0;width:100%;height:100%;z-index:0;" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <radialGradient id="g1" cx="60%" cy="50%" r="60%">
+            <stop offset="0%" stop-color="#3d1f00"/>
+            <stop offset="100%" stop-color="#0d0d0d"/>
+          </radialGradient>
+        </defs>
+        <rect width="400" height="240" fill="url(#g1)"/>
+        <ellipse cx="250" cy="130" rx="120" ry="50" fill="rgba(232,88,10,0.15)" filter="blur(30px)"/>
+      </svg>
+      <div class="cell-content" style="position:relative;z-index:2;">
+        <div class="cell-title">Драйв<br>и скорость</div>
+        <div class="cell-desc">Действуем быстро, не ждём идеального момента</div>
+      </div>
+    </div>
+
+    <!-- ③ Постоянный рост — col 4, row 1 -->
+    <div class="cell cell-dark-mid" style="grid-column: 4/5; grid-row: 1/2;">
+      <div class="cell-icon">↑</div>
+      <div class="cell-title">Постоянный<br>рост</div>
+      <div class="cell-desc">Каждый из нас растёт вместе с компанией</div>
+    </div>
+
+    <!-- ④ Качество во всём — col 3, row 2 -->
+    <!-- Обоснование: text-cell рядом с featured вертикально — proximity к "лидерству" -->
+    <div class="cell cell-dark-mid" style="grid-column: 3/4; grid-row: 2/3;">
+      <div class="cell-icon">◈</div>
+      <div class="cell-title">Качество<br>во всём</div>
+      <div class="cell-desc">Не выпускаем то, за что не готовы отвечать</div>
+    </div>
+
+    <!-- ⑤ Свобода = Результат — col 4, row 2 -->
+    <div class="cell" style="grid-column: 4/5; grid-row: 2/3; background: #1e1e1e;">
+      <div class="business-badge">
+        <div class="business-badge-dot"></div>
+        Owner mindset
+      </div>
+      <div class="cell-title">Свобода = Результат</div>
+      <div class="cell-desc">Нет бюрократии и формальностей — есть ответственность</div>
+    </div>
+
+    <!-- ⑥ Главное — интересы клиентов — col 1-2, row 3 -->
+    <!-- Обоснование: photo-wide 2×1 внизу — "клиентская" тема требует человечности → фото -->
+    <div class="cell cell-photo cell-people" style="grid-column: 1/3; grid-row: 3/4;">
+      <svg style="position:absolute;inset:0;width:100%;height:100%;z-index:0;" viewBox="0 0 560 240" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0a0a1a"/>
+            <stop offset="100%" stop-color="#1a0a2e"/>
+          </linearGradient>
+        </defs>
+        <rect width="560" height="240" fill="url(#g2)"/>
+        <circle cx="420" cy="80" r="80" fill="rgba(100,100,255,0.06)" filter="blur(40px)"/>
+      </svg>
+      <div class="cell-content">
+        <div class="cell-tag">👥 Партнёрство</div>
+        <div class="cell-title">Главное — интересы клиентов</div>
+        <div class="cell-desc">Думаем как партнёры, для которых создаём продукты</div>
+      </div>
+    </div>
+
+    <!-- ⑦ Открытая коммуникация — col 3, row 3 -->
+    <div class="cell cell-dark" style="grid-column: 3/4; grid-row: 3/4;">
+      <div class="cell-icon">◎</div>
+      <div class="cell-title">Открытая коммуникация</div>
+      <div class="cell-desc">Если что-то идёт не так — говорим об этом прямо</div>
+    </div>
+
+    <!-- ⑧ Думай как владелец бизнеса — col 4, row 3 -->
+    <div class="cell cell-dark-mid" style="grid-column: 4/5; grid-row: 3/4;">
+      <div class="cell-icon">◇</div>
+      <div class="cell-title">Думай как<br>владелец<br>бизнеса</div>
+      <div class="cell-desc">Каждый из нас делает вклад в компанию</div>
+    </div>
+
+  </div><!-- /bento -->
+
+  <!-- REVIEW ANNOTATIONS -->
+  <div class="annotations">
+    <div class="annotation">
+      <h4>Близость (Proximity)</h4>
+      <p>
+        <strong>Было:</strong> 8 равноудалённых ячеек без логики группировки.<br><br>
+        <strong>Стало:</strong> Featured 2×2 "притягивает" col 3–4 в rows 1–2 — образуется зона "лидерских" ценностей. Нижние 4 ячейки — "операционные". Gap между строками 1–2 и строкой 3 намеренно тот же, но смысловой разрыв виден через смену типов ячеек (text → photo+text).
+      </p>
+    </div>
+    <div class="annotation">
+      <h4>Контраст (Contrast)</h4>
+      <p>
+        <strong>Было:</strong> Оранжевая карточка — единственная, без системы. Почему эта ценность главная — непонятно.<br><br>
+        <strong>Стало:</strong> Акцентный orange <strong>только у Featured 2×2</strong> + обоснование через label "Ключевая ценность". Остальные ячейки — #1e1e1e/#242424, фото-ячейки с overlay. Иерархия читается сразу.
+      </p>
+    </div>
+    <div class="annotation">
+      <h4>Сетка (Grid)</h4>
+      <p>
+        <strong>Было:</strong> Irregular 3-col с произвольными высотами. Левая колонка — text-only, скучно. Ячейки разной ширины без системы.<br><br>
+        <strong>Стало:</strong> Строгая <strong>4-column × 3-row</strong> система. Только два модуля: 1×1 и 2×1 (featured = 2×2). Все ячейки кратны одному модулю. Ритм предсказуемый, но визуально нескучный.
+      </p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

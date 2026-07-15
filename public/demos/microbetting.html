@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Лига Ставок · UX-аудит · Демо</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: #0e0e1c;
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  color: #fff;
+}
+
+/* ── Tab bar ── */
+.tabbar {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  gap: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: #0e0e1c;
+  position: relative;
+  z-index: 10;
+}
+
+.brand {
+  color: rgba(255,255,255,0.28);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-right: 32px;
+  flex-shrink: 0;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.35);
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: color 0.18s, background 0.18s;
+  white-space: nowrap;
+  position: relative;
+}
+.tab:hover {
+  color: rgba(255,255,255,0.65);
+  background: rgba(255,255,255,0.05);
+}
+.tab.active {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+  font-weight: 600;
+}
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -7px;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: #22c55e;
+  border-radius: 2px 2px 0 0;
+}
+
+/* ── Frame area ── */
+.frames {
+  height: calc(100vh - 52px);
+  position: relative;
+}
+
+iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+}
+iframe.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Hint tooltip ── */
+.hint {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%) translateY(0);
+  background: rgba(30,32,52,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.hint::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid rgba(255,255,255,0.12);
+}
+.hint::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid rgba(30,32,52,0.92);
+}
+.hint.gone {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-6px);
+}
+</style>
+</head>
+<body>
+
+<div class="tabbar">
+  <span class="brand">Лига Ставок · UX-аудит</span>
+  <div class="tabs">
+    <button class="tab active" onclick="show(0)">⏱ Таймер закрытия рынка</button>
+    <button class="tab"        onclick="show(1)">📈 Движение котировок</button>
+    <button class="tab"        onclick="show(2)">⚽ Гол-момент</button>
+    <button class="tab"        onclick="show(3)">🗂 Список рынков</button>
+    <button class="tab"        onclick="show(4)">🔄 Skeleton &amp; Latency</button>
+  </div>
+</div>
+
+<div class="hint" id="hint">↑ &nbsp;Переключайте анимации через вкладки</div>
+
+<div class="frames">
+  <iframe id="f0" class="active" src="microbetting-timer.html"></iframe>
+  <iframe id="f1"               src="microbetting-odds.html"></iframe>
+  <iframe id="f2"               src="microbetting-goal.html"></iframe>
+  <iframe id="f3"               src="microbetting-markets.html"></iframe>
+  <iframe id="f4"               src="microbetting-skeleton.html"></iframe>
+</div>
+
+<script>
+function show(idx) {
+  document.querySelectorAll('.tab').forEach((t, i) =>
+    t.classList.toggle('active', i === idx));
+  document.querySelectorAll('iframe').forEach((f, i) =>
+    f.classList.toggle('active', i === idx));
+  dismissHint();
+}
+
+const hint = document.getElementById('hint');
+function dismissHint() {
+  hint.classList.add('gone');
+}
+setTimeout(dismissHint, 4000);
+</script>
+</body>
+</html>

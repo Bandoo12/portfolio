@@ -40,3 +40,19 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .ftp-manifest
+
+# deploy scripts with plaintext credentials
+scripts/ftp_deploy.sh
+scripts/ftp_deploy_demo.sh
+scripts/ftp_curl_upload.sh
+scripts/ftp_upload.py
+
+# secrets / sessions
+*.session
+tg_groups.txt
+
+# unrelated local projects/artifacts living in this dir
+/VSCOProfileFilter/
+/test-results/
+bot.log
+.claude/

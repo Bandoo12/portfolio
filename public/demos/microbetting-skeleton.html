@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Лига Ставок · Skeleton · Demo</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body { height: 100%; overflow-x: auto; overflow-y: hidden; }
+
+body {
+  background: #1a1a2e;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-items: center;
+  justify-items: center;
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  padding: 24px 40px;
+  gap: 18px;
+}
+
+.caption-header {
+  color: rgba(255,255,255,0.28);
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  text-align: center; line-height: 2;
+}
+.caption-title { color: #fff; font-size: 16px; font-weight: 700; letter-spacing: 0.01em; margin-top: 2px; }
+
+.main-row { display: flex; gap: 24px; align-items: center; height: 100%; min-height: 0; }
+.phone-col { display: flex; flex-direction: column; align-items: center; gap: 12px; height: 100%; }
+.caption { color: rgba(255,255,255,0.35); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; text-align: center; flex-shrink: 0; }
+
+/* Center */
+.center-col { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; flex-shrink: 0; width: 148px; }
+.ctrl-label { color: rgba(255,255,255,0.28); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; text-align: center; }
+.ctrl-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.07); margin: 4px 0; }
+.legend-col { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.legend-item { display: flex; align-items: flex-start; gap: 7px; }
+.legend-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+.legend-text { color: rgba(255,255,255,0.28); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4; }
+
+/* ════ iPhone ════ */
+.iphone {
+  width: 300px; flex: 1; min-height: 0; max-height: 600px;
+  border-radius: 46px; border: 8px solid #2a2a30;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 0 1px rgba(0,0,0,0.5), 0 40px 80px rgba(0,0,0,0.85);
+  background: #000; position: relative; overflow: hidden; display: flex; flex-direction: column;
+}
+.island { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 88px; height: 22px; background: #000; border-radius: 14px; z-index: 30; }
+.screen { flex: 1; background: #10121a; display: flex; flex-direction: column; overflow: hidden; padding-top: 40px; border-radius: 38px 38px 0 0; }
+
+.statusbar { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 4px; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0; }
+.sb-right { display: flex; gap: 4px; align-items: center; font-size: 10px; }
+
+.navbar { position: relative; display: flex; align-items: center; justify-content: space-between; padding: 3px 10px 5px; background: #10121a; flex-shrink: 0; }
+.nav-back    { color: #fff; font-size: 20px; line-height: 1; }
+.nav-balance { position: absolute; left: 50%; transform: translateX(-50%); color: #fff; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.nav-balance .plus { color: #4ade80; font-size: 14px; font-weight: 700; }
+.nav-icon-btn { color: rgba(255,255,255,0.6); font-size: 14px; z-index: 1; }
+
+.match-block { flex-shrink: 0; padding: 0 8px 6px; background: #10121a; display: flex; flex-direction: column; }
+.score-plaque { display: flex; align-items: center; background: #1e2030; border-radius: 10px 10px 0 0; padding: 8px 10px; }
+.sb-team { display: flex; align-items: center; gap: 5px; flex: 1; }
+.sb-team.right { flex-direction: row-reverse; }
+.sb-flag { font-size: 15px; line-height: 1; }
+.sb-name { color: #fff; font-size: 11px; font-weight: 700; }
+.sb-center { display: flex; flex-direction: column; align-items: center; padding: 0 8px; }
+.sb-score  { color: #fff; font-size: 20px; font-weight: 800; letter-spacing: 0.05em; line-height: 1; }
+.sb-period { margin-top: 3px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.65); font-size: 7px; font-weight: 600; padding: 2px 6px; border-radius: 20px; }
+.sb-sep    { opacity: 0.6; }
+
+.stream-box { height: 90px; position: relative; overflow: hidden; border-radius: 0 0 12px 12px; }
+.ice-surface { position: absolute; inset: 0; background: linear-gradient(160deg, #cce8eb 0%, #a8d4d8 40%, #8fc5c9 100%); }
+.ice-line { position: absolute; }
+.ice-line.center { top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:rgba(255,40,40,0.55); }
+.ice-line.blue-l { top:0;bottom:0;left:28%;width:2px;background:rgba(30,80,200,0.65); }
+.ice-line.blue-r { top:0;bottom:0;right:28%;width:2px;background:rgba(30,80,200,0.65); }
+.ice-circle { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border:2px solid rgba(255,40,40,0.5);border-radius:50%; }
+.ice-dot { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:4px;background:rgba(255,40,40,0.65);border-radius:50%; }
+.cam-overlay { position:absolute;inset:0;background:radial-gradient(ellipse 120% 60% at 50% 100%,rgba(0,0,0,0.4) 0%,transparent 70%); }
+
+.content { flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px; padding:6px 8px 10px; scrollbar-width:none; }
+.content::-webkit-scrollbar { display: none; }
+
+/* ─── Market card ─── */
+.mcard { background: #1e2235; border-radius: 12px; overflow: hidden; flex-shrink: 0; border: 1.5px solid transparent; }
+.mcard-head { padding: 8px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.mcard-q    { color: #fff; font-size: 11px; font-weight: 700; margin-bottom: 1px; line-height: 1.3; }
+.mcard-sub  { color: rgba(255,255,255,0.38); font-size: 9px; }
+.opts-row { display: flex; gap: 6px; padding: 6px 8px; }
+.opt-btn {
+  flex: 1; border-radius: 9px; padding: 8px 6px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.07); border: 2px solid transparent;
+  cursor: default;
+}
+.opt-label { color: rgba(255,255,255,0.6); font-size: 10px; font-weight: 600; }
+.opt-odds  { color: #fff; font-size: 14px; font-weight: 800; }
+
+/* ─── BET PANEL ─── */
+.bet-panel {
+  flex-shrink: 0; padding: 8px 8px 10px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  display: flex; flex-direction: column; gap: 7px;
+}
+.bet-amount-row {
+  display: flex; align-items: center; gap: 6px;
+}
+.bet-amount-label { color: rgba(255,255,255,0.45); font-size: 10px; font-weight: 600; flex-shrink: 0; }
+.bet-amount-val {
+  flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px; padding: 5px 9px;
+  color: #fff; font-size: 12px; font-weight: 700;
+}
+.bet-presets { display: flex; gap: 5px; }
+.bet-preset {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px; padding: 4px 8px;
+  color: rgba(255,255,255,0.45); font-size: 9px; font-weight: 600;
+  cursor: default;
+}
+.bet-win-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.bet-win-label { color: rgba(255,255,255,0.35); font-size: 9px; }
+.bet-win-val   { color: #4ade80; font-size: 11px; font-weight: 700; }
+
+/* ─── THE BET BUTTON ─── */
+.bet-btn {
+  position: relative; overflow: hidden;
+  width: 100%; padding: 11px;
+  border: none; border-radius: 11px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: transform 0.1s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.bet-btn:active { transform: scale(0.97); }
+
+/* BEFORE button — plain green */
+.bet-btn.before-btn {
+  background: #22c55e; color: #fff;
+}
+.bet-btn.before-btn.blocked {
+  background: #22c55e; opacity: 0.7; cursor: default;
+}
+
+/* AFTER button */
+.bet-btn.after-btn {
+  background: #22c55e; color: #fff;
+  border: 1.5px solid transparent;
+  transition: background 0.4s ease, border-color 0.4s ease, opacity 0.25s ease;
+}
+
+/* ─── Stage tracker ─── */
+.stage-tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  margin-bottom: 0;
+  transition: max-height 0.4s cubic-bezier(0.22,1,0.36,1),
+              opacity 0.3s ease,
+              margin-bottom 0.4s ease;
+}
+.stage-tracker.visible {
+  max-height: 52px;
+  opacity: 1;
+  margin-bottom: 4px;
+}
+
+.st-row {
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+}
+
+.st-node {
+  width: 9px; height: 9px; border-radius: 50%;
+  border: 1.5px solid rgba(255,255,255,0.18);
+  background: transparent; flex-shrink: 0;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.st-node.active {
+  border-color: #22c55e; background: #22c55e;
+  animation: sn-pulse 1s ease-in-out infinite;
+}
+.st-node.done { border-color: #22c55e; background: #22c55e; animation: none; }
+.st-node.err  { border-color: #ef4444; background: #ef4444; animation: none; }
+
+@keyframes sn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0   rgba(34,197,94,0.55); }
+  50%       { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+}
+
+.st-bar {
+  flex: 1; height: 1.5px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden; margin: 0 3px;
+}
+.st-fill {
+  width: 100%; height: 100%;
+  background: #22c55e;
+  transform-origin: left; transform: scaleX(0);
+  transition: transform 0.55s ease;
+}
+.st-fill.filled { transform: scaleX(1); }
+
+.st-lblrow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 3px;
+}
+.slabel {
+  font-size: 7px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.2);
+  transition: color 0.3s ease;
+  flex: 1; text-align: center;
+}
+.slabel:first-child { text-align: left; }
+.slabel:last-child  { text-align: right; }
+.slabel.active { color: rgba(255,255,255,0.72); }
+.slabel.err    { color: #f87171; }
+
+/* ── Before: double-press warning ── */
+.double-warn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 10px; border-radius: 8px;
+  background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171; font-size: 9px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0; transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  flex-shrink: 0;
+}
+.double-warn.show { opacity: 1; transform: translateY(0); }
+
+
+/* ─── Phone C: Receipt card ─── */
+.bet-btn.c-btn {
+  background: #22c55e; color: #fff;
+  border: 1.5px solid transparent;
+  transition: background 0.35s ease, opacity 0.25s ease, border-color 0.35s ease;
+  width: 100%;
+}
+.bet-btn.c-btn.processing { opacity: 0.5; pointer-events: none; }
+
+.receipt-card {
+  max-height: 0; overflow: hidden; opacity: 0; margin-top: 0;
+  transition: max-height 0.45s cubic-bezier(0.22,1,0.36,1),
+              opacity 0.3s ease 0.1s, margin-top 0.4s ease;
+}
+.receipt-card.open { max-height: 80px; opacity: 1; margin-top: 6px; }
+
+.receipt-inner {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px; padding: 8px 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.receipt-params { flex: 1; font-size: 10px; color: rgba(255,255,255,0.55); line-height: 1.3; }
+.receipt-params strong { color: #fff; font-size: 11px; }
+
+.receipt-status {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 9px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.5); flex-shrink: 0;
+}
+.receipt-status.ok  { color: #4ade80; }
+.receipt-status.err { color: #f87171; }
+
+.receipt-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #fb923c; flex-shrink: 0;
+  animation: rdot-blink 1s ease-in-out infinite;
+}
+.receipt-dot.done { background: #22c55e; animation: none; }
+.receipt-dot.err  { background: #ef4444; animation: none; }
+
+@keyframes rdot-blink {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.8); }
+}
+
+/* ── Reset button ── */
+.reset-row {
+  display: flex; gap: 8px; padding: 0 8px 8px;
+}
+.reset-small {
+  flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 9px; padding: 7px;
+  color: rgba(255,255,255,0.35); font-family: inherit; font-size: 9px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; transition: background 0.15s; text-align: center;
+  display: none;
+}
+.reset-small:hover { background: rgba(255,255,255,0.1); }
+</style>
+</head>
+<body>
+
+<div class="caption-header">
+  UX-аудит · Лига Ставок
+  <div class="caption-title">Skeleton + latency feedback</div>
+</div>
+
+<div class="main-row">
+
+  <!-- ══ Phone AFTER ══ -->
+  <div class="phone-col">
+    <div class="caption">Решение 1 · Этапы</div>
+    <div class="iphone">
+      <div class="island"></div>
+      <div class="screen">
+        <div class="statusbar"><span>18:00</span><div class="sb-right"><span>●●●</span><span>▮</span></div></div>
+        <div class="navbar">
+          <span class="nav-back">←</span>
+          <div class="nav-balance">52 914 ₽ <span class="plus">+</span></div>
+          <span class="nav-icon-btn">🔔</span>
+        </div>
+        <div class="match-block">
+          <div class="score-plaque">
+            <div class="sb-team"><span class="sb-flag">🇺🇸</span><span class="sb-name">США</span></div>
+            <div class="sb-center">
+              <div class="sb-score">2<span class="sb-sep">:</span>0</div>
+              <span class="sb-period">Перерыв</span>
+            </div>
+            <div class="sb-team right"><span class="sb-flag">🇭🇺</span><span class="sb-name">Венгрия</span></div>
+          </div>
+          <div class="stream-box">
+            <div class="ice-surface"></div>
+            <div class="ice-line blue-l"></div><div class="ice-line center"></div><div class="ice-line blue-r"></div>
+            <div class="ice-circle"></div><div class="ice-dot"></div>
+            <div class="cam-overlay"></div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Вбрасывание в следующие 20 сек?</div>
+              <div class="mcard-sub">Статус по этапам · защита от двойного тапа</div>
+            </div>
+            <div class="opts-row">
+              <div class="opt-btn" style="border-color:rgba(34,197,94,0.45);background:rgba(34,197,94,0.1)">
+                <span class="opt-label">Да</span><span class="opt-odds">3.64</span>
+              </div>
+              <div class="opt-btn">
+                <span class="opt-label">Нет</span><span class="opt-odds">1.23</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bet-panel">
+          <div class="bet-amount-row">
+            <span class="bet-amount-label">Ставка</span>
+            <div class="bet-amount-val">500 ₽</div>
+          </div>
+          <div class="bet-presets">
+            <div class="bet-preset">+100</div>
+            <div class="bet-preset">+500</div>
+            <div class="bet-preset">Max</div>
+          </div>
+          <div class="bet-win-row">
+            <span class="bet-win-label">Выигрыш</span>
+            <span class="bet-win-val">1 820 ₽</span>
+          </div>
+          <div style="display:flex;flex-direction:column">
+            <div class="stage-tracker" id="a_tracker">
+              <div class="st-row">
+                <div class="st-node" id="sn0"></div>
+                <div class="st-bar"><div class="st-fill" id="sf0"></div></div>
+                <div class="st-node" id="sn1"></div>
+                <div class="st-bar"><div class="st-fill" id="sf1"></div></div>
+                <div class="st-node" id="sn2"></div>
+              </div>
+              <div class="st-lblrow">
+                <span class="slabel" id="sl0">Отправлена</span>
+                <span class="slabel" id="sl1">Проверка</span>
+                <span class="slabel" id="sl2">Принята</span>
+              </div>
+            </div>
+            <button class="bet-btn after-btn" id="a_btn" onclick="afterPress()">
+              <span id="a_btext">Сделать ставку</span>
+            </button>
+          </div>
+          <button class="reset-small" id="a_reset" onclick="afterReset()">↺ сбросить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Center ══ -->
+  <div class="center-col">
+    <div class="ctrl-label">Нажми «Сделать ставку»</div>
+    <div class="ctrl-divider"></div>
+    <div class="legend-col">
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div><span class="legend-text">Этап 1: ставка отправлена</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div><span class="legend-text">Этап 2: проверка лимитов</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div><span class="legend-text">Этап 3: результат сервера</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div><span class="legend-text">Защита от двойного тапа</span></div>
+    </div>
+    <div class="ctrl-divider"></div>
+    <p class="ctrl-label" style="text-align:left;color:rgba(255,255,255,0.18);margin-bottom:4px">Концепция</p>
+    <p style="color:rgba(255,255,255,0.35);font-size:10px;line-height:1.6;text-align:left">Вместо пустого спиннера — прогресс по этапам или мини-квитанция. Пользователь видит что ставка принята и где она в системе, не паникует при долгой обработке.</p>
+  </div>
+
+  <!-- ══ Phone C — Receipt morph ══ -->
+  <div class="phone-col">
+    <div class="caption">Решение 2 · Квитанция</div>
+    <div class="iphone">
+      <div class="island"></div>
+      <div class="screen">
+        <div class="statusbar"><span>18:00</span><div class="sb-right"><span>●●●</span><span>▮</span></div></div>
+        <div class="navbar">
+          <span class="nav-back">←</span>
+          <div class="nav-balance">52 914 ₽ <span class="plus">+</span></div>
+          <span class="nav-icon-btn">🔔</span>
+        </div>
+        <div class="match-block">
+          <div class="score-plaque">
+            <div class="sb-team"><span class="sb-flag">🇺🇸</span><span class="sb-name">США</span></div>
+            <div class="sb-center">
+              <div class="sb-score">2<span class="sb-sep">:</span>0</div>
+              <span class="sb-period">Перерыв</span>
+            </div>
+            <div class="sb-team right"><span class="sb-flag">🇭🇺</span><span class="sb-name">Венгрия</span></div>
+          </div>
+          <div class="stream-box">
+            <div class="ice-surface"></div>
+            <div class="ice-line blue-l"></div><div class="ice-line center"></div><div class="ice-line blue-r"></div>
+            <div class="ice-circle"></div><div class="ice-dot"></div>
+            <div class="cam-overlay"></div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Вбрасывание в следующие 20 сек?</div>
+              <div class="mcard-sub">Квитанция · контекст вместо ожидания</div>
+            </div>
+            <div class="opts-row">
+              <div class="opt-btn" style="border-color:rgba(34,197,94,0.45);background:rgba(34,197,94,0.1)">
+                <span class="opt-label">Да</span><span class="opt-odds">3.64</span>
+              </div>
+              <div class="opt-btn">
+                <span class="opt-label">Нет</span><span class="opt-odds">1.23</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bet-panel">
+          <div class="bet-amount-row">
+            <span class="bet-amount-label">Ставка</span>
+            <div class="bet-amount-val">500 ₽</div>
+          </div>
+          <div class="bet-presets">
+            <div class="bet-preset">+100</div>
+            <div class="bet-preset">+500</div>
+            <div class="bet-preset">Max</div>
+          </div>
+          <div class="bet-win-row">
+            <span class="bet-win-label">Выигрыш</span>
+            <span class="bet-win-val">1 820 ₽</span>
+          </div>
+          <div>
+            <button class="bet-btn c-btn" id="c_btn" onclick="cPress()">
+              <span id="c_btext">Сделать ставку</span>
+            </button>
+            <div class="receipt-card" id="c_receipt">
+              <div class="receipt-inner">
+                <div class="receipt-params">
+                  <div><strong>Да</strong> · 500 ₽ · ×3.64</div>
+                  <div style="margin-top:2px;color:rgba(255,255,255,0.35);font-size:9px">Выигрыш при победе: 1 820 ₽</div>
+                </div>
+                <div class="receipt-status" id="c_status">
+                  <div class="receipt-dot" id="c_rdot"></div>
+                  <span id="c_stext">Обрабатывается</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="reset-small" id="c_reset" onclick="cReset()">↺ сбросить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ═══════════ BEFORE phone ═══════════ */
+let bState = 'idle'; // idle | waiting | done
+let bPressCount = 0;
+let bTimer = null;
+
+function beforePress() {
+  bPressCount++;
+  const btn  = document.getElementById('b_btn');
+  const warn = document.getElementById('b_warn');
+  const rst  = document.getElementById('b_reset');
+
+  if (bPressCount === 1) {
+    // First press: button shows no feedback — user waits
+    bState = 'waiting';
+    btn.classList.add('blocked');
+    // After 2.2s server "responds" — no clear confirmation, just text changes
+    bTimer = setTimeout(() => {
+      btn.textContent = 'Готово';
+      bState = 'done';
+      rst.style.display = 'block';
+    }, 2200);
+    return;
+  }
+
+  // Second press during wait → double bet warning
+  if (bPressCount === 2 && bState === 'waiting') {
+    warn.classList.add('show');
+    btn.style.animation = 'none';
+    rst.style.display = 'block';
+  }
+}
+
+function beforeReset() {
+  clearTimeout(bTimer);
+  bState = 'idle'; bPressCount = 0;
+  const btn  = document.getElementById('b_btn');
+  const warn = document.getElementById('b_warn');
+  const rst  = document.getElementById('b_reset');
+  btn.textContent = 'Сделать ставку';
+  btn.classList.remove('blocked');
+  warn.classList.remove('show');
+  rst.style.display = 'none';
+}
+
+/* ═══════════ AFTER phone ═══════════ */
+let aState = 'idle';
+let aTimers = [];
+
+function afterPress() {
+  if (aState !== 'idle') return;
+  aState = 'running';
+
+  const btn     = document.getElementById('a_btn');
+  const btext   = document.getElementById('a_btext');
+  const tracker = document.getElementById('a_tracker');
+  const rst     = document.getElementById('a_reset');
+
+  // Immediate — show tracker, stage 1 active
+  tracker.classList.add('visible');
+  document.getElementById('sn0').className = 'st-node active';
+  document.getElementById('sl0').className = 'slabel active';
+  btext.textContent = 'Отправлена';
+  btn.style.opacity = '0.55';
+  btn.style.pointerEvents = 'none';
+
+  // Stage 2 at 0.9s
+  aTimers.push(setTimeout(() => {
+    document.getElementById('sf0').classList.add('filled');
+    setTimeout(() => {
+      document.getElementById('sn0').className = 'st-node done';
+      document.getElementById('sn1').className = 'st-node active';
+      document.getElementById('sl1').className = 'slabel active';
+      btext.textContent = 'Проверка лимитов...';
+    }, 300);
+  }, 900));
+
+  // Stage 3 at 2.5s — result
+  aTimers.push(setTimeout(() => {
+    document.getElementById('sf1').classList.add('filled');
+    setTimeout(() => {
+      document.getElementById('sn1').className = 'st-node done';
+      const ok = Math.random() < 0.7;
+      btn.style.opacity = '1';
+      if (ok) {
+        document.getElementById('sn2').className = 'st-node done';
+        document.getElementById('sl2').className = 'slabel active';
+        document.getElementById('sl2').textContent = '✓ Принята';
+        btn.style.background = '#16a34a';
+        btext.textContent = '✓ Ставка принята';
+        aState = 'success';
+      } else {
+        document.getElementById('sn2').className = 'st-node err';
+        document.getElementById('sl2').className = 'slabel err';
+        document.getElementById('sl2').textContent = '✕ Отклонена';
+        btn.style.background = 'rgba(239,68,68,0.15)';
+        btn.style.borderColor = 'rgba(239,68,68,0.4)';
+        btext.style.color = '#f87171';
+        btext.textContent = '✕ Рынок закрыт';
+        aState = 'error';
+      }
+      rst.style.display = 'block';
+    }, 300);
+  }, 2500));
+}
+
+function afterReset() {
+  aTimers.forEach(clearTimeout); aTimers = [];
+  aState = 'idle';
+
+  const btn     = document.getElementById('a_btn');
+  const btext   = document.getElementById('a_btext');
+  const tracker = document.getElementById('a_tracker');
+  const rst     = document.getElementById('a_reset');
+
+  tracker.classList.remove('visible');
+  ['sn0','sn1','sn2'].forEach(id => { document.getElementById(id).className = 'st-node'; });
+  ['sf0','sf1'].forEach(id => { document.getElementById(id).classList.remove('filled'); });
+  ['sl0','sl1'].forEach(id => { document.getElementById(id).className = 'slabel'; });
+  const sl2 = document.getElementById('sl2');
+  sl2.className = 'slabel'; sl2.textContent = 'Принята';
+
+  btn.removeAttribute('style');
+  btext.removeAttribute('style');
+  btext.textContent = 'Сделать ставку';
+  rst.style.display = 'none';
+}
+/* ═══════════ PHONE C — Receipt ═══════════ */
+let cState = 'idle';
+let cTimers = [];
+
+function cPress() {
+  if (cState !== 'idle') return;
+  cState = 'processing';
+
+  const btn     = document.getElementById('c_btn');
+  const btext   = document.getElementById('c_btext');
+  const receipt = document.getElementById('c_receipt');
+  const rst     = document.getElementById('c_reset');
+
+  btn.classList.add('processing');
+  btext.textContent = 'Отправлена';
+  receipt.classList.add('open');
+
+  cTimers.push(setTimeout(() => {
+    const ok    = Math.random() < 0.7;
+    const rdot  = document.getElementById('c_rdot');
+    const stext = document.getElementById('c_stext');
+    const stat  = document.getElementById('c_status');
+
+    btn.style.opacity = '1';
+    if (ok) {
+      rdot.className    = 'receipt-dot done';
+      stext.textContent = 'Принята ✓';
+      stat.className    = 'receipt-status ok';
+      btn.style.background = '#16a34a';
+      btext.textContent = '✓ Ставка принята';
+      cState = 'success';
+    } else {
+      rdot.className    = 'receipt-dot err';
+      stext.textContent = 'Отклонена';
+      stat.className    = 'receipt-status err';
+      btn.style.background  = 'rgba(239,68,68,0.15)';
+      btn.style.borderColor = 'rgba(239,68,68,0.4)';
+      btext.style.color = '#f87171';
+      btext.textContent = '✕ Рынок закрыт';
+      cState = 'error';
+    }
+    rst.style.display = 'block';
+  }, 2500));
+}
+
+function cReset() {
+  cTimers.forEach(clearTimeout); cTimers = [];
+  cState = 'idle';
+
+  const btn     = document.getElementById('c_btn');
+  const btext   = document.getElementById('c_btext');
+  const receipt = document.getElementById('c_receipt');
+  const rst     = document.getElementById('c_reset');
+
+  btn.removeAttribute('style');
+  btn.classList.remove('processing');
+  btext.removeAttribute('style');
+  btext.textContent = 'Сделать ставку';
+
+  receipt.classList.remove('open');
+  document.getElementById('c_rdot').className  = 'receipt-dot';
+  document.getElementById('c_stext').textContent = 'Обрабатывается';
+  document.getElementById('c_status').className = 'receipt-status';
+  rst.style.display = 'none';
+}
+</script>
+</body>
+</html>

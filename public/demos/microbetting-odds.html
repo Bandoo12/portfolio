@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Лига Ставок · Движение котировок · Demo</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background: #1a1a2e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 48px;
+  gap: 32px;
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+}
+
+/* Page header */
+.page-header {
+  text-align: center;
+}
+.page-super {
+  color: rgba(255,255,255,0.28);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.page-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* Two-phone row */
+.phones-row {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+.phone-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.caption {
+  color: rgba(255,255,255,0.35);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ════ iPhone shell (320px) ════ */
+.iphone {
+  width: 320px;
+  height: 640px;
+  border-radius: 50px;
+  border: 9px solid #2a2a30;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,0.08),
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 50px 100px rgba(0,0,0,0.85);
+  background: #000;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.island {
+  position: absolute; top: 9px; left: 50%;
+  transform: translateX(-50%);
+  width: 100px; height: 26px;
+  background: #000; border-radius: 18px; z-index: 30;
+}
+.screen {
+  flex: 1; background: #10121a;
+  display: flex; flex-direction: column;
+  overflow: hidden; padding-top: 46px;
+}
+
+/* Status bar */
+.statusbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 20px 5px; font-size: 12px; font-weight: 600; color: #fff; flex-shrink: 0;
+}
+.sb-right { display: flex; gap: 4px; align-items: center; font-size: 11px; }
+
+/* Navbar */
+.navbar {
+  position: relative; display: flex; align-items: center;
+  justify-content: space-between; padding: 5px 12px 7px;
+  background: #10121a; flex-shrink: 0;
+}
+.nav-back { color: #fff; font-size: 22px; line-height: 1; z-index: 1; }
+.nav-balance {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  color: #fff; font-size: 14px; font-weight: 600;
+  display: flex; align-items: center; gap: 3px; white-space: nowrap;
+}
+.nav-balance .plus { color: #4ade80; font-size: 16px; font-weight: 700; }
+.nav-icons { display: flex; gap: 12px; align-items: center; z-index: 1; }
+.nav-icon-btn { color: rgba(255,255,255,0.6); font-size: 15px; }
+
+/* Match block */
+.match-block { flex-shrink: 0; padding: 0 10px 8px; background: #10121a; display: flex; flex-direction: column; }
+.score-plaque { display: flex; align-items: center; background: #1e2030; border-radius: 10px 10px 0 0; padding: 8px 12px; }
+.sb-team { display: flex; align-items: center; gap: 6px; flex: 1; }
+.sb-team.right { flex-direction: row-reverse; }
+.sb-flag { font-size: 18px; line-height: 1; }
+.sb-name { color: #fff; font-size: 12px; font-weight: 700; }
+.sb-center { display: flex; flex-direction: column; align-items: center; padding: 0 10px; }
+.sb-score { color: #fff; font-size: 20px; font-weight: 800; letter-spacing: 0.05em; line-height: 1; }
+.sb-period { margin-top: 3px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.65); font-size: 8px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+.stream-box { height: 120px; position: relative; overflow: hidden; border-radius: 0 0 14px 14px; }
+.ice-surface { position: absolute; inset: 0; background: linear-gradient(160deg, #cce8eb 0%, #a8d4d8 40%, #8fc5c9 100%); }
+.ice-line { position: absolute; }
+.ice-line.center  { top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:rgba(255,40,40,0.55); }
+.ice-line.blue-l  { top:0;bottom:0;left:28%;width:2px;background:rgba(30,80,200,0.65); }
+.ice-line.blue-r  { top:0;bottom:0;right:28%;width:2px;background:rgba(30,80,200,0.65); }
+.ice-circle { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:54px;height:54px;border:2px solid rgba(255,40,40,0.5);border-radius:50%; }
+.ice-dot { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:5px;background:rgba(255,40,40,0.65);border-radius:50%; }
+.crease { position:absolute;top:50%;transform:translateY(-50%);width:20px;height:30px;border:2px solid rgba(255,40,40,0.45); }
+.crease.left  { left:3px;border-left:none;border-radius:7px 0 0 7px; }
+.crease.right { right:3px;border-right:none;border-radius:0 7px 7px 0; }
+.cam-overlay { position:absolute;inset:0;background:radial-gradient(ellipse 120% 60% at 50% 100%,rgba(0,0,0,0.4) 0%,transparent 70%);transform:perspective(180px) rotateX(8deg);transform-origin:bottom center; }
+.player { position:absolute;bottom:30%;width:7px;height:15px;background:rgba(0,0,0,0.5);border-radius:3px 3px 2px 2px; }
+
+/* Content */
+.content { flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:8px 10px 12px;scrollbar-width:none; }
+.content::-webkit-scrollbar { display: none; }
+
+/* Market card dark */
+.mcard {
+  background: #1e2235; border-radius: 14px;
+  overflow: hidden; flex-shrink: 0;
+}
+.mcard-head { padding: 10px 12px 7px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.mcard-q   { color: #fff; font-size: 12px; font-weight: 700; margin-bottom: 1px; line-height: 1.3; }
+.mcard-sub { color: rgba(255,255,255,0.38); font-size: 10px; }
+
+/* Buttons row */
+.yn-row { display: flex; gap: 7px; padding: 8px 10px 10px; }
+
+/* ── Before: static button ── */
+.yn-static {
+  flex: 1; background: rgba(255,255,255,0.07);
+  border: 2px solid transparent; border-radius: 11px;
+  padding: 10px; display: flex; align-items: center; justify-content: space-between;
+}
+.ys-label { color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 600; }
+.ys-odds  { color: #fff; font-size: 18px; font-weight: 800; transition: opacity 0.05s; }
+.ys-odds.blink { opacity: 0.15; }
+
+/* ── After: animated button ── */
+.yn-anim {
+  flex: 1; background: rgba(255,255,255,0.07);
+  border: 2px solid transparent; border-radius: 11px;
+  padding: 10px; display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; overflow: hidden;
+}
+.yn-anim:hover { background: rgba(255,255,255,0.10); }
+.ya-left { display: flex; align-items: center; gap: 4px; }
+.ya-label { color: rgba(255,255,255,0.6); font-size: 12px; font-weight: 600; }
+
+/* Trend arrow */
+.trend-arrow {
+  font-size: 9px; font-weight: 900; opacity: 0;
+  display: inline-block; line-height: 1;
+}
+.trend-arrow.up   { color: #4ade80; opacity: 1; animation: tarrow-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.trend-arrow.down { color: #ef4444; opacity: 1; animation: tarrow-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes tarrow-pop {
+  0%   { transform: scale(0.2); }
+  65%  { transform: scale(1.6); }
+  100% { transform: scale(1); }
+}
+
+/* ── Flip number (scaleY approach) ── */
+.flip-wrap { line-height: 1; }
+.flip-num {
+  display: inline-block;
+  font-size: 18px; font-weight: 800; color: #fff;
+  border-radius: 4px; padding: 2px 4px;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Button color flash */
+.yn-anim.flash-up   { background: rgba(34,197,94,0.22);  border-color: rgba(34,197,94,0.55); }
+.yn-anim.flash-down { background: rgba(239,68,68,0.20);  border-color: rgba(239,68,68,0.55); }
+
+/* Sparkline */
+.sparkline {
+  display: flex; align-items: center; gap: 4px;
+  padding: 0 10px 9px; margin-top: -2px;
+}
+.sp-label { color: rgba(255,255,255,0.2); font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 2px; }
+.sp-dot {
+  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; opacity: 0.75;
+}
+.sp-dot.up   { background: #4ade80; }
+.sp-dot.down { background: #ef4444; }
+.sp-dot.flat { background: rgba(255,255,255,0.16); }
+.sp-dot.new  { animation: dot-pop 0.32s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes dot-pop {
+  0%   { transform: scale(0); }
+  70%  { transform: scale(1.6); }
+  100% { transform: scale(1); }
+}
+.sp-sep { color: rgba(255,255,255,0.1); font-size: 8px; margin: 0 4px; }
+
+/* ── Legend row ── */
+.legend {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+}
+.legend-item { display: flex; align-items: center; gap: 7px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-text { color: rgba(255,255,255,0.4); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <p class="page-super">UX-аудит · Лига Ставок</p>
+  <h1 class="page-title">Движение котировок</h1>
+</div>
+
+<div class="phones-row">
+
+  <!-- ══════ Phone A: BEFORE ══════ -->
+  <div class="phone-col">
+    <div class="caption">Сейчас</div>
+    <div class="iphone">
+      <div class="island"></div>
+      <div class="screen">
+        <div class="statusbar"><span>18:00</span><div class="sb-right"><span>●●●</span><span>▮</span></div></div>
+        <div class="navbar">
+          <span class="nav-back">←</span>
+          <div class="nav-balance">52 914 ₽ <span class="plus">+</span></div>
+          <div class="nav-icons"><span class="nav-icon-btn">🔔</span></div>
+        </div>
+        <div class="match-block">
+          <div class="score-plaque">
+            <div class="sb-team"><span class="sb-flag">🇺🇸</span><span class="sb-name">США</span></div>
+            <div class="sb-center"><span class="sb-score">2:0</span><span class="sb-period">Перерыв</span></div>
+            <div class="sb-team right"><span class="sb-flag">🇭🇺</span><span class="sb-name">Венгрия</span></div>
+          </div>
+          <div class="stream-box">
+            <div class="ice-surface"></div>
+            <div class="ice-line blue-l"></div><div class="ice-line center"></div><div class="ice-line blue-r"></div>
+            <div class="ice-circle"></div><div class="ice-dot"></div>
+            <div class="crease left"></div><div class="crease right"></div>
+            <div class="player" style="left:40%;bottom:28%"></div>
+            <div class="player" style="left:50%;bottom:42%"></div>
+            <div class="player" style="left:60%;bottom:32%"></div>
+            <div class="cam-overlay"></div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Вбрасывание в следующие 20 сек?</div>
+              <div class="mcard-sub">Цифра меняется — направление непонятно</div>
+            </div>
+            <div class="yn-row">
+              <div class="yn-static">
+                <span class="ys-label">Да</span>
+                <span class="ys-odds" id="b_da">3.64</span>
+              </div>
+              <div class="yn-static">
+                <span class="ys-label">Нет</span>
+                <span class="ys-odds" id="b_net">1.23</span>
+              </div>
+            </div>
+          </div>
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Удар по воротам в 30 сек?</div>
+              <div class="mcard-sub">Активное окно</div>
+            </div>
+            <div class="yn-row">
+              <div class="yn-static">
+                <span class="ys-label">Да</span>
+                <span class="ys-odds" id="b_da2">2.15</span>
+              </div>
+              <div class="yn-static">
+                <span class="ys-label">Нет</span>
+                <span class="ys-odds" id="b_net2">1.72</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ Phone B: AFTER ══════ -->
+  <div class="phone-col">
+    <div class="caption">Решение</div>
+    <div class="iphone">
+      <div class="island"></div>
+      <div class="screen">
+        <div class="statusbar"><span>18:00</span><div class="sb-right"><span>●●●</span><span>▮</span></div></div>
+        <div class="navbar">
+          <span class="nav-back">←</span>
+          <div class="nav-balance">52 914 ₽ <span class="plus">+</span></div>
+          <div class="nav-icons"><span class="nav-icon-btn">🔔</span></div>
+        </div>
+        <div class="match-block">
+          <div class="score-plaque">
+            <div class="sb-team"><span class="sb-flag">🇺🇸</span><span class="sb-name">США</span></div>
+            <div class="sb-center"><span class="sb-score">2:0</span><span class="sb-period">Перерыв</span></div>
+            <div class="sb-team right"><span class="sb-flag">🇭🇺</span><span class="sb-name">Венгрия</span></div>
+          </div>
+          <div class="stream-box">
+            <div class="ice-surface"></div>
+            <div class="ice-line blue-l"></div><div class="ice-line center"></div><div class="ice-line blue-r"></div>
+            <div class="ice-circle"></div><div class="ice-dot"></div>
+            <div class="crease left"></div><div class="crease right"></div>
+            <div class="player" style="left:40%;bottom:28%"></div>
+            <div class="player" style="left:50%;bottom:42%"></div>
+            <div class="player" style="left:60%;bottom:32%"></div>
+            <div class="cam-overlay"></div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Вбрасывание в следующие 20 сек?</div>
+              <div class="mcard-sub">Flip · цвет · тренд ▲▼</div>
+            </div>
+            <div class="yn-row">
+              <div class="yn-anim" id="btn_da" onclick="manualUpdate('da')">
+                <div class="ya-left">
+                  <span class="ya-label">Да</span>
+                  <span class="trend-arrow" id="tr_da"></span>
+                </div>
+                <div class="flip-wrap"><span class="flip-num" id="a_da">3.64</span></div>
+              </div>
+              <div class="yn-anim" id="btn_net" onclick="manualUpdate('net')">
+                <div class="ya-left">
+                  <span class="ya-label">Нет</span>
+                  <span class="trend-arrow" id="tr_net"></span>
+                </div>
+                <div class="flip-wrap"><span class="flip-num" id="a_net">1.23</span></div>
+              </div>
+            </div>
+            <div class="sparkline">
+              <span class="sp-label">Тренд</span>
+              <div class="sp-dot flat" id="sp_da_0"></div><div class="sp-dot flat" id="sp_da_1"></div>
+              <div class="sp-dot flat" id="sp_da_2"></div><div class="sp-dot flat" id="sp_da_3"></div>
+              <div class="sp-dot flat" id="sp_da_4"></div>
+              <span class="sp-sep">│</span>
+              <div class="sp-dot flat" id="sp_net_0"></div><div class="sp-dot flat" id="sp_net_1"></div>
+              <div class="sp-dot flat" id="sp_net_2"></div><div class="sp-dot flat" id="sp_net_3"></div>
+              <div class="sp-dot flat" id="sp_net_4"></div>
+            </div>
+          </div>
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Удар по воротам в 30 сек?</div>
+              <div class="mcard-sub">Активное окно</div>
+            </div>
+            <div class="yn-row">
+              <div class="yn-anim" id="btn_da2" onclick="manualUpdate('da2')">
+                <div class="ya-left">
+                  <span class="ya-label">Да</span>
+                  <span class="trend-arrow" id="tr_da2"></span>
+                </div>
+                <div class="flip-wrap"><span class="flip-num" id="a_da2">2.15</span></div>
+              </div>
+              <div class="yn-anim" id="btn_net2" onclick="manualUpdate('net2')">
+                <div class="ya-left">
+                  <span class="ya-label">Нет</span>
+                  <span class="trend-arrow" id="tr_net2"></span>
+                </div>
+                <div class="flip-wrap"><span class="flip-num" id="a_net2">1.72</span></div>
+              </div>
+            </div>
+            <div class="sparkline">
+              <span class="sp-label">Тренд</span>
+              <div class="sp-dot flat" id="sp_da2_0"></div><div class="sp-dot flat" id="sp_da2_1"></div>
+              <div class="sp-dot flat" id="sp_da2_2"></div><div class="sp-dot flat" id="sp_da2_3"></div>
+              <div class="sp-dot flat" id="sp_da2_4"></div>
+              <span class="sp-sep">│</span>
+              <div class="sp-dot flat" id="sp_net2_0"></div><div class="sp-dot flat" id="sp_net2_1"></div>
+              <div class="sp-dot flat" id="sp_net2_2"></div><div class="sp-dot flat" id="sp_net2_3"></div>
+              <div class="sp-dot flat" id="sp_net2_4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div><span class="legend-text">Рост — зелёный fold + стрелка ▲</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div><span class="legend-text">Падение — красный fold + стрелка ▼</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.25)"></div><span class="legend-text">Точки — история 5 обновлений</span></div>
+  <div class="legend-item" style="color:rgba(255,255,255,0.28);font-size:12px">↺ нажми на котировку — ручное обновление</div>
+</div>
+
+<p style="color:rgba(255,255,255,0.18);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;margin-top:4px">Концепция</p>
+<p style="color:rgba(255,255,255,0.35);font-size:11px;line-height:1.6;text-align:center;max-width:600px;margin-top:4px">Стрелка направления и цветовая вспышка дают мгновенный сигнал об изменении котировки — без необходимости сравнивать числа вручную.</p>
+
+<script>
+/* ════ State ════ */
+const S = {
+  da:   { odds: 3.64, hist: [], busy: false },
+  net:  { odds: 1.23, hist: [], busy: false },
+  da2:  { odds: 2.15, hist: [], busy: false },
+  net2: { odds: 1.72, hist: [], busy: false },
+};
+
+/* ════ Trend: direction of current change ════ */
+function getTrend(id, dir) {
+  return dir;
+}
+
+/* ════ Sparkline ════ */
+function updateSparkline(id, dir) {
+  const h = S[id].hist;
+  for (let i = 0; i < 5; i++) {
+    const dot = document.getElementById(`sp_${id}_${i}`);
+    if (!dot) continue;
+    if (i >= h.length) { dot.className = 'sp-dot flat'; continue; }
+    const prev = i > 0 ? h[i - 1] : h[i];
+    const d = h[i] > prev ? 'up' : h[i] < prev ? 'down' : 'flat';
+    dot.className = 'sp-dot ' + d + (i === h.length - 1 ? ' new' : '');
+  }
+}
+
+/* ════ AFTER: animated update (scaleY fold-unfold) ════ */
+function updateAnimated(id, newOdds) {
+  const s = S[id];
+  if (s.busy) return;
+  s.busy = true;
+
+  const dir     = newOdds >= s.odds ? 'up' : 'down';
+  const valEl   = document.getElementById('a_' + id);
+  const btnEl   = document.getElementById('btn_' + id);
+  const trendEl = document.getElementById('tr_' + id);
+  if (!valEl) { s.busy = false; return; }
+
+  /* Phase 1: fold down (collapse scaleY → 0) */
+  valEl.style.transition = 'transform 0.18s ease-in';
+  valEl.style.transform  = 'scaleY(0.04)';
+
+  setTimeout(() => {
+    /* Swap number while fully folded */
+    s.odds = newOdds;
+    s.hist.push(newOdds);
+    if (s.hist.length > 5) s.hist.shift();
+    updateSparkline(id, dir);
+    valEl.textContent = newOdds.toFixed(2);
+
+    /* Color flash on button */
+    if (btnEl) {
+      btnEl.classList.remove('flash-up', 'flash-down');
+      void btnEl.offsetWidth;
+      btnEl.classList.add(dir === 'up' ? 'flash-up' : 'flash-down');
+      setTimeout(() => {
+        btnEl.style.transition = 'background 0.7s ease, border-color 0.7s ease';
+        btnEl.classList.remove('flash-up', 'flash-down');
+        setTimeout(() => { btnEl.style.transition = ''; }, 750);
+      }, 65);
+    }
+
+    /* Trend arrow — показываем на каждом изменении */
+    if (trendEl) {
+      trendEl.className = 'trend-arrow'; void trendEl.offsetWidth;
+      trendEl.className   = 'trend-arrow ' + dir;
+      trendEl.textContent = dir === 'up' ? '▲' : '▼';
+    }
+
+    /* Phase 2: spring back open */
+    requestAnimationFrame(() => {
+      valEl.style.transition = 'transform 0.32s cubic-bezier(0.34,1.7,0.64,1)';
+      valEl.style.transform  = 'scaleY(1)';
+    });
+
+    setTimeout(() => { s.busy = false; }, 360);
+  }, 185);
+}
+
+/* ════ BEFORE: blink update (shows the problem) ════ */
+function updateStatic(id, newOdds) {
+  const el = document.getElementById('b_' + id);
+  if (!el) return;
+  /* Abrupt blink — no direction info */
+  el.classList.add('blink');
+  setTimeout(() => {
+    el.textContent = newOdds.toFixed(2);
+    el.classList.remove('blink');
+  }, 55);
+}
+
+/* ════ Random delta ════ */
+function delta(cur) {
+  const big  = Math.random() < 0.22;
+  const mag  = big ? 0.20 + Math.random() * 0.40 : 0.03 + Math.random() * 0.13;
+  const sign = Math.random() < 0.5 ? 1 : -1;
+  return Math.round(Math.min(9.99, Math.max(1.05, cur + sign * mag)) * 100) / 100;
+}
+
+/* ════ Manual click ════ */
+function manualUpdate(id) {
+  const n = delta(S[id].odds);
+  updateAnimated(id, n);
+  updateStatic(id, n);
+}
+
+/* ════ Auto-tick: both phones update simultaneously ════ */
+function tick() {
+  const ids = ['da', 'net', 'da2', 'net2'];
+  const id  = ids[Math.floor(Math.random() * ids.length)];
+  const n   = delta(S[id].odds);
+  updateAnimated(id, n);
+  updateStatic(id, n);
+  setTimeout(tick, 1100 + Math.random() * 900);
+}
+
+setTimeout(tick, 800);
+</script>
+</body>
+</html>

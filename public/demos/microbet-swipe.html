@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>⚡ Турбо Ставки</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Helvetica Neue',sans-serif;background:#04020E;overflow:hidden;color:#fff}
+
+.page{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse 80% 60% at 50% 10%,rgba(108,69,222,.2) 0%,#04020E 70%)}
+.phone{width:390px;height:844px;background:#08051A;border-radius:48px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 0 0 1.5px rgba(255,255,255,.07),0 40px 120px rgba(108,69,222,.3),0 20px 60px rgba(0,0,0,.7)}
+@media(max-width:430px){.phone{width:100vw;height:100dvh;border-radius:0;box-shadow:none}.page{padding:0}}
+
+.status{height:48px;padding:16px 28px 4px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;font-size:13px;font-weight:600;letter-spacing:-.2px;position:relative;z-index:20}
+
+.xp-wrap{height:28px;padding:0 20px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.xp-level{font-size:10px;font-weight:800;color:#F5A623;letter-spacing:.06em;white-space:nowrap}
+.xp-bar{flex:1;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,#6C45DE,#A97BFF);border-radius:3px;transition:width .6s cubic-bezier(.34,1.56,.64,1)}
+.xp-pts{font-size:10px;color:rgba(255,255,255,.35);white-space:nowrap}
+
+.app-header{padding:4px 20px 8px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.app-left{display:flex;align-items:center;gap:8px}
+.app-title{font-size:20px;font-weight:900;letter-spacing:-.4px;background:linear-gradient(135deg,#fff 0%,rgba(255,255,255,.7) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.app-live{display:flex;align-items:center;gap:4px;background:rgba(255,59,48,.15);border:1px solid rgba(255,59,48,.3);border-radius:100px;padding:3px 8px;font-size:9px;font-weight:800;color:#FF3B30;letter-spacing:.08em}
+.live-dot{width:5px;height:5px;background:#FF3B30;border-radius:50%;animation:pulse-dot 1.4s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+.app-right{display:flex;align-items:center;gap:6px}
+.streak-pill{display:none;align-items:center;gap:4px;background:linear-gradient(135deg,rgba(255,107,26,.2),rgba(255,107,26,.1));border:1px solid rgba(255,107,26,.35);border-radius:100px;padding:5px 10px;font-size:12px;font-weight:800;color:#FF6B1A}
+.streak-pill.show{display:flex}
+.rank-pill{background:rgba(108,69,222,.2);border:1px solid rgba(108,69,222,.35);border-radius:100px;padding:5px 10px;font-size:11px;font-weight:700;color:#A97BFF}
+
+.quest-bar{margin:0 20px 10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px}
+.quest-text{font-size:10px;color:rgba(255,255,255,.5);flex:1}
+.quest-text strong{color:#F5A623}
+.quest-progress{display:flex;align-items:center;gap:4px}
+.quest-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.15)}
+.quest-dot.done{background:#27DB55}
+
+.card-area{flex:1;margin:0 16px;position:relative;overflow:visible;min-height:0}
+
+.bet-card{position:absolute;inset:0;border-radius:22px;overflow:hidden;cursor:grab;user-select:none;touch-action:none;will-change:transform;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.6)}
+.bet-card:active{cursor:grabbing}
+.bet-card[data-layer="1"]{transform:scale(.96) translateY(10px);z-index:1;pointer-events:none}
+.bet-card[data-layer="2"]{transform:scale(.92) translateY(20px);z-index:0;pointer-events:none}
+.bet-card[data-layer="0"]{z-index:5;transform:scale(1) translateY(0)}
+
+.card-header{flex-shrink:0;height:190px;position:relative;display:flex;flex-direction:column;justify-content:flex-end;padding:14px 16px 0;overflow:hidden}
+.card-header-bg{position:absolute;inset:0}
+.card-top-badges{position:absolute;top:12px;left:12px;right:12px;display:flex;align-items:center;justify-content:space-between}
+.badge-live{display:flex;align-items:center;gap:4px;background:rgba(0,0,0,.45);backdrop-filter:blur(10px);border-radius:100px;padding:4px 10px;font-size:9px;font-weight:800;color:#fff;letter-spacing:.08em}
+.badge-sport{background:rgba(0,0,0,.35);backdrop-filter:blur(10px);border-radius:100px;padding:4px 10px;font-size:9px;font-weight:700;color:rgba(255,255,255,.8)}
+.card-teams-row{display:flex;align-items:center;justify-content:space-between;padding-bottom:10px;position:relative;z-index:1}
+.team-col{display:flex;flex-direction:column;align-items:center;gap:5px;flex:1}
+.team-logo{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;border:2px solid rgba(255,255,255,.18);text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.team-name{font-size:11px;font-weight:600;color:rgba(255,255,255,.85);text-align:center}
+.score-col{display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 8px}
+.score-num{font-size:38px;font-weight:900;color:#fff;letter-spacing:3px;line-height:1;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.score-min{font-size:10px;color:rgba(255,255,255,.55);font-weight:600}
+.card-timer-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08)}
+.card-timer-fill{height:100%;border-radius:0 2px 2px 0;transition:width .5s linear}
+
+.card-body{flex:1;background:#0D0B1E;padding:14px 16px 12px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.card-xp-row{display:flex;align-items:center;justify-content:space-between}
+.xp-chip{display:inline-flex;align-items:center;gap:4px;background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.25);border-radius:100px;padding:3px 9px;font-size:10px;font-weight:800;color:#F5A623}
+.hot-chip{display:none;align-items:center;gap:3px;background:rgba(255,107,26,.12);border:1px solid rgba(255,107,26,.25);border-radius:100px;padding:3px 9px;font-size:10px;font-weight:700;color:#FF6B1A}
+.hot-chip.show{display:inline-flex}
+.card-question{font-size:21px;font-weight:800;color:#fff;line-height:1.25;letter-spacing:-.3px}
+
+.dir-row{display:flex;align-items:stretch;gap:6px}
+.dir-no{flex:1;background:rgba(60,100,246,.12);border:1.5px solid rgba(60,100,246,.22);border-radius:10px;padding:8px 10px;display:flex;align-items:center;gap:7px}
+.dir-yes{flex:1;background:rgba(39,219,85,.1);border:1.5px solid rgba(39,219,85,.2);border-radius:10px;padding:8px 10px;display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.dir-arrow{font-size:15px;font-weight:900}
+.dir-no .dir-arrow{color:#3C64F6}
+.dir-yes .dir-arrow{color:#27DB55}
+.dir-info{display:flex;flex-direction:column}
+.dir-label{font-size:13px;font-weight:700;color:#fff}
+.dir-odd{font-size:11px;color:rgba(255,255,255,.4)}
+.dir-win{font-size:10px;font-weight:700;color:rgba(255,255,255,.6)}
+
+.social-row{display:flex;align-items:center;gap:6px}
+.social-no{font-size:10px;color:rgba(255,255,255,.35);white-space:nowrap}
+.social-bar{flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.social-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#3C64F6,#27DB55);transition:width .5s ease}
+.social-yes{font-size:10px;color:rgba(255,255,255,.35);white-space:nowrap}
+
+.ov-base{position:absolute;inset:0;border-radius:22px;opacity:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:10;transition:opacity .05s linear}
+.ov-yes{background:linear-gradient(160deg,rgba(39,219,85,.28),rgba(39,219,85,.12));border:2.5px solid #27DB55}
+.ov-no{background:linear-gradient(160deg,rgba(60,100,246,.28),rgba(60,100,246,.12));border:2.5px solid #3C64F6}
+.ov-skip{background:rgba(0,0,0,.55);border:2px solid rgba(255,255,255,.15)}
+.ov-icon{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;border:3px solid}
+.ov-yes .ov-icon{background:rgba(39,219,85,.2);border-color:#27DB55;color:#27DB55}
+.ov-no .ov-icon{background:rgba(60,100,246,.2);border-color:#3C64F6;color:#3C64F6}
+.ov-skip .ov-icon{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.5)}
+.ov-label{font-size:24px;font-weight:900;letter-spacing:.03em}
+.ov-yes .ov-label{color:#27DB55}
+.ov-no .ov-label{color:#3C64F6}
+.ov-skip .ov-label{color:rgba(255,255,255,.5)}
+.ov-sub{font-size:14px;font-weight:700;color:rgba(255,255,255,.75)}
+
+.amount-section{flex-shrink:0;padding:0 20px 6px}
+.amount-label{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.amount-row{display:flex;gap:7px}
+.amount-chip{flex:1;height:34px;border-radius:9px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:rgba(255,255,255,.5);cursor:pointer;transition:all .15s ease}
+.amount-chip.sel{background:rgba(108,69,222,.25);border-color:#6C45DE;color:#fff}
+
+.swipe-guide{display:flex;justify-content:space-between;padding:0 24px 4px;flex-shrink:0}
+.guide-txt{font-size:10px;color:rgba(255,255,255,.2)}
+
+.action-row{display:flex;align-items:center;justify-content:center;gap:14px;padding:8px 20px 16px;flex-shrink:0}
+.act-btn{border:none;cursor:pointer;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .15s ease;font-size:18px;font-weight:700}
+.act-btn:active{transform:scale(.9)}
+.btn-skip{width:48px;height:48px;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4)}
+.btn-no{width:58px;height:58px;background:rgba(60,100,246,.15);border:2px solid rgba(60,100,246,.4);color:#3C64F6}
+.btn-yes{width:58px;height:58px;background:rgba(39,219,85,.15);border:2px solid rgba(39,219,85,.4);color:#27DB55}
+.btn-undo{width:48px;height:48px;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);font-size:16px}
+.action-labels{display:flex;align-items:center;justify-content:center;gap:14px;padding:0 20px 4px;flex-shrink:0}
+.act-lbl{font-size:9px;color:rgba(255,255,255,.25);text-align:center;letter-spacing:.04em}
+.act-lbl-w48{width:48px}
+.act-lbl-w58{width:58px}
+
+.achievement{position:absolute;top:60px;left:20px;right:20px;background:linear-gradient(135deg,#1E0F42,#2A1660);border:1px solid rgba(108,69,222,.5);border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;z-index:50;transform:translateY(-20px) scale(.95);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+.achievement.show{transform:translateY(0) scale(1);opacity:1}
+.ach-icon{font-size:28px;flex-shrink:0}
+.ach-text{flex:1}
+.ach-title{font-size:13px;font-weight:800;color:#fff;margin-bottom:1px}
+.ach-sub{font-size:11px;color:rgba(255,255,255,.5)}
+.ach-xp{font-size:13px;font-weight:800;color:#F5A623;white-space:nowrap}
+
+.float-xp{position:absolute;font-size:16px;font-weight:900;color:#F5A623;pointer-events:none;z-index:60;animation:float-up .8s ease-out forwards}
+@keyframes float-up{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.3)}}
+
+.particle{position:fixed;border-radius:50%;pointer-events:none;z-index:100;animation:particle-burst var(--dur,600ms) ease-out forwards}
+@keyframes particle-burst{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
+
+.done-screen{display:none;flex-direction:column;align-items:center;justify-content:center;position:absolute;inset:0;background:#08051A;z-index:30;gap:12px;padding:40px;text-align:center}
+.done-screen.show{display:flex;animation:pop-in .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop-in{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.done-emoji{font-size:56px;margin-bottom:4px}
+.done-h{font-size:24px;font-weight:900;letter-spacing:-.3px}
+.done-sub{font-size:14px;color:rgba(255,255,255,.45)}
+.done-potential{font-size:42px;font-weight:900;color:#27DB55;letter-spacing:-.5px}
+.done-breakdown{font-size:13px;color:rgba(255,255,255,.35)}
+.done-stats{display:flex;gap:20px;margin:4px 0}
+.done-stat{text-align:center}
+.done-stat-val{font-size:20px;font-weight:800}
+.done-stat-lbl{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em}
+.done-btn{background:linear-gradient(135deg,#6C45DE,#3C64F6);color:#fff;border:none;border-radius:14px;padding:14px 36px;font-size:15px;font-weight:800;cursor:pointer;margin-top:8px;letter-spacing:-.2px}
+.done-btn:active{transform:scale(.96)}
+
+.fly-yes{animation:fly-yes .42s cubic-bezier(.6,0,.8,.5) forwards}
+.fly-no{animation:fly-no .42s cubic-bezier(.6,0,.8,.5) forwards}
+.fly-skip{animation:fly-skip .36s cubic-bezier(.6,0,.8,.5) forwards}
+@keyframes fly-yes{to{transform:translateX(200%) rotate(32deg);opacity:0}}
+@keyframes fly-no{to{transform:translateX(-200%) rotate(-32deg);opacity:0}}
+@keyframes fly-skip{to{transform:translateY(-160%) scale(.85);opacity:0}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="phone" id="phone">
+
+  <div class="status">
+    <span>9:41</span>
+    <span style="font-size:15px;letter-spacing:-3px;opacity:.7">•••</span>
+    <span>🔋</span>
+  </div>
+
+  <div class="xp-wrap">
+    <span class="xp-level" id="xpLevel">⭐ LVL 3</span>
+    <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    <span class="xp-pts" id="xpPts">0 / 200 XP</span>
+  </div>
+
+  <div class="app-header">
+    <div class="app-left">
+      <span class="app-title">⚡ Турбо</span>
+      <div class="app-live"><div class="live-dot"></div>LIVE</div>
+    </div>
+    <div class="app-right">
+      <div class="streak-pill" id="streakPill">🔥 <span id="streakNum">0</span>x</div>
+      <div class="rank-pill" id="rankPill">#12 сейчас</div>
+    </div>
+  </div>
+
+  <div class="quest-bar">
+    <div class="quest-text">🎯 Квест дня: <strong id="questDone">0</strong>/5 ставок → фрибет <strong>500 ₽</strong></div>
+    <div class="quest-progress" id="questDots">
+      <div class="quest-dot"></div><div class="quest-dot"></div><div class="quest-dot"></div><div class="quest-dot"></div><div class="quest-dot"></div>
+    </div>
+  </div>
+
+  <div class="card-area" id="cardArea">
+    <div class="done-screen" id="doneScreen">
+      <div class="done-emoji">🏆</div>
+      <div class="done-h">Сессия завершена!</div>
+      <div class="done-sub">Если все зайдут, ты получишь:</div>
+      <div class="done-potential" id="donePot">0 ₽</div>
+      <div class="done-breakdown" id="doneBreak">из 0 ставок</div>
+      <div class="done-stats">
+        <div class="done-stat"><div class="done-stat-val" id="doneBets" style="color:#A97BFF">0</div><div class="done-stat-lbl">Ставок</div></div>
+        <div class="done-stat"><div class="done-stat-val" id="doneXP" style="color:#F5A623">0</div><div class="done-stat-lbl">XP заработано</div></div>
+        <div class="done-stat"><div class="done-stat-val" id="doneStreak" style="color:#FF6B1A">0</div><div class="done-stat-lbl">Макс. серия</div></div>
+      </div>
+      <button class="done-btn" onclick="resetGame()">⚡ Играть снова</button>
+    </div>
+  </div>
+
+  <div class="achievement" id="achievement">
+    <div class="ach-icon" id="achIcon">🏆</div>
+    <div class="ach-text">
+      <div class="ach-title" id="achTitle">Достижение!</div>
+      <div class="ach-sub" id="achSub">Описание</div>
+    </div>
+    <div class="ach-xp" id="achXP">+100 XP</div>
+  </div>
+
+  <div class="amount-section">
+    <div class="amount-label">Сумма ставки</div>
+    <div class="amount-row">
+      <div class="amount-chip" onclick="setAmt(100,this)">100 ₽</div>
+      <div class="amount-chip sel" onclick="setAmt(500,this)">500 ₽</div>
+      <div class="amount-chip" onclick="setAmt(1000,this)">1 000 ₽</div>
+      <div class="amount-chip" onclick="setAmt(2000,this)">2 000 ₽</div>
+    </div>
+  </div>
+
+  <div class="swipe-guide">
+    <span class="guide-txt">← НЕТ · свайп влево</span>
+    <span class="guide-txt">свайп вправо · ДА →</span>
+  </div>
+
+  <div class="action-labels">
+    <div class="act-lbl act-lbl-w48">Пропустить</div>
+    <div class="act-lbl act-lbl-w58">← НЕТ</div>
+    <div class="act-lbl act-lbl-w58">ДА →</div>
+    <div class="act-lbl act-lbl-w48">Отмена</div>
+  </div>
+
+  <div class="action-row">
+    <button class="act-btn btn-skip" onclick="doSkip()">↑</button>
+    <button class="act-btn btn-no" onclick="doBet('no')">✕</button>
+    <button class="act-btn btn-yes" onclick="doBet('yes')">✓</button>
+    <button class="act-btn btn-undo" onclick="doUndo()">↩</button>
+  </div>
+
+</div>
+</div>
+<script>
+const SPORT_BG={
+  football:  ['#0A0520','#1C0A48','#2D1470'],
+  tennis:    ['#1A0A1C','#3A0E2A','#6B1E44'],
+  basketball:['#1A0A00','#4A1500','#7B2800'],
+  hockey:    ['#020A1C','#041E4A','#073278'],
+};
+
+const CARDS=[
+  {id:1,sport:'football',sportLabel:'⚽ Футбол',hot:true,
+   t1:{n:'Ливерпуль',abbr:'LIV',c:'#CC0000'},t2:{n:'Бавария',abbr:'BAY',c:'#0033A0'},
+   score:'1 : 0',min:"67'",timerMax:299,timerLeft:241,
+   question:'Гол в следующие 5 минут?',xp:75,
+   yes:{odd:2.23,votes:847},no:{odd:1.68,votes:341}},
+  {id:2,sport:'tennis',sportLabel:'🎾 Теннис',hot:false,
+   t1:{n:'Зверев',abbr:'ZVR',c:'#1a7a42'},t2:{n:'Джокович',abbr:'DJO',c:'#c93535'},
+   score:'6 : 4',min:'Подача 3',timerMax:90,timerLeft:44,
+   question:'Зверев выиграет эту подачу?',xp:50,
+   yes:{odd:1.85,votes:523},no:{odd:1.92,votes:498}},
+  {id:3,sport:'basketball',sportLabel:'🏀 Баскет',hot:false,
+   t1:{n:'ЦСКА',abbr:'CSK',c:'#C8102E'},t2:{n:'Зенит',abbr:'ZEN',c:'#0066B3'},
+   score:'54 : 51',min:'3Q 2:40',timerMax:160,timerLeft:98,
+   question:'Следующее очко из-за дуги?',xp:60,
+   yes:{odd:2.55,votes:213},no:{odd:1.52,votes:467}},
+  {id:4,sport:'football',sportLabel:'⚽ Футбол',hot:true,
+   t1:{n:'Реал М',abbr:'RMA',c:'#FEBE10'},t2:{n:'ПСЖ',abbr:'PSG',c:'#004170'},
+   score:'2 : 1',min:"82'",timerMax:540,timerLeft:443,
+   question:'Жёлтая карточка до конца?',xp:50,
+   yes:{odd:1.78,votes:1204},no:{odd:2.05,votes:876}},
+  {id:5,sport:'tennis',sportLabel:'🎾 Теннис',hot:false,
+   t1:{n:'Медведев',abbr:'MED',c:'#1B4F72'},t2:{n:'Алькарас',abbr:'ALC',c:'#784212'},
+   score:'4 : 6',min:'Подача 7',timerMax:90,timerLeft:67,
+   question:'Эйс или двойная ошибка?',xp:100,
+   yes:{odd:3.10,votes:312},no:{odd:1.38,votes:891}},
+];
+
+const XP_PER_LEVEL=200;
+const ACHIEVEMENTS=[
+  {streak:2,icon:'🔥',title:'Первая серия!',sub:'2 ставки подряд',xp:50},
+  {streak:3,icon:'💥',title:'Комбо x3!',sub:'3 ставки без пропуска',xp:75},
+  {streak:5,icon:'🏆',title:'На огне!',sub:'5 подряд — ты машина',xp:150},
+  {bets:3,icon:'🎯',title:'Меткий стрелок',sub:'3 ставки за сессию',xp:60},
+];
+
+let state={
+  currentIdx:0,selectedAmount:500,
+  xp:0,level:1,streak:0,maxStreak:0,
+  totalBets:0,totalPotential:0,history:[],
+  questDone:2,achFired:{},earnedXP:0,
+};
+
+const fmt=n=>Math.round(n).toLocaleString('ru');
+const fmtT=s=>`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+
+function cardHTML(card){
+  const bg=SPORT_BG[card.sport]||SPORT_BG.football;
+  const total=card.yes.votes+card.no.votes;
+  const yesPct=Math.round(card.yes.votes/total*100);
+  const tPct=Math.round(card.timerLeft/card.timerMax*100);
+  const urgent=tPct<30;
+  const timerColor=urgent?'#FF3B30':'#27DB55';
+  const wY=fmt(state.selectedAmount*card.yes.odd);
+  const wN=fmt(state.selectedAmount*card.no.odd);
+  return `
+<div class="card-header" style="background:linear-gradient(160deg,${bg[0]} 0%,${bg[1]} 55%,${bg[2]} 100%)">
+  <div class="card-top-badges">
+    <div class="badge-live"><div class="live-dot"></div>LIVE</div>
+    <div class="badge-sport">${card.sportLabel}</div>
+  </div>
+  <div class="card-teams-row">
+    <div class="team-col">
+      <div class="team-logo" style="background:${card.t1.c}">${card.t1.abbr}</div>
+      <div class="team-name">${card.t1.n}</div>
+    </div>
+    <div class="score-col">
+      <div class="score-num">${card.score}</div>
+      <div class="score-min">${card.min}</div>
+    </div>
+    <div class="team-col">
+      <div class="team-logo" style="background:${card.t2.c}">${card.t2.abbr}</div>
+      <div class="team-name">${card.t2.n}</div>
+    </div>
+  </div>
+  <div class="card-timer-bar">
+    <div class="card-timer-fill" style="width:${tPct}%;background:${timerColor};box-shadow:0 0 6px ${timerColor}"></div>
+  </div>
+</div>
+<div class="card-body">
+  <div class="card-xp-row">
+    <div class="xp-chip">⭐ +${card.xp} XP · ⏱ ${fmtT(card.timerLeft)}</div>
+    <div class="hot-chip ${card.hot?'show':''}">🔥 Горячая</div>
+  </div>
+  <div class="card-question">${card.question}</div>
+  <div class="dir-row">
+    <div class="dir-no">
+      <div class="dir-arrow">←</div>
+      <div class="dir-info">
+        <div class="dir-label">${card.no.label||'НЕТ'}</div>
+        <div class="dir-odd">×${card.no.odd}</div>
+        <div class="dir-win">+${wN} ₽</div>
+      </div>
+    </div>
+    <div class="dir-yes">
+      <div class="dir-info" style="text-align:right">
+        <div class="dir-label">${card.yes.label||'ДА'}</div>
+        <div class="dir-odd">×${card.yes.odd}</div>
+        <div class="dir-win">+${wY} ₽</div>
+      </div>
+      <div class="dir-arrow">→</div>
+    </div>
+  </div>
+  <div class="social-row">
+    <div class="social-no">НЕТ ${100-yesPct}%</div>
+    <div class="social-bar"><div class="social-fill" style="width:${yesPct}%"></div></div>
+    <div class="social-yes">ДА ${yesPct}%</div>
+  </div>
+</div>
+<div class="ov-base ov-yes" id="ov-yes-${card.id}">
+  <div class="ov-icon">✓</div>
+  <div class="ov-label">ДА!</div>
+  <div class="ov-sub" id="ov-yes-sub-${card.id}">×${card.yes.odd} → +${wY} ₽</div>
+</div>
+<div class="ov-base ov-no" id="ov-no-${card.id}">
+  <div class="ov-icon">✕</div>
+  <div class="ov-label">НЕТ</div>
+  <div class="ov-sub" id="ov-no-sub-${card.id}">×${card.no.odd} → +${wN} ₽</div>
+</div>
+<div class="ov-base ov-skip" id="ov-skip-${card.id}">
+  <div class="ov-icon">↑</div>
+  <div class="ov-label">Пропустить</div>
+</div>`;
+}
+
+let dragging=false,sx=0,sy=0,dx=0,dy=0,topCard=null;
+
+function setupDrag(){
+  topCard=document.querySelector('[data-layer="0"]');
+  if(!topCard)return;
+  topCard.addEventListener('mousedown',startDrag);
+  topCard.addEventListener('touchstart',startDrag,{passive:true});
+}
+
+function startDrag(e){
+  dragging=true;dx=0;dy=0;
+  const p=e.touches?e.touches[0]:e;
+  sx=p.clientX;sy=p.clientY;
+  topCard.style.transition='none';
+  document.addEventListener('mousemove',moveDrag);
+  document.addEventListener('touchmove',moveDrag,{passive:true});
+  document.addEventListener('mouseup',endDrag);
+  document.addEventListener('touchend',endDrag);
+}
+
+function moveDrag(e){
+  if(!dragging||!topCard)return;
+  const p=e.touches?e.touches[0]:e;
+  dx=p.clientX-sx;dy=p.clientY-sy;
+  const rot=dx*0.07;
+  topCard.style.transform=`translateX(${dx}px) translateY(${dy*.25}px) rotate(${rot}deg)`;
+  const cid=topCard.dataset.cid;
+  const T=50;
+  const ovY=document.getElementById(`ov-yes-${cid}`);
+  const ovN=document.getElementById(`ov-no-${cid}`);
+  const ovS=document.getElementById(`ov-skip-${cid}`);
+  if(dx>T){ovY.style.opacity=Math.min((dx-T)/70,1);ovN.style.opacity=0;ovS.style.opacity=0}
+  else if(dx<-T){ovN.style.opacity=Math.min((-dx-T)/70,1);ovY.style.opacity=0;ovS.style.opacity=0}
+  else if(dy<-T){ovS.style.opacity=Math.min((-dy-T)/50,1);ovY.style.opacity=0;ovN.style.opacity=0}
+  else{ovY.style.opacity=0;ovN.style.opacity=0;ovS.style.opacity=0}
+}
+
+function endDrag(){
+  if(!dragging)return;dragging=false;
+  document.removeEventListener('mousemove',moveDrag);
+  document.removeEventListener('touchmove',moveDrag);
+  document.removeEventListener('mouseup',endDrag);
+  document.removeEventListener('touchend',endDrag);
+  if(dx>110){commitBet('yes');return}
+  if(dx<-110){commitBet('no');return}
+  if(dy<-80){commitSkip();return}
+  topCard.style.transition='transform .4s cubic-bezier(.34,1.56,.64,1)';
+  topCard.style.transform='translateX(0) translateY(0) rotate(0)';
+  const cid=topCard.dataset.cid;
+  ['yes','no','skip'].forEach(k=>{const o=document.getElementById(`ov-${k}-${cid}`);if(o)o.style.opacity=0});
+}
+
+function renderDeck(){
+  const area=document.getElementById('cardArea');
+  area.querySelectorAll('.bet-card').forEach(c=>c.remove());
+  const rem=CARDS.length-state.currentIdx;
+  if(rem<=0){showDone();return}
+  const count=Math.min(rem,3);
+  for(let i=count-1;i>=0;i--){
+    const el=document.createElement('div');
+    el.className='bet-card';
+    el.dataset.layer=i;
+    el.dataset.cid=CARDS[state.currentIdx+i].id;
+    el.innerHTML=cardHTML(CARDS[state.currentIdx+i]);
+    area.appendChild(el);
+  }
+  setupDrag();
+  updateHUD();
+}
+
+function updateHUD(){
+  const xpInLevel=state.xp%XP_PER_LEVEL;
+  document.getElementById('xpFill').style.width=(xpInLevel/XP_PER_LEVEL*100)+'%';
+  document.getElementById('xpLevel').textContent=`⭐ LVL ${state.level}`;
+  document.getElementById('xpPts').textContent=`${xpInLevel} / ${XP_PER_LEVEL} XP`;
+  const sp=document.getElementById('streakPill');
+  if(state.streak>=2){sp.classList.add('show');document.getElementById('streakNum').textContent=state.streak}
+  else{sp.classList.remove('show')}
+  const qd=Math.min(state.questDone,5);
+  document.getElementById('questDone').textContent=qd;
+  const dots=document.getElementById('questDots').children;
+  for(let i=0;i<5;i++)dots[i].className='quest-dot'+(i<qd?' done':'');
+  const rank=Math.max(1,12-state.totalBets*2);
+  document.getElementById('rankPill').textContent=`#${rank} сейчас`;
+}
+
+function commitBet(side){
+  if(!topCard)return;
+  const card=CARDS[state.currentIdx];
+  const chosen=side==='yes'?card.yes:card.no;
+  const win=Math.round(state.selectedAmount*chosen.odd);
+  state.history.push({type:'bet',side,idx:state.currentIdx,amount:state.selectedAmount,win,xp:card.xp});
+  state.totalBets++;
+  state.questDone=Math.min(5,state.questDone+1);
+  state.totalPotential+=win;
+  state.streak++;
+  state.maxStreak=Math.max(state.maxStreak,state.streak);
+  addXP(card.xp+(state.streak>1?(state.streak-1)*15:0));
+  state.earnedXP+=card.xp;
+  topCard.classList.add(side==='yes'?'fly-yes':'fly-no');
+  particles(topCard,side==='yes'?'#27DB55':'#3C64F6');
+  floatXP(topCard,card.xp);
+  checkAchievements();
+  setTimeout(()=>{state.currentIdx++;renderDeck()},420);
+}
+
+function commitSkip(){
+  if(!topCard)return;
+  state.history.push({type:'skip',idx:state.currentIdx});
+  state.streak=0;
+  topCard.classList.add('fly-skip');
+  setTimeout(()=>{state.currentIdx++;renderDeck()},380);
+}
+
+function doBet(side){if(topCard)commitBet(side)}
+function doSkip(){if(topCard)commitSkip()}
+
+function doUndo(){
+  if(!state.history.length||state.currentIdx===0)return;
+  const last=state.history.pop();
+  state.currentIdx--;
+  if(last.type==='bet'){
+    state.totalBets--;state.totalPotential-=last.win;
+    state.streak=Math.max(0,state.streak-1);
+    state.earnedXP-=last.xp;state.xp-=last.xp;
+    if(state.xp<0){state.level=Math.max(1,state.level-1);state.xp+=XP_PER_LEVEL}
+    state.questDone=Math.max(0,state.questDone-1);
+  }
+  document.getElementById('doneScreen').classList.remove('show');
+  renderDeck();
+}
+
+function addXP(amount){
+  state.xp+=amount;
+  while(state.xp>=XP_PER_LEVEL){state.xp-=XP_PER_LEVEL;state.level++;levelUp()}
+  updateHUD();
+}
+
+function levelUp(){
+  showAchievement('⬆️',`Уровень ${state.level}!`,'Ты становишься лучше',`LVL ${state.level}`);
+}
+
+function checkAchievements(){
+  ACHIEVEMENTS.forEach(a=>{
+    const key=a.streak?`s${a.streak}`:`b${a.bets}`;
+    if(state.achFired[key])return;
+    if(a.streak&&state.streak===a.streak){state.achFired[key]=1;addXP(a.xp);showAchievement(a.icon,a.title,a.sub,`+${a.xp} XP`)}
+    if(a.bets&&state.totalBets===a.bets){state.achFired[key]=1;addXP(a.xp);showAchievement(a.icon,a.title,a.sub,`+${a.xp} XP`)}
+  });
+}
+
+let achTimer=null;
+function showAchievement(icon,title,sub,xp){
+  const el=document.getElementById('achievement');
+  document.getElementById('achIcon').textContent=icon;
+  document.getElementById('achTitle').textContent=title;
+  document.getElementById('achSub').textContent=sub;
+  document.getElementById('achXP').textContent=xp;
+  el.classList.add('show');
+  if(achTimer)clearTimeout(achTimer);
+  achTimer=setTimeout(()=>el.classList.remove('show'),2800);
+}
+
+function setAmt(v,el){
+  state.selectedAmount=v;
+  document.querySelectorAll('.amount-chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  if(topCard&&state.currentIdx<CARDS.length){
+    const card=CARDS[state.currentIdx];
+    const wY=fmt(v*card.yes.odd),wN=fmt(v*card.no.odd);
+    const s1=document.getElementById(`ov-yes-sub-${card.id}`);
+    const s2=document.getElementById(`ov-no-sub-${card.id}`);
+    const dirWins=topCard.querySelectorAll('.dir-win');
+    if(s1)s1.textContent=`×${card.yes.odd} → +${wY} ₽`;
+    if(s2)s2.textContent=`×${card.no.odd} → +${wN} ₽`;
+    if(dirWins[0])dirWins[0].textContent=`+${wN} ₽`;
+    if(dirWins[1])dirWins[1].textContent=`+${wY} ₽`;
+  }
+}
+
+function showDone(){
+  document.getElementById('donePot').textContent=`+${fmt(state.totalPotential)} ₽`;
+  document.getElementById('doneBreak').textContent=`из ${state.totalBets} ставок`;
+  document.getElementById('doneBets').textContent=state.totalBets;
+  document.getElementById('doneXP').textContent=state.earnedXP;
+  document.getElementById('doneStreak').textContent=state.maxStreak;
+  document.getElementById('doneScreen').classList.add('show');
+}
+
+function resetGame(){
+  state.currentIdx=0;state.streak=0;state.maxStreak=0;state.totalBets=0;
+  state.totalPotential=0;state.earnedXP=0;state.questDone=2;state.history=[];state.achFired={};
+  document.getElementById('doneScreen').classList.remove('show');
+  renderDeck();
+}
+
+function particles(el,color){
+  const r=el.getBoundingClientRect();
+  const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  for(let i=0;i<14;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const angle=(Math.PI*2*i)/14,dist=55+Math.random()*90;
+    p.style.cssText=`left:${cx}px;top:${cy}px;width:${5+Math.random()*7}px;height:${5+Math.random()*7}px;background:${color};--tx:${Math.cos(angle)*dist}px;--ty:${Math.sin(angle)*dist}px;--dur:${480+Math.random()*220}ms;animation-delay:${i*18}ms`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),800);
+  }
+}
+
+function floatXP(el,xp){
+  const r=el.getBoundingClientRect();
+  const f=document.createElement('div');
+  f.className='float-xp';
+  f.textContent=`+${xp} XP`;
+  f.style.cssText=`left:${r.left+r.width/2-30}px;top:${r.top+r.height/2}px;position:fixed;z-index:60`;
+  document.body.appendChild(f);
+  setTimeout(()=>f.remove(),1000);
+}
+
+renderDeck();
+</script>
+</body>
+</html>

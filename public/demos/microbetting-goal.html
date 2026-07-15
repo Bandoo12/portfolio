@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Лига Ставок · Goal Moment · Demo</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: #1a1a2e;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  align-items: center;
+  justify-items: center;
+  font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+  padding: 24px 40px;
+  gap: 18px;
+}
+
+.caption-header {
+  color: rgba(255,255,255,0.28);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 2;
+}
+.caption-title {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-top: 2px;
+}
+
+.main-row {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  height: 100%;
+  min-height: 0;
+}
+
+.phone-col { display: flex; flex-direction: column; align-items: center; gap: 12px; height: 100%; }
+
+.caption {
+  color: rgba(255,255,255,0.35);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.center-col {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 10px; flex-shrink: 0; width: 140px;
+}
+.ctrl-label {
+  color: rgba(255,255,255,0.28); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase; text-align: center; margin-bottom: 2px;
+}
+.goal-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px; border: none; border-radius: 12px;
+  font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+}
+.goal-btn:hover  { opacity: 0.88; }
+.goal-btn:active { transform: scale(0.95); }
+.goal-btn.usa { background: #1d4ed8; color: #fff; }
+.goal-btn.hun { background: #dc2626; color: #fff; }
+
+.reset-btn {
+  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 10px; padding: 8px; color: rgba(255,255,255,0.38);
+  font-family: inherit; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; transition: background 0.15s; display: none; text-align: center;
+}
+.reset-btn:hover { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.6); }
+
+.ctrl-divider { width: 100%; height: 1px; background: rgba(255,255,255,0.07); margin: 4px 0; }
+
+.legend-col { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.legend-item { display: flex; align-items: flex-start; gap: 7px; }
+.legend-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; }
+.legend-text { color: rgba(255,255,255,0.28); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; line-height: 1.4; }
+
+/* ════ iPhone ════ */
+.iphone {
+  width: 300px; flex: 1; min-height: 0; max-height: 600px;
+  border-radius: 46px; border: 8px solid #2a2a30;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 0 1px rgba(0,0,0,0.5), 0 40px 80px rgba(0,0,0,0.85);
+  background: #000; position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.island {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  width: 88px; height: 22px; background: #000; border-radius: 14px; z-index: 30;
+}
+.screen {
+  flex: 1; background: #10121a; display: flex; flex-direction: column;
+  overflow: hidden; padding-top: 40px; position: relative;
+  border-radius: 38px 38px 0 0;
+}
+
+/* ── iOS-style goal banner (slides from top, no content blocked) ── */
+.goal-banner {
+  position: absolute;
+  top: 8px; left: 10px; right: 10px;
+  z-index: 50;
+  border-radius: 20px;
+  padding: 10px 14px;
+  display: flex; align-items: center; gap: 10px;
+  transform: translateY(-90px);
+  opacity: 0;
+  pointer-events: none;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.goal-banner.show {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform 0.42s cubic-bezier(0.34,1.3,0.64,1), opacity 0.3s ease;
+}
+.goal-banner.hide {
+  transform: translateY(-90px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.55,0,1,0.45), opacity 0.25s ease-in;
+}
+.gb-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+.gb-body { flex: 1; min-width: 0; }
+.gb-app  { color: rgba(255,255,255,0.7); font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1px; }
+.gb-title{ color: #fff; font-size: 13px; font-weight: 700; line-height: 1.2; }
+.gb-sub  { color: rgba(255,255,255,0.7); font-size: 10px; margin-top: 1px; }
+.gb-score{ color: #fff; font-size: 20px; font-weight: 900; flex-shrink: 0; }
+
+/* Status bar */
+.statusbar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 0 16px 4px; font-size: 11px; font-weight: 600; color: #fff; flex-shrink: 0;
+}
+.sb-right { display: flex; gap: 4px; align-items: center; font-size: 10px; }
+
+/* Navbar */
+.navbar {
+  position: relative; display: flex; align-items: center;
+  justify-content: space-between; padding: 3px 10px 5px;
+  background: #10121a; flex-shrink: 0; z-index: 1;
+}
+.nav-back    { color: #fff; font-size: 20px; line-height: 1; }
+.nav-balance { position: absolute; left: 50%; transform: translateX(-50%); color: #fff; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+.nav-balance .plus { color: #4ade80; font-size: 14px; font-weight: 700; }
+.nav-icon-btn { color: rgba(255,255,255,0.6); font-size: 14px; z-index: 1; }
+
+/* Match block */
+.match-block { flex-shrink: 0; padding: 0 8px 6px; background: #10121a; display: flex; flex-direction: column; z-index: 1; }
+.score-plaque {
+  display: flex; align-items: center;
+  background: #1e2030; border-radius: 10px 10px 0 0; padding: 8px 10px;
+}
+.sb-team { display: flex; align-items: center; gap: 5px; flex: 1; }
+.sb-team.right { flex-direction: row-reverse; }
+.sb-flag { font-size: 15px; line-height: 1; }
+.sb-name { color: #fff; font-size: 11px; font-weight: 700; }
+.sb-center { display: flex; flex-direction: column; align-items: center; padding: 0 8px; }
+.sb-score  { color: #fff; font-size: 20px; font-weight: 800; letter-spacing: 0.05em; line-height: 1; display: flex; align-items: center; gap: 2px; }
+.score-digit { display: inline-block; }
+.sb-sep    { opacity: 0.6; }
+.sb-period { margin-top: 3px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.65); font-size: 7px; font-weight: 600; padding: 2px 6px; border-radius: 20px; }
+
+/* Stream box */
+.stream-box { height: 104px; position: relative; overflow: hidden; border-radius: 0 0 12px 12px; }
+.ice-surface { position: absolute; inset: 0; background: linear-gradient(160deg, #cce8eb 0%, #a8d4d8 40%, #8fc5c9 100%); }
+.ice-line { position: absolute; }
+.ice-line.center { top:0;bottom:0;left:50%;width:2px;transform:translateX(-50%);background:rgba(255,40,40,0.55); }
+.ice-line.blue-l { top:0;bottom:0;left:28%;width:2px;background:rgba(30,80,200,0.65); }
+.ice-line.blue-r { top:0;bottom:0;right:28%;width:2px;background:rgba(30,80,200,0.65); }
+.ice-circle { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border:2px solid rgba(255,40,40,0.5);border-radius:50%; }
+.ice-dot { position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:4px;height:4px;background:rgba(255,40,40,0.65);border-radius:50%; }
+.crease { position:absolute;top:50%;transform:translateY(-50%);width:16px;height:24px;border:2px solid rgba(255,40,40,0.45); }
+.crease.left  { left:3px;border-left:none;border-radius:5px 0 0 5px; }
+.crease.right { right:3px;border-right:none;border-radius:0 5px 5px 0; }
+.player { position:absolute;bottom:30%;width:5px;height:12px;background:rgba(0,0,0,0.5);border-radius:2px; }
+.cam-overlay { position:absolute;inset:0;background:radial-gradient(ellipse 120% 60% at 50% 100%,rgba(0,0,0,0.4) 0%,transparent 70%); }
+
+/* Content */
+.content { flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:6px 8px 8px;scrollbar-width:none; z-index: 1; }
+.content::-webkit-scrollbar { display: none; }
+
+/* Goal toast — persistent post-goal record in feed */
+.goal-toast {
+  flex-shrink: 0; display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 11px;
+  opacity: 0; transition: opacity 0.45s ease;
+  border: 1.5px solid transparent; overflow: hidden;
+}
+.goal-toast.visible { opacity: 1; }
+.gt-icon  { font-size: 15px; line-height: 1; flex-shrink: 0; }
+.gt-body  { flex: 1; }
+.gt-title { color: #fff; font-size: 11px; font-weight: 700; }
+.gt-sub   { color: rgba(255,255,255,0.45); font-size: 9px; margin-top: 1px; letter-spacing: 0.04em; }
+.gt-score { font-size: 16px; font-weight: 900; color: #fff; flex-shrink: 0; }
+
+/* Market card */
+.mcard { background: #1e2235; border-radius: 12px; overflow: hidden; flex-shrink: 0; }
+.mcard-head { padding: 8px 10px 6px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+.mcard-q    { color: #fff; font-size: 11px; font-weight: 700; margin-bottom: 1px; line-height: 1.3; }
+.mcard-sub  { color: rgba(255,255,255,0.38); font-size: 9px; }
+.yn-row { display: flex; gap: 6px; padding: 6px 8px 8px; }
+.yn-btn { flex: 1; background: rgba(255,255,255,0.07); border: 2px solid transparent; border-radius: 10px; padding: 8px; display: flex; align-items: center; justify-content: space-between; }
+.yn-label { color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 600; }
+.yn-odds  { color: #fff; font-size: 15px; font-weight: 800; }
+
+.mcard.new-market { border: 1.5px solid rgba(34,197,94,0.5); }
+.new-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  background: rgba(34,197,94,0.15); color: #4ade80;
+  font-size: 8px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 2px 7px; border-radius: 20px; margin-bottom: 4px;
+}
+
+/* ════ KEYFRAMES ════ */
+@keyframes score-punch {
+  0%   { transform: scale(1); }
+  28%  { transform: scale(1.45); }
+  55%  { transform: scale(0.93); }
+  76%  { transform: scale(1.07); }
+  100% { transform: scale(1); }
+}
+@keyframes digit-drop {
+  0%   { transform: translateY(-24px) scale(1.5); opacity: 0; }
+  50%  { transform: translateY(3px) scale(0.94); opacity: 1; }
+  75%  { transform: translateY(-1px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes plaque-flash {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+@keyframes digit-blink {
+  0%,100% { opacity: 1; }
+  45%     { opacity: 0.12; }
+}
+@keyframes card-slide-in {
+  0%   { transform: translateY(-18px); opacity: 0; }
+  65%  { transform: translateY(3px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes card-glow {
+  0%   { box-shadow: 0 0 0 0   rgba(34,197,94,0.8); }
+  35%  { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+  65%  { box-shadow: 0 0 0 0   rgba(34,197,94,0.5); }
+  100% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+}
+</style>
+</head>
+<body>
+
+<div class="caption-header">
+  UX-аудит · Лига Ставок
+  <div class="caption-title">Обновление счёта — Goal Moment</div>
+</div>
+
+<div class="main-row">
+
+  <!-- ══ Phone BEFORE ══ -->
+  <div class="phone-col">
+    <div class="caption">Сейчас</div>
+    <div class="iphone">
+      <div class="island"></div>
+      <div class="screen">
+        <div class="statusbar"><span>18:00</span><div class="sb-right"><span>●●●</span><span>▮</span></div></div>
+        <div class="navbar">
+          <span class="nav-back">←</span>
+          <div class="nav-balance">52 914 ₽ <span class="plus">+</span></div>
+          <span class="nav-icon-btn">🔔</span>
+        </div>
+        <div class="match-block">
+          <div class="score-plaque">
+            <div class="sb-team"><span class="sb-flag">🇺🇸</span><span class="sb-name">США</span></div>
+            <div class="sb-center">
+              <div class="sb-score">
+                <span class="score-digit" id="b_usa">2</span>
+                <span class="sb-sep">:</span>
+                <span class="score-digit" id="b_hun">0</span>
+              </div>
+              <span class="sb-period">Перерыв</span>
+            </div>
+            <div class="sb-team right"><span class="sb-flag">🇭🇺</span><span class="sb-name">Венгрия</span></div>
+          </div>
+          <div class="stream-box">
+            <div class="ice-surface"></div>
+            <div class="ice-line blue-l"></div><div class="ice-line center"></div><div class="ice-line blue-r"></div>
+            <div class="ice-circle"></div><div class="ice-dot"></div>
+            <div class="crease left"></div><div class="crease right"></div>
+            <div class="player" style="left:38%;bottom:28%"></div>
+            <div class="player" style="left:50%;bottom:40%"></div>
+            <div class="player" style="left:60%;bottom:30%"></div>
+            <div class="cam-overlay"></div>
+          </div>
+        </div>
+        <div class="content">
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Вбрасывание в следующие 20 сек?</div>
+              <div class="mcard-sub">Счёт моргает — кто забил непонятно</div>
+            </div>
+            <div class="yn-row">
+              <div class="yn-btn"><span class="yn-label">Да</span><span class="yn-odds">3.64</span></div>
+              <div class="yn-btn"><span class="yn-label">Нет</span><span class="yn-odds">1.23</span></div>
+            </div>
+          </div>
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Удар по воротам в 30 сек?</div>
+              <div class="mcard-sub">Активное окно</div>
+            </div>
+            <div class="yn-row">
+              <div class="yn-btn"><span class="yn-label">Да</span><span class="yn-odds">2.15</span></div>
+              <div class="yn-btn"><span class="yn-label">Нет</span><span class="yn-odds">1.72</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Center ══ -->
+  <div class="center-col">
+    <div class="ctrl-label">Забить гол</div>
+    <button class="goal-btn usa" onclick="goal('usa')">🇺🇸 США</button>
+    <button class="goal-btn hun" onclick="goal('hun')">🇭🇺 Венгрия</button>
+    <button class="reset-btn" id="resetBtn" onclick="resetScore()">↺ сбросить</button>
+    <div class="ctrl-divider"></div>
+    <div class="legend-col">
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div><span class="legend-text">Баннер сверху</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#fff"></div><span class="legend-text">Punch + цифра</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#1d4ed8"></div><span class="legend-text">Свечение рамки</span></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4ade80"></div><span class="legend-text">Новый рынок</span></div>
+    </div>
+    <div class="ctrl-divider"></div>
+    <p class="ctrl-label" style="text-align:left;color:rgba(255,255,255,0.18);margin-bottom:4px">Концепция</p>
+    <p style="color:rgba(255,255,255,0.35);font-size:10px;line-height:1.6;text-align:left">iOS-баннер вместо полноэкранного оверлея — голевой момент подсвечивается, не блокируя интерфейс. Пользователь может сразу поставить на следующее событие.</p>
+  </div>
+
+  <!-- ══ Phone AFTER ══ -->
+  <div class="phone-col">
+    <div class="caption">Решение</div>
+    <div class="iphone" id="a_iphone">
+      <div class="island"></div>
+      <div class="screen">
+
+        <!-- iOS-style banner — slides from top, content stays interactive -->
+        <div class="goal-banner" id="a_banner">
+          <div class="gb-icon" id="gb_icon"></div>
+          <div class="gb-body">
+            <div class="gb-app">Лига Ставок · Хоккей</div>
+            <div class="gb-title" id="gb_title"></div>
+            <div class="gb-sub" id="gb_sub"></div>
+          </div>
+          <div class="gb-score" id="gb_score"></div>
+        </div>
+
+        <div class="statusbar"><span>18:00</span><div class="sb-right"><span>●●●</span><span>▮</span></div></div>
+        <div class="navbar">
+          <span class="nav-back">←</span>
+          <div class="nav-balance">52 914 ₽ <span class="plus">+</span></div>
+          <span class="nav-icon-btn">🔔</span>
+        </div>
+        <div class="match-block">
+          <div class="score-plaque" id="a_plaque">
+            <div class="sb-team"><span class="sb-flag">🇺🇸</span><span class="sb-name">США</span></div>
+            <div class="sb-center" id="a_score_block">
+              <div class="sb-score">
+                <span class="score-digit" id="a_usa">2</span>
+                <span class="sb-sep">:</span>
+                <span class="score-digit" id="a_hun">0</span>
+              </div>
+              <span class="sb-period">Перерыв</span>
+            </div>
+            <div class="sb-team right"><span class="sb-flag">🇭🇺</span><span class="sb-name">Венгрия</span></div>
+          </div>
+          <div class="stream-box">
+            <div class="ice-surface"></div>
+            <div class="ice-line blue-l"></div><div class="ice-line center"></div><div class="ice-line blue-r"></div>
+            <div class="ice-circle"></div><div class="ice-dot"></div>
+            <div class="crease left"></div><div class="crease right"></div>
+            <div class="player" style="left:38%;bottom:28%"></div>
+            <div class="player" style="left:50%;bottom:40%"></div>
+            <div class="player" style="left:60%;bottom:30%"></div>
+            <div class="cam-overlay"></div>
+          </div>
+        </div>
+        <div class="content" id="a_content">
+          <!-- Persistent goal record -->
+          <div class="goal-toast" id="a_goal_toast">
+            <div class="gt-icon" id="toast_flag"></div>
+            <div class="gt-body">
+              <div class="gt-title" id="toast_title"></div>
+              <div class="gt-sub">Только что · счёт изменился</div>
+            </div>
+            <div class="gt-score" id="toast_score"></div>
+          </div>
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Вбрасывание в следующие 20 сек?</div>
+              <div class="mcard-sub">Активное окно</div>
+            </div>
+            <div class="yn-row">
+              <div class="yn-btn"><span class="yn-label">Да</span><span class="yn-odds">3.64</span></div>
+              <div class="yn-btn"><span class="yn-label">Нет</span><span class="yn-odds">1.23</span></div>
+            </div>
+          </div>
+          <div class="mcard">
+            <div class="mcard-head">
+              <div class="mcard-q">Удар по воротам в 30 сек?</div>
+              <div class="mcard-sub">Активное окно</div>
+            </div>
+            <div class="yn-row">
+              <div class="yn-btn"><span class="yn-label">Да</span><span class="yn-odds">2.15</span></div>
+              <div class="yn-btn"><span class="yn-label">Нет</span><span class="yn-odds">1.72</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const score = { usa: 2, hun: 0 };
+const TEAMS = {
+  usa: { label: 'США',     color: '#1d4ed8', glow: '0 0 0 5px rgba(29,78,216,0.75)', flag: '🇺🇸', toastBg: 'rgba(29,78,216,0.14)', toastBorder: 'rgba(29,78,216,0.38)' },
+  hun: { label: 'Венгрия', color: '#dc2626', glow: '0 0 0 5px rgba(220,38,38,0.75)', flag: '🇭🇺', toastBg: 'rgba(220,38,38,0.14)', toastBorder: 'rgba(220,38,38,0.38)' },
+};
+
+let busy = false;
+let bannerTimer = null;
+let toastTimer  = null;
+
+function goal(team) {
+  if (busy) return;
+  busy = true;
+  setTimeout(() => { busy = false; }, 2400);
+
+  score[team]++;
+  const t = TEAMS[team];
+  const newScore = score.usa + ':' + score.hun;
+
+  // ── Before: digit blinks (bad UX) ──
+  const bEl = document.getElementById('b_' + team);
+  bEl.style.animation = 'none'; void bEl.offsetWidth;
+  bEl.textContent = score[team];
+  bEl.style.animation = 'digit-blink 0.22s ease 2';
+
+  // ── After: 1. iOS banner slides in ──
+  const banner = document.getElementById('a_banner');
+  clearTimeout(bannerTimer);
+  banner.style.background = t.color + 'ee';
+  banner.style.boxShadow = '0 8px 32px ' + t.color + '88';
+  document.getElementById('gb_icon').textContent  = t.flag;
+  document.getElementById('gb_title').textContent = 'Гол! ' + t.label;
+  document.getElementById('gb_sub').textContent   = 'Счёт изменился · ' + newScore;
+  document.getElementById('gb_score').textContent = newScore;
+
+  banner.classList.remove('show', 'hide');
+  void banner.offsetWidth;
+  banner.classList.add('show');
+
+  // Auto-hide banner after 3.2s
+  bannerTimer = setTimeout(() => { banner.classList.replace('show', 'hide'); }, 3200);
+
+  // 2. Score plaque: flash color → fade back
+  const plaque = document.getElementById('a_plaque');
+  plaque.style.transition = 'none';
+  plaque.style.background = t.color;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    plaque.style.transition = 'background 1.2s ease';
+    plaque.style.background = '#1e2030';
+  }));
+
+  // 3. Score block punch
+  const block = document.getElementById('a_score_block');
+  block.style.animation = 'none'; void block.offsetWidth;
+  block.style.animation = 'score-punch 0.52s ease';
+
+  // 4. Digit drop
+  const aEl = document.getElementById('a_' + team);
+  aEl.style.animation = 'none'; void aEl.offsetWidth;
+  aEl.textContent = score[team];
+  aEl.style.animation = 'digit-drop 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+
+  // 5. iPhone frame glow → fade
+  const iphone = document.getElementById('a_iphone');
+  iphone.style.transition = 'box-shadow 0.06s ease';
+  iphone.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.08), ' + t.glow + ', 0 40px 80px rgba(0,0,0,0.85)';
+  setTimeout(() => {
+    iphone.style.transition = 'box-shadow 1.4s ease';
+    iphone.style.boxShadow  = 'inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 0 1px rgba(0,0,0,0.5), 0 40px 80px rgba(0,0,0,0.85)';
+  }, 100);
+
+  // 6. Persistent goal toast — fades in at 1.4s
+  clearTimeout(toastTimer);
+  const toast = document.getElementById('a_goal_toast');
+  toast.classList.remove('visible');
+  toast.style.background   = t.toastBg;
+  toast.style.borderColor  = t.toastBorder;
+  document.getElementById('toast_flag').textContent  = t.flag;
+  document.getElementById('toast_title').textContent = 'Гол! ' + t.label;
+  document.getElementById('toast_score').textContent = newScore;
+  toastTimer = setTimeout(() => { toast.classList.add('visible'); }, 1400);
+
+  // 7. New market card at 800ms
+  setTimeout(() => {
+    const content = document.getElementById('a_content');
+    content.querySelectorAll('.new-market').forEach(c => c.remove());
+    const card = document.createElement('div');
+    card.className = 'mcard new-market';
+    card.style.animation = 'card-slide-in 0.48s cubic-bezier(0.34,1.3,0.64,1), card-glow 1.6s ease 0.2s';
+    card.innerHTML = `
+      <div class="mcard-head">
+        <div style="margin-bottom:4px"><span class="new-badge">🆕 Открылось</span></div>
+        <div class="mcard-q">Следующий гол в матче?</div>
+        <div class="mcard-sub">Новое окно · 3 мин</div>
+      </div>
+      <div class="yn-row">
+        <div class="yn-btn" style="border-color:rgba(29,78,216,0.45)">
+          <span class="yn-label">🇺🇸 США</span><span class="yn-odds">1.55</span>
+        </div>
+        <div class="yn-btn" style="border-color:rgba(220,38,38,0.45)">
+          <span class="yn-label">🇭🇺 Венгр.</span><span class="yn-odds">4.20</span>
+        </div>
+      </div>`;
+    const toastEl = document.getElementById('a_goal_toast');
+    content.insertBefore(card, toastEl.nextSibling);
+  }, 800);
+
+  document.getElementById('resetBtn').style.display = 'block';
+}
+
+function resetScore() {
+  score.usa = 2; score.hun = 0;
+
+  ['b_usa','b_hun','a_usa','a_hun'].forEach(id => {
+    const el = document.getElementById(id);
+    el.style.animation = 'none';
+    el.textContent = id.includes('usa') ? '2' : '0';
+  });
+
+  clearTimeout(bannerTimer); clearTimeout(toastTimer);
+  const banner = document.getElementById('a_banner');
+  banner.classList.remove('show', 'hide');
+
+  const plaque = document.getElementById('a_plaque');
+  plaque.style.transition = 'none'; plaque.style.background = '#1e2030';
+
+  document.getElementById('a_score_block').style.animation = 'none';
+
+  const toast = document.getElementById('a_goal_toast');
+  toast.classList.remove('visible');
+
+  const iphone = document.getElementById('a_iphone');
+  iphone.style.transition = 'none';
+  iphone.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.08), 0 0 0 1px rgba(0,0,0,0.5), 0 40px 80px rgba(0,0,0,0.85)';
+
+  document.querySelectorAll('.new-market').forEach(c => c.remove());
+  document.getElementById('resetBtn').style.display = 'none';
+  busy = false;
+}
+</script>
+</body>
+</html>

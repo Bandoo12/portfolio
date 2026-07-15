@@ -1,1170 +1,920 @@
 'use client';
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, useMotionValue, useTransform, animate, AnimatePresence, MotionValue } from 'framer-motion';
+import { flushSync } from 'react-dom';
+import {
+  motion, useMotionValue, useTransform, animate, MotionValue, AnimatePresence,
+} from 'framer-motion';
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
-// ── ICONS (exact from v2) ────────────────────────────────────────────────────
-function SoccerBallSVG({ size = 80 }: { size?: number }) {
+// ── Layout ──────────────────────────────────────────────────────────────────
+const CARD_W = 314, GAP = 8, STEP = CARD_W + GAP;
+const SPRING = { type: 'spring', stiffness: 320, damping: 32, mass: 0.8 } as const;
+const getX   = (v: number) => 23 - v * STEP;
+
+// ── Match simulation ────────────────────────────────────────────────────────
+const REAL_MS = 180_000;
+const TOTAL_MIN = 115;
+const MS_PER_MIN = REAL_MS / TOTAL_MIN;
+
+type Phase   = 'first_half' | 'halftime' | 'second_half' | 'added_time' | 'full_time';
+type Block   = 'none' | 'goal' | 'var' | 'halftime' | 'penalty' | 'ended';
+type EvtKind = 'corner' | 'foul' | 'goal' | 'var' | 'penalty_awarded' | 'penalty_scored' | 'goal_canceled' | 'yellow_card' | 'substitution';
+
+interface Evt { min: number; kind: EvtKind; team: 'home' | 'away'; label?: string; blockMs?: number; }
+interface MatchState {
+  phase: Phase; block: Block; score: [number, number]; matchMin: number;
+  momentum: number; eventFlash: string | null; ballTx: number; ballTy: number;
+  cornersHome: number; cornersAway: number;
+  yellowsHome: number; yellowsAway: number;
+  shotsHome: number; shotsAway: number;
+}
+
+const EVENTS: Evt[] = [
+  { min: 7,  kind: 'corner',          team: 'home' },
+  { min: 15, kind: 'foul',            team: 'away' },
+  { min: 23, kind: 'goal',            team: 'home', label: 'Корнэ 23′',    blockMs: 7000 },
+  { min: 31, kind: 'yellow_card',     team: 'away', label: 'Жёлтая — НОР' },
+  { min: 38, kind: 'var',             team: 'home', label: 'VAR проверка', blockMs: 10000 },
+  { min: 41, kind: 'goal_canceled',   team: 'home', label: 'Гол отменён',  blockMs: 4000 },
+  { min: 62, kind: 'corner',          team: 'away' },
+  { min: 69, kind: 'penalty_awarded', team: 'away', label: 'Пенальти!',    blockMs: 0 },
+  { min: 70, kind: 'penalty_scored',  team: 'away', label: 'Эдегор 70′',   blockMs: 7000 },
+  { min: 77, kind: 'goal',            team: 'home', label: 'Перье 77′',    blockMs: 7000 },
+  { min: 84, kind: 'substitution',    team: 'home', label: 'Замена — КДИ' },
+  { min: 88, kind: 'yellow_card',     team: 'away', label: 'Жёлтая — НОР' },
+];
+
+function getPhase(min: number): Phase {
+  if (min < 45) return 'first_half';
+  if (min < 60) return 'halftime';
+  if (min < 90) return 'second_half';
+  if (min < 95) return 'added_time';
+  return 'full_time';
+}
+function dispMin(min: number, phase: Phase): string {
+  if (phase === 'halftime')   return 'Перерыв';
+  if (phase === 'full_time')  return 'Финал';
+  if (phase === 'added_time') return `90+${min - 90}′`;
+  return `${Math.min(min, phase === 'first_half' ? 45 : 90)}′`;
+}
+
+// ── Cards ───────────────────────────────────────────────────────────────────
+type CardType = 'instant' | 'window' | 'penalty';
+interface CardData { id: number; type: CardType; }
+
+const BASE_CARDS: CardData[] = [{ id: 1, type: 'instant' }, { id: 2, type: 'window' }];
+const PENALTY_CARD: CardData = { id: 99, type: 'penalty' };
+
+const GLOW: Record<CardType, [number, number, number]> = {
+  instant: [59, 130, 246],
+  window:  [245, 158, 11],
+  penalty: [239, 68, 68],
+};
+
+const MKT_INSTANT = [
+  { label: 'Гол',     odds: 14.94, pct: 7  },
+  { label: 'Угловой', odds: 8.34,  pct: 12 },
+  { label: 'Фол',     odds: 2.21,  pct: 45 },
+  { label: 'Аут',     odds: 1.75,  pct: 36 },
+];
+const MKT_WINDOW = [
+  { label: 'Гол или Аут',     odds: 1.69, pct: 59 },
+  { label: 'Фол или Угловой', odds: 1.98, pct: 41 },
+];
+const MKT_PENALTY = [
+  { label: 'Забьёт', odds: 1.30, pct: 77 },
+  { label: 'Мимо',   odds: 3.80, pct: 23 },
+];
+
+const WIN_MIN = 48, WIN_MAX = 58;
+
+// ── SVGs ─────────────────────────────────────────────────────────────────────
+function SoccerBallSVG({ size = 56 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width={size} height={size} viewBox="0 0 88 88" fill="none">
       <path d="M22.0509 31.7733C21.7923 29.9902 21.2393 27.8676 20.5778 25.3282L18.595 17.7161L18.5601 17.582C21.1642 15.072 24.1387 12.9443 27.3932 11.2891L33.3781 15.8283C35.4298 17.3845 37.1547 18.6929 38.6818 19.5958C39.4815 20.0686 40.2867 20.468 41.1268 20.7536V31.834C40.6754 32.0443 40.2427 32.3086 39.8383 32.6263L32.7532 38.194C32.4888 38.4019 32.2437 38.6267 32.0182 38.8665L22.1983 34.6143C22.2577 33.686 22.1918 32.7447 22.0509 31.7733Z" fill="#91FABA"/>
       <path d="M14.8319 37.4096C13.7502 38.3413 12.2274 39.3808 9.93756 40.9358L7.35645 42.6892C7.61858 35.2188 10.1128 28.3171 14.1918 22.6318L15.2172 26.5684C15.9266 29.2918 16.3981 31.1179 16.6077 32.5627C16.8076 33.9406 16.7221 34.698 16.4972 35.3076C16.2741 35.9123 15.8572 36.526 14.8319 37.4096Z" fill="#91FABA"/>
-      <path d="M19.4374 61.9122C21.9842 61.9122 24.1312 61.9122 25.8852 62.1183C26.8103 62.2268 27.6937 62.3988 28.5363 62.6829L33.7272 55.8908C33.5381 55.5241 33.3808 55.1369 33.2591 54.7318L30.4763 45.4683C30.3384 45.0092 30.2511 44.5436 30.212 44.0783L20.2145 39.749C19.6928 40.4043 19.0888 41.0023 18.4221 41.5769C17.0726 42.7396 15.2841 43.954 13.1556 45.3997L7.68701 49.1137C8.32725 53.7073 9.81756 58.0285 11.9937 61.9122H19.4374Z" fill="#91FABA"/>
-      <path d="M43.2366 36.9508C43.435 36.7954 43.6586 36.7246 43.8768 36.7246C44.095 36.7246 44.3186 36.7954 44.517 36.9508L51.6021 42.5187C51.7909 42.6672 51.9347 42.8776 52.0098 43.1273C52.0824 43.3693 52.0857 43.633 52.0098 43.8856L49.2268 53.1494C49.1506 53.4043 49.0065 53.6067 48.8319 53.7478C48.6391 53.9037 48.4121 53.9843 48.1789 53.9843H39.5747C39.3415 53.9843 39.1145 53.9037 38.9217 53.7478C38.7471 53.6067 38.603 53.4043 38.5264 53.1494L35.7437 43.8856C35.6678 43.633 35.671 43.3693 35.7437 43.1273C35.8188 42.8776 35.9626 42.6672 36.1516 42.5187L43.2366 36.9508Z" fill="#91FABA"/>
       <path d="M49.0448 19.7107C50.591 18.8418 52.3433 17.572 54.4267 16.0618L60.8096 11.4365C63.9802 13.0845 66.8798 15.1831 69.4237 17.6476L67.4228 25.3287C66.7614 27.8682 66.2084 29.9907 65.9499 31.7738C65.8098 32.74 65.7439 33.6764 65.8014 34.5999L55.7463 38.8784C55.5179 38.6342 55.2689 38.4054 55.0005 38.1942L47.9154 32.6265C47.511 32.3087 47.0783 32.0444 46.627 31.8342V20.7979C47.4545 20.5318 48.2517 20.1566 49.0448 19.7107Z" fill="#91FABA"/>
-      <path d="M41.481 14.8613C40.2592 14.1389 38.7863 13.0271 36.5773 11.3516L33.3413 8.89724C36.7015 7.87993 40.2658 7.33301 43.9578 7.33301C47.744 7.33301 51.396 7.90816 54.8313 8.97597L51.326 11.5162C49.082 13.1423 47.5863 14.2209 46.3499 14.9158C45.1748 15.5762 44.4909 15.7368 43.9072 15.7303C43.3235 15.7238 42.6426 15.5479 41.481 14.8613Z" fill="#91FABA"/>
-      <path d="M69.5785 41.5766C70.9278 42.7393 72.7164 43.9537 74.8449 45.3995L80.236 49.061C79.5998 53.6741 78.1064 58.0132 75.9222 61.9116H69.1088C66.5619 61.9116 64.4151 61.9116 62.6609 62.1177C61.6973 62.2306 60.7788 62.4125 59.9047 62.7186L54.0762 55.7912C54.243 55.4542 54.3834 55.1 54.4942 54.7312L57.2772 45.4677C57.4136 45.0134 57.5005 44.5521 57.5401 44.0916L67.7759 39.7363C68.2999 40.3967 68.9075 40.9984 69.5785 41.5766Z" fill="#91FABA"/>
+      <path d="M43.2366 36.9508C43.435 36.7954 43.6586 36.7246 43.8768 36.7246C44.095 36.7246 44.3186 36.7954 44.517 36.9508L51.6021 42.5187C51.7909 42.6672 51.9347 42.8776 52.0098 43.1273C52.0824 43.3693 52.0857 43.633 52.0098 43.8856L49.2268 53.1494C49.1506 53.4043 49.0065 53.6067 48.8319 53.7478C48.6391 53.9037 48.4121 53.9843 48.1789 53.9843H39.5747C39.3415 53.9843 39.1145 53.9037 38.9217 53.7478C38.7471 53.6067 38.603 53.4043 38.5264 53.1494L35.7437 43.8856C35.6678 43.633 35.671 43.3693 35.7437 43.1273C35.8188 42.8776 35.9626 42.6672 36.1516 42.5187L43.2366 36.9508Z" fill="#91FABA"/>
       <path d="M54.2973 68.2973C53.5578 69.9334 52.882 72.0186 52.0742 74.5116L50.2545 80.1271C48.2088 80.482 46.1049 80.6668 43.9577 80.6668C42.043 80.6668 40.1623 80.5198 38.3268 80.236L36.4719 74.5116C35.6641 72.0186 34.9884 69.9334 34.2486 68.2973C33.8708 67.4621 33.4506 66.6825 32.9448 65.9719L38.0426 59.3015C38.5358 59.4214 39.0491 59.4845 39.5746 59.4845H48.1788C48.7423 59.4845 49.2923 59.4115 49.8185 59.2744L55.5341 66.0673C55.0582 66.7518 54.6585 67.4991 54.2973 68.2973Z" fill="#91FABA"/>
-      <path d="M31.2865 76.3518C30.4196 73.6762 29.8354 71.8862 29.2371 70.5636C28.666 69.3004 28.1955 68.7328 27.7031 68.3676C27.2171 68.0076 26.5638 67.7355 25.2434 67.5804C23.8479 67.4165 22.0259 67.4121 19.2798 67.4121H15.77C20.0159 72.5304 25.6259 76.4732 32.0417 78.6823L31.2865 76.3518Z" fill="#91FABA"/>
-      <path d="M63.3027 67.5804C64.6982 67.4165 66.5202 67.4121 69.2661 67.4121H72.1456C68.0576 72.3397 62.705 76.1784 56.5864 78.4286L57.2596 76.3518C58.1264 73.6762 58.7105 71.8862 59.3089 70.5636C59.8802 69.3004 60.3506 68.7328 60.8431 68.3676C61.3289 68.0076 61.9823 67.7355 63.3027 67.5804Z" fill="#91FABA"/>
-      <path d="M71.3925 32.5631C71.6023 31.1183 72.0738 29.2922 72.7833 26.5688L73.7862 22.7188C77.8177 28.3725 80.2857 35.2208 80.5574 42.6306L78.0629 40.9362C75.7731 39.3812 74.2503 38.3417 73.1687 37.41C72.1431 36.5265 71.7262 35.9127 71.5033 35.3081C71.2781 34.6984 71.1927 33.941 71.3925 32.5631Z" fill="#91FABA"/>
     </svg>
   );
 }
 
-function CheckCircleSVG({ size = 80 }: { size?: number }) {
+function CheckCircleSVG({ size = 52 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 88 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path fillRule="evenodd" clipRule="evenodd" d="M80.6668 43.9997C80.6668 64.2499 64.2504 80.6663 44.0002 80.6663C23.7497 80.6663 7.3335 64.2499 7.3335 43.9997C7.3335 23.7492 23.7497 7.33301 44.0002 7.33301C64.2504 7.33301 80.6668 23.7492 80.6668 43.9997ZM58.7779 32.8885C59.8519 33.9624 59.8519 35.7036 58.7779 36.7774L40.4446 55.1108C39.3706 56.1847 37.6297 56.1847 36.5556 55.1108L29.2223 47.7774C28.1484 46.7035 28.1484 44.9625 29.2223 43.8886C30.2962 42.8146 32.0374 42.8146 33.1114 43.8886L38.5002 49.2771L46.6944 41.0828L54.8891 32.8885C55.963 31.8145 57.704 31.8145 58.7779 32.8885Z" fill="#91FABA"/>
+    <svg width={size} height={size} viewBox="0 0 88 88" fill="none">
+      <path fillRule="evenodd" clipRule="evenodd" d="M80.6668 43.9997C80.6668 64.2499 64.2504 80.6663 44.0002 80.6663C23.7497 80.6663 7.3335 64.2499 7.3335 43.9997C7.3335 23.7492 23.7497 7.33301 44.0002 7.33301C64.2504 7.33301 80.6668 23.7492 80.6668 43.9997ZM58.7779 32.8885C59.8519 33.9624 59.8519 35.7036 58.7779 36.7774L40.4446 55.1108C39.3706 56.1847 37.6297 56.1847 36.5556 55.1108L29.2223 47.7774C28.1484 46.7035 28.1484 44.9625 29.2223 43.8886C30.2962 42.8146 32.0374 42.8146 33.1114 43.8886L38.5002 49.2771L54.8891 32.8885C55.963 31.8145 57.704 31.8145 58.7779 32.8885Z" fill="#91FABA"/>
     </svg>
   );
 }
 
-// ── HELPERS ──────────────────────────────────────────────────────────────────
-function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
-
-// ── TEAMS ────────────────────────────────────────────────────────────────────
-const HOME = { name: "Кот-д'Ивуар", abbr: 'КДИ', flag: '🇨🇮', color: '#F47920' };
-const AWAY = { name: 'Норвегия',     abbr: 'НОР', flag: '🇳🇴', color: '#3B6EB5' };
-
-// ── TIMELINE ─────────────────────────────────────────────────────────────────
-// Real 0→70s  = 1-й тайм 0→45'
-// Real 70→90s = Перерыв
-// Real 90→160s= 2-й тайм 46→90'
-// Real 160→167s = Доп время 90'→93'
-// Real 167→180s = Серия пенальти
-const T_HT = 70, T_HT2 = 90, T_SH = 160, T_XT = 167, T_END = 180;
-type Phase = 'FH' | 'HT' | 'SH' | 'XT' | 'PEN' | 'FT';
-
-const getPhase = (t: number): Phase =>
-  t < T_HT ? 'FH' : t < T_HT2 ? 'HT' : t < T_SH ? 'SH' : t < T_XT ? 'XT' : t < T_END ? 'PEN' : 'FT';
-
-const getMatchMin = (t: number): number => {
-  if (t <= 0) return 0;
-  if (t <= T_HT)  return (t / T_HT) * 45;
-  if (t <= T_HT2) return 45;
-  if (t <= T_SH)  return 45 + ((t - T_HT2) / (T_SH - T_HT2)) * 45;
-  if (t <= T_XT)  return 90 + ((t - T_SH) / (T_XT - T_SH)) * 3;
-  return 93;
-};
-
-const fmtMM = (mm: number, ph: Phase): string => {
-  if (ph === 'HT')  return 'Перерыв';
-  if (ph === 'PEN') return 'Пенальти';
-  if (ph === 'FT')  return 'Завершён';
-  const m = Math.floor(mm);
-  const s = Math.floor((mm - m) * 60).toString().padStart(2, '0');
-  return ph === 'XT' ? `90+${m - 90}:${s}` : `${m}:${s}`;
-};
-
-const phLabel = (ph: Phase): string => {
-  if (ph === 'FH')  return '1-й тайм';
-  if (ph === 'HT')  return 'Перерыв';
-  if (ph === 'SH')  return '2-й тайм';
-  if (ph === 'XT')  return 'Доп. время';
-  if (ph === 'PEN') return 'Серия пенальти';
-  return 'Матч завершён';
-};
-
-// ── MATCH EVENTS ─────────────────────────────────────────────────────────────
-interface ME { id:string; t:number; type:string; team:'home'|'away'|'n'; title:string; lock:number; bx:number; by:number; }
-const EVENTS: ME[] = [
-  { id:'e1', t:7,   type:'attack',   team:'away', title:'Норвегия — Опасная атака!',  lock:3, bx:62,  by:88  },
-  { id:'e2', t:15,  type:'corner',   team:'home', title:"Угловой — Кот-д'Ивуар",      lock:4, bx:310, by:7   },
-  { id:'e3', t:25,  type:'foul',     team:'away', title:'Фол — Норвегия',              lock:2, bx:210, by:100 },
-  { id:'e4', t:35,  type:'freekick', team:'home', title:'Штрафной — КДИ',             lock:3, bx:248, by:88  },
-  { id:'e5', t:46,  type:'shot',     team:'away', title:'Удар — Норвегия → Мимо!',   lock:3, bx:42,  by:92  },
-  { id:'e6', t:56,  type:'corner',   team:'away', title:'Угловой — Норвегия',          lock:4, bx:4,   by:7   },
-  { id:'e7', t:65,  type:'save',     team:'home', title:'Удар КДИ → Сейв!',          lock:4, bx:282, by:85  },
-  { id:'e8', t:98,  type:'sub',      team:'home', title:"Замена — Кот-д'Ивуар",       lock:4, bx:157, by:87  },
-  { id:'e9', t:109, type:'attack',   team:'home', title:'КДИ — Прорыв!!!',           lock:3, bx:260, by:90  },
-  { id:'eA', t:118, type:'corner',   team:'away', title:'Угловой — Норвегия',          lock:4, bx:4,   by:7   },
-  { id:'eB', t:122, type:'goal',     team:'away', title:'ГОЛ! Норвегия 0:1',          lock:5, bx:28,  by:87  },
-  { id:'eC', t:127, type:'var',      team:'n',    title:'ВАР: Гол отменён ✕',         lock:6, bx:157, by:87  },
-  { id:'eD', t:137, type:'foul',     team:'home', title:'Фол — КДИ',                  lock:2, bx:162, by:70  },
-  { id:'eE', t:146, type:'freekick', team:'home', title:'Штрафной — КДИ',             lock:3, bx:232, by:88  },
-  { id:'eF', t:154, type:'attack',   team:'home', title:'КДИ — Удар! Близко!!!',     lock:4, bx:268, by:93  },
-  { id:'eG', t:159, type:'yellow',   team:'away', title:'Жёлтая — Норвегия',           lock:2, bx:198, by:72  },
-];
-const SCORE_EVENTS: Record<string, [number,number]> = { eB:[0,1], eC:[0,0] };
-
-// ── SHOOTOUT ─────────────────────────────────────────────────────────────────
-const SHOTS = [
-  { p:'Эригайзи', team:'home' as const, pct:'71%', yes:'1.41', no:'3.05', scored:true  },
-  { p:'Хааланд',  team:'away' as const, pct:'88%', yes:'1.14', no:'6.50', scored:true  },
-  { p:'Кессьé',   team:'home' as const, pct:'68%', yes:'1.47', no:'2.82', scored:false },
-  { p:'Эдегор',   team:'away' as const, pct:'82%', yes:'1.22', no:'4.90', scored:true  },
-  { p:'Корне',    team:'home' as const, pct:'75%', yes:'1.33', no:'3.55', scored:true  },
-] as const;
-
-// ── ODDS ─────────────────────────────────────────────────────────────────────
-const BASE_O = { goal:14.94, corner:8.34, foul:2.21, out:1.75 };
-function computeOdds(bx: number, by: number) {
-  const nearGoal   = bx < 75 || bx > 239;
-  const inBox      = nearGoal && by > 46 && by < 129;
-  const nearCorner = (bx < 25 || bx > 289) && (by < 25 || by > 150);
-  const nearLine   = by < 18 || by > 157;
-  const r = () => 1 + (Math.random() - 0.5) * 0.09;
-  return {
-    goal:   +Math.max(3.5, BASE_O.goal   * (inBox ? 0.52 : nearGoal ? 0.7 : 1) * r()).toFixed(2),
-    corner: +Math.max(2.8, BASE_O.corner * (nearCorner ? 0.55 : 1) * r()).toFixed(2),
-    foul:   +Math.max(1.5, BASE_O.foul   * r()).toFixed(2),
-    out:    +Math.max(1.3, BASE_O.out    * (nearLine ? 0.65 : 1) * r()).toFixed(2),
-  };
-}
-
-// ── TEAM HEADER ──────────────────────────────────────────────────────────────
-function TeamHeader({ homeScore, awayScore, matchMin, phase }: {
-  homeScore: number; awayScore: number; matchMin: number; phase: Phase;
+// ── Tracker3D ────────────────────────────────────────────────────────────────
+function Tracker3D({ ms, cardType, selLabel, betPlaced, betResult, betWon }: {
+  ms: MatchState; cardType: CardType;
+  selLabel: string | null; betPlaced: boolean; betResult: boolean; betWon: boolean;
 }) {
+  const { phase, block, score, momentum, eventFlash, ballTx, ballTy } = ms;
+  const ballX = useMotionValue(ballTx);
+  const ballY = useMotionValue(ballTy);
+
+  useEffect(() => {
+    animate(ballX, ballTx, { duration: 0.9, ease: 'easeInOut' });
+    animate(ballY, ballTy, { duration: 0.9, ease: 'easeInOut' });
+  }, [ballTx, ballTy]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const homeAlpha = (momentum / 100) * 0.22;
+  const awayAlpha = ((100 - momentum) / 100) * 0.22;
+
+  const showGoal   = selLabel === 'Гол' || selLabel === 'Гол или Аут';
+  const showCorner = selLabel === 'Угловой' || selLabel === 'Фол или Угловой';
+  const showFoul   = selLabel === 'Фол' && !showCorner;
+
+  const [r, g, b] = GLOW[cardType];
+  const acc = `${r},${g},${b}`;
+
+  const isDim = phase === 'halftime' || phase === 'full_time';
+
   return (
-    <div style={{ height:50, display:'flex', alignItems:'center', padding:'0 10px', gap:4, position:'relative', zIndex:11 }}>
-      <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'flex-end', gap:6 }}>
-        <span style={{ fontSize:9, fontWeight:400, color:'#eeeff3', textAlign:'right', lineHeight:'12px' }}>
-          {HOME.name}
-        </span>
-        <div style={{ width:24, height:24, borderRadius:'50%', background:HOME.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>
-          {HOME.flag}
+    <div style={{ width: '100%', position: 'relative', borderRadius: 24, overflow: 'hidden', height: 168 }}>
+      <div style={{ position: 'absolute', inset: 0, perspective: '520px', perspectiveOrigin: '50% 10%' }}>
+        <div style={{ width: '100%', height: '100%', transform: 'rotateX(18deg)', transformOrigin: 'center 70%', position: 'relative' }}>
+          <svg width="100%" height="100%" viewBox="0 0 314 196" style={{ display: 'block', position: 'absolute', inset: 0 }}>
+            <defs>
+              <linearGradient id="v3fg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stopColor="#0d4a1c" />
+                <stop offset="40%"  stopColor="#155e28" />
+                <stop offset="100%" stopColor="#1e7836" />
+              </linearGradient>
+              <filter id="v3bl"><feGaussianBlur stdDeviation="8" /></filter>
+            </defs>
+            <rect width="314" height="196" fill="url(#v3fg)" />
+            {[0,1,2,3,4,5,6,7].map(i => (
+              <rect key={i} x={i*39.25} width={39.25} height={196} fill={i%2===0?'rgba(0,0,0,0.07)':'rgba(255,255,255,0.025)'} />
+            ))}
+            {/* Possession zones */}
+            <rect x="0"   width="157" height="196" fill={`rgba(60,210,120,${homeAlpha})`} />
+            <rect x="157" width="157" height="196" fill={`rgba(220,60,60,${awayAlpha})`} />
+            {/* Market zone highlights */}
+            {showGoal && <>
+              <rect x="8"   y="52" width="60" height="84" fill={`rgba(${acc},0.28)`} filter="url(#v3bl)" />
+              <rect x="246" y="52" width="60" height="84" fill={`rgba(${acc},0.28)`} filter="url(#v3bl)" />
+            </>}
+            {showCorner && [
+              [0,0],[314,0],[0,196],[314,196]
+            ].map(([cx,cy],i) => (
+              <circle key={i} cx={cx} cy={cy} r="52" fill={`rgba(${acc},0.28)`} filter="url(#v3bl)" />
+            ))}
+            {showFoul && <circle cx="157" cy="98" r="44" fill={`rgba(${acc},0.22)`} filter="url(#v3bl)" />}
+            {/* Field lines */}
+            <rect x="8"   y="8"  width="298" height="180" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            <line x1="157" y1="8" x2="157" y2="188" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" />
+            <circle cx="157" cy="98" r="28" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            <circle cx="157" cy="98" r="2.5" fill="rgba(255,255,255,0.65)" />
+            <rect x="8"   y="54" width="58" height="80" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            <rect x="248" y="54" width="58" height="80" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            <rect x="8"   y="74" width="22" height="40" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            <rect x="284" y="74" width="22" height="40" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            <circle cx="47"  cy="98" r="2" fill="rgba(255,255,255,0.55)" />
+            <circle cx="267" cy="98" r="2" fill="rgba(255,255,255,0.55)" />
+            <path d="M18,8 A10,10 0 0,0 8,18"   stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            <path d="M296,8 A10,10 0 0,1 306,18" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            <path d="M8,178 A10,10 0 0,1 18,188" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            <path d="M296,188 A10,10 0 0,0 306,178" stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" fill="none" />
+            {/* Players */}
+            <motion.g style={{ x: ballX, y: ballY }}>
+              <circle cx="-20" cy="14"  r="4.5" fill="rgba(60,200,120,0.85)" />
+              <circle cx="-14" cy="-18" r="4.5" fill="rgba(60,200,120,0.85)" />
+              <circle cx="-30" cy="-5"  r="3.8" fill="rgba(60,200,120,0.7)" />
+              <circle cx="26"  cy="-14" r="4.5" fill="rgba(220,70,70,0.85)" />
+              <circle cx="18"  cy="20"  r="4.5" fill="rgba(220,70,70,0.85)" />
+              <circle cx="33"  cy="5"   r="3.8" fill="rgba(220,70,70,0.7)" />
+            </motion.g>
+            {/* Ball */}
+            <motion.circle cx={0} cy={0} r={20}  fill="rgba(255,255,255,0.09)" style={{ x: ballX, y: ballY }} />
+            <motion.ellipse cx={0} cy={4} rx={5} ry={2.5} fill="rgba(0,0,0,0.35)" style={{ x: ballX, y: ballY }} />
+            <motion.circle cx={0} cy={0} r={5.5} fill="white" style={{ x: ballX, y: ballY }} />
+            <motion.circle cx={0} cy={0} r={5.5} fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="0.8" style={{ x: ballX, y: ballY }} />
+            <motion.circle cx={-1.5} cy={-1.5} r={1.8} fill="rgba(255,255,255,0.55)" style={{ x: ballX, y: ballY }} />
+          </svg>
+
+          <AnimatePresence>
+            {eventFlash && (
+              <motion.div key={eventFlash}
+                initial={{ opacity: 0, scale: 0.85, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.22 }}
+                style={{ position: 'absolute', top: '38%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 20, pointerEvents: 'none' }}>
+                <div style={{ background: 'rgba(0,0,0,0.76)', backdropFilter: 'blur(12px)', borderRadius: 10, padding: '5px 14px', border: '1px solid rgba(255,255,255,0.16)' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>{eventFlash}</span>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
-      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', minWidth:56 }}>
-        <span style={{ fontSize:20, fontWeight:500, color:'#ffffff', lineHeight:1 }}>
-          {homeScore}:{awayScore}
-        </span>
-        <span style={{ fontSize:8, fontWeight:400, color:'#eeeff3', whiteSpace:'nowrap', marginTop:2 }}>
-          {phLabel(phase)} {fmtMM(matchMin, phase)}
-        </span>
+
+      {/* Score badge */}
+      <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 35, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', borderRadius: 10, padding: '3px 10px' }}>
+        <span style={{ fontSize: 11, fontWeight: 800, color: '#fff' }}>🇨🇮 {score[0]}</span>
+        <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.3)' }}>·</span>
+        <span style={{ fontSize: 11, fontWeight: 800, color: '#fff' }}>{score[1]} 🇳🇴</span>
       </div>
-      <div style={{ flex:1, display:'flex', alignItems:'center', gap:6 }}>
-        <div style={{ width:24, height:24, borderRadius:'50%', background:AWAY.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>
-          {AWAY.flag}
+
+      {/* Halftime / full-time overlay */}
+      <AnimatePresence>
+        {isDim && (
+          <motion.div key={phase} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', borderRadius: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, zIndex: 30 }}>
+            <span style={{ fontSize: 20, fontWeight: 800, color: '#fff', letterSpacing: 1 }}>
+              {phase === 'halftime' ? 'ПЕРЕРЫВ' : 'МАТЧ ЗАВЕРШЁН'}
+            </span>
+            {phase === 'halftime' && <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)' }}>Ставки откроются во втором тайме</span>}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Block dim */}
+      <AnimatePresence>
+        {block !== 'none' && block !== 'halftime' && block !== 'ended' && !isDim && (
+          <motion.div key="block" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.3)', borderRadius: 24, zIndex: 28, pointerEvents: 'none' }} />
+        )}
+      </AnimatePresence>
+
+      {/* Bet result overlays */}
+      <AnimatePresence>
+        {betResult && betWon && (
+          <motion.div key="win" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,100,44,0.72)', borderRadius: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, zIndex: 35 }}>
+            <CheckCircleSVG size={48} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Ставка выиграла!</span>
+          </motion.div>
+        )}
+        {betResult && !betWon && (
+          <motion.div key="loss" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'absolute', inset: 0, background: 'rgba(120,10,10,0.68)', borderRadius: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, zIndex: 35 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 24, background: 'rgba(255,80,80,0.18)', border: '1px solid rgba(255,80,80,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4L16 16M16 4L4 16" stroke="#ff6666" strokeWidth="2.2" strokeLinecap="round"/></svg>
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Не зашло</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Watching badge */}
+      {betPlaced && !betResult && (
+        <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 36, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', borderRadius: 20, padding: '4px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <motion.div animate={{ opacity: [1,0.2,1] }} transition={{ duration: 0.9, repeat: Infinity }} style={{ width: 6, height: 6, borderRadius: 3, background: `rgb(${acc})`, flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap' }}>Следим за мячом...</span>
         </div>
-        <span style={{ fontSize:9, fontWeight:400, color:'#eeeff3', lineHeight:'12px' }}>
-          {AWAY.name}
+      )}
+    </div>
+  );
+}
+
+// ── Window timeline strip ────────────────────────────────────────────────────
+function WindowTimeline({ matchMin, active }: { matchMin: number; active: boolean }) {
+  const pct = active
+    ? Math.max(0, Math.min(1, (matchMin - WIN_MIN) / (WIN_MAX - WIN_MIN)))
+    : matchMin < WIN_MIN ? 0 : 1;
+  const [ra, ga, ba] = GLOW.window;
+  const barColor = pct > 0.8 ? 'rgba(239,68,68,0.9)' : `rgba(${ra},${ga},${ba},0.9)`;
+
+  return (
+    <div style={{ padding: '8px 12px 0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5 }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)' }}>{WIN_MIN}′</span>
+        <span style={{ fontSize: 10, fontWeight: 700, color: active ? `rgb(${ra},${ga},${ba})` : 'rgba(255,255,255,0.3)' }}>
+          {active ? `${matchMin}′` : matchMin < WIN_MIN ? `Открытие в ${WIN_MIN}:00` : 'Следующее окно'}
         </span>
+        <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.3)' }}>{WIN_MAX}′</span>
+      </div>
+      <div style={{ height: 4, background: 'rgba(255,255,255,0.08)', borderRadius: 2, overflow: 'visible', position: 'relative' }}>
+        <motion.div
+          animate={{ width: `${pct * 100}%` }}
+          transition={{ duration: 0.6, ease: 'linear' }}
+          style={{ height: '100%', background: barColor, borderRadius: 2, position: 'relative' }}
+        />
+        {active && (
+          <motion.div
+            animate={{ left: `${pct * 100}%` }}
+            transition={{ duration: 0.6, ease: 'linear' }}
+            style={{ position: 'absolute', top: -3, width: 10, height: 10, borderRadius: 5, background: barColor, border: '2px solid #121214', transform: 'translateX(-50%)', pointerEvents: 'none' }}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-// ── FIELD SLOT (v2 style + 3D perspective) ───────────────────────────────────
-function FieldSlot({ bx, by, phase, locked, flash, homeScore, awayScore, collapse, keyboardOpen, betPlaced, betResult, betWon, placedLabel, placedOdds }: {
-  bx: MotionValue<number>; by: MotionValue<number>;
-  phase: Phase; locked: boolean; flash: string|null;
-  homeScore: number; awayScore: number;
-  collapse?: boolean; keyboardOpen?: boolean;
-  betPlaced?: boolean; betResult?: boolean; betWon?: boolean;
-  placedLabel?: string; placedOdds?: string;
+// ── VirtualCard ──────────────────────────────────────────────────────────────
+function VirtualCard({ card, i, x, vIdx, ms, onBetResult }: {
+  card: CardData; i: number; x: MotionValue<number>; vIdx: number; ms: MatchState;
+  onBetResult: (won: boolean, label: string, odds: string, amount: number, market: string) => void;
 }) {
-  const shadowY = useTransform(by, (v: number) => v + 2.5);
-  const isHT = phase === 'HT';
-  const trackerState = betResult ? (betWon ? 'win' : 'loss') : betPlaced ? 'live' : 'idle';
+  const isActive = i === vIdx;
+  const [r, g, b] = GLOW[card.type];
+  const AccentColor = `rgb(${r},${g},${b})`;
+
+  const progress    = useTransform(x, (xv: number) => Math.max(0, 1 - Math.abs(xv + i * STEP - 23) / STEP));
+  const cardScale   = useTransform(progress, (t: number) => 0.88 + 0.12 * t);
+  const cardOpacity = useTransform(progress, (t: number) => 0.72 + 0.28 * t);
+  const cardFilter  = useTransform(progress, (t: number) => `grayscale(${(1 - t).toFixed(2)})`);
+  const origin      = i < vIdx ? 'right center' : 'left center';
+
+  // Glow MotionValues
+  const rMV = useMotionValue(r);
+  const gMV = useMotionValue(g);
+  const bMV = useMotionValue(b);
+  const intMV = useMotionValue(0.35);
+  const pulseAlive = useRef(false);
+  const pulseCtrl  = useRef<{ stop: () => void } | null>(null);
+
+  useEffect(() => {
+    pulseAlive.current = true;
+    pulseCtrl.current?.stop();
+    if (!isActive) {
+      pulseCtrl.current = animate(intMV, 0.28, { duration: 0.6 });
+      return () => { pulseAlive.current = false; pulseCtrl.current?.stop(); };
+    }
+    const spd = ms.momentum > 65 ? 0.55 : ms.momentum > 45 ? 1.1 : 1.9;
+    const step = (toMax: boolean) => {
+      if (!pulseAlive.current) return;
+      const c = animate(intMV, toMax ? 0.82 : 0.42, { duration: spd / 2, ease: 'easeInOut' });
+      pulseCtrl.current = c;
+      c.then(() => step(!toMax));
+    };
+    step(true);
+    return () => { pulseAlive.current = false; pulseCtrl.current?.stop(); };
+  }, [isActive, ms.momentum]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const glowShadow = useTransform(
+    [rMV, gMV, bMV, intMV] as MotionValue<number>[],
+    ([rv, gv, bv, iv]: number[]) =>
+      `inset 0px 0px 18px 1px rgba(255,255,255,${iv.toFixed(2)}), inset 0px 1px 34px 3px rgba(${Math.round(rv)},${Math.round(gv)},${Math.round(bv)},${iv.toFixed(2)})`
+  );
+
+  // Bet state
+  const [selIdx, setSelIdx]         = useState<number | null>(null);
+  const [chipIdx, setChipIdx]       = useState<number | null>(null);
+  const [amount, setAmount]         = useState(0);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [betPlaced, setBetPlaced]   = useState(false);
+  const [betResult, setBetResult]   = useState(false);
+  const [betWon, setBetWon]         = useState(false);
+  const placedRef = useRef<{ label: string; odds: string; amount: number }>({ label: '', odds: '', amount: 0 });
+
+  // 2nd chance
+  const [scActive, setScActive]     = useState(false);
+  const [scTimeLeft, setScTimeLeft] = useState(8);
+  const [scSelIdx, setScSelIdx]     = useState<number | null>(null);
+  const [scPlaced, setScPlaced]     = useState(false);
+  const [scResult, setScResult]     = useState<boolean | null>(null);
+
+  const resetCard = () => {
+    setBetPlaced(false); setBetResult(false); setBetWon(false);
+    setSelIdx(null); setChipIdx(null); setAmount(0);
+    setScActive(false); setScTimeLeft(8); setScSelIdx(null); setScPlaced(false); setScResult(null);
+    placedRef.current = { label: '', odds: '', amount: 0 };
+  };
+
+  useEffect(() => {
+    if (!betPlaced) return;
+    const won = Math.random() < 0.55;
+    const delay = card.type === 'penalty' ? 3000 : 5500;
+    const t = setTimeout(() => {
+      setBetWon(won); setBetPlaced(false); setBetResult(true);
+      const mkt = card.type === 'instant' ? 'Что произойдёт следующим?' :
+                  card.type === 'window'  ? `Что первым с ${WIN_MIN}:00 по ${WIN_MAX}:00?` :
+                  'Забьёт пенальти?';
+      onBetResult(won, placedRef.current.label, placedRef.current.odds, placedRef.current.amount, mkt);
+      if (!won) setTimeout(() => setScActive(true), 700);
+    }, delay);
+    return () => clearTimeout(t);
+  }, [betPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!scActive || scPlaced) return;
+    if (scTimeLeft <= 0) { setScActive(false); return; }
+    const t = setTimeout(() => setScTimeLeft(n => n - 1), 1000);
+    return () => clearTimeout(t);
+  }, [scActive, scTimeLeft, scPlaced]);
+
+  useEffect(() => {
+    if (!scPlaced) return;
+    const t = setTimeout(() => setScResult(true), 2200);
+    return () => clearTimeout(t);
+  }, [scPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Ball bounce while waiting
+  const bX = useMotionValue(0), bY = useMotionValue(0), bR = useMotionValue(0), bS = useMotionValue(1);
+  useEffect(() => {
+    if (!betPlaced) { bX.set(0); bY.set(0); bR.set(0); bS.set(1); return; }
+    let alive = true, ph = 0;
+    let tid: ReturnType<typeof setTimeout>;
+    let ctrls: { stop: () => void }[] = [];
+    const run = () => {
+      if (!alive) return;
+      ctrls.forEach(c => c.stop());
+      const p = ph % 4;
+      if (p === 0) ctrls = [animate(bY, [0,-36,0], { duration: 0.6, ease: [0.22,1,0.36,1] }), animate(bR, [bR.get(), bR.get()+160], { duration: 0.6 })];
+      else if (p === 1) ctrls = [animate(bX, [0,-22,0], { duration: 0.55 }), animate(bY, [0,-10,0], { duration: 0.55 })];
+      else if (p === 2) ctrls = [animate(bY, [0,-28,0], { duration: 0.65 }), animate(bS, [1,1.14,1], { duration: 0.65 })];
+      else ctrls = [animate(bX, [0,24,0], { duration: 0.5 }), animate(bR, [bR.get(), bR.get()-100], { duration: 0.5 })];
+      ph++;
+      Promise.all(ctrls).then(() => { if (alive) tid = setTimeout(run, 280); });
+    };
+    run();
+    return () => { alive = false; clearTimeout(tid); ctrls.forEach(c => c.stop()); bX.set(0); bY.set(0); bR.set(0); bS.set(1); };
+  }, [betPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const mkts = card.type === 'instant' ? MKT_INSTANT : card.type === 'window' ? MKT_WINDOW : MKT_PENALTY;
+  const selLabel = selIdx !== null ? (mkts[selIdx]?.label ?? null) : null;
+
+  const windowActive = card.type === 'window' && ms.matchMin >= WIN_MIN && ms.matchMin < WIN_MAX;
+  const disabled =
+    ms.block !== 'none' ||
+    ms.phase === 'halftime' ||
+    ms.phase === 'full_time' ||
+    (card.type === 'window' && !windowActive);
+
+  const CHIP_VALS = [100, 250, 500, 1000];
+
+  const placeBet = () => {
+    if (selIdx === null || amount === 0 || disabled) return;
+    const o = mkts[selIdx];
+    placedRef.current = { label: o.label, odds: o.odds.toFixed(2), amount };
+    setBetPlaced(true);
+    setSelIdx(null); setChipIdx(null); setAmount(0);
+  };
 
   return (
-    <motion.div
-      initial={false}
-      animate={{ height: (collapse && keyboardOpen) ? 0 : 155 }}
-      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
-      style={{ position:'relative', width:'100%', overflow:'hidden', flexShrink:0 }}
-    >
-      {/* 3D perspective wrapper */}
-      <div style={{
-        width:'100%', height:'100%',
-        perspective:'550px', perspectiveOrigin:'50% -10%',
-        position:'relative',
+    <motion.div style={{ flexShrink: 0, overflow: 'visible', width: CARD_W }}>
+      <motion.div style={{
+        width: '100%', borderRadius: 32, background: '#121214',
+        position: 'relative', overflow: 'hidden',
+        scale: cardScale, opacity: cardOpacity, filter: cardFilter, transformOrigin: origin,
       }}>
-        <svg
-          viewBox="0 0 314 175"
-          style={{
-            width:'100%', height:'210px', display:'block',
-            transform:'rotateX(32deg)', transformOrigin:'50% 100%',
-            position:'absolute', bottom:0, left:0,
-          }}
-        >
-          <defs>
-            <radialGradient id="v3fg" cx="50%" cy="50%" r="60%">
-              <stop offset="0%" stopColor="#1e6b32"/>
-              <stop offset="100%" stopColor="#154e24"/>
-            </radialGradient>
-          </defs>
-          <rect width="314" height="175" fill="url(#v3fg)"/>
-          {[0,2,4,6].map(i => (
-            <rect key={i} x={8 + i*37.25} y={8} width={37.25} height={159} fill="rgba(0,0,0,0.06)"/>
-          ))}
+        <div style={{ position: 'relative', isolation: 'isolate' }}>
+          {/* Content above glow */}
+          <div style={{ position: 'relative', zIndex: 20 }}>
 
-          {/* Field lines */}
-          <rect x="8" y="8" width="298" height="159" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-          <line x1="157" y1="8" x2="157" y2="167" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5"/>
-          <circle cx="157" cy="87.5" r="26" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-          <circle cx="157" cy="87.5" r="2" fill="rgba(255,255,255,0.6)"/>
-          <rect x="8"   y="51" width="54" height="73" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-          <rect x="252" y="51" width="54" height="73" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-          <rect x="8"   y="68" width="20" height="39" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-          <rect x="286" y="68" width="20" height="39" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-          <circle cx="47"  cy="87.5" r="2" fill="rgba(255,255,255,0.55)"/>
-          <circle cx="267" cy="87.5" r="2" fill="rgba(255,255,255,0.55)"/>
-          <path d="M 18,8 A 10,10 0 0,0 8,18"   stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-          <path d="M 296,8 A 10,10 0 0,1 306,18" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-          <path d="M 8,157 A 10,10 0 0,1 18,167" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-          <path d="M 296,167 A 10,10 0 0,0 306,157" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" fill="none"/>
-
-          {/* Players */}
-          <motion.g style={{ x:bx, y:by }}>
-            <circle cx="-22" cy="12"  r="4" fill="rgba(80,220,140,0.85)"/>
-            <circle cx="-12" cy="-19" r="4" fill="rgba(80,220,140,0.85)"/>
-            <circle cx="-30" cy="-6"  r="3.5" fill="rgba(80,220,140,0.7)"/>
-          </motion.g>
-          <motion.g style={{ x:bx, y:by }}>
-            <circle cx="25"  cy="-12" r="4" fill="rgba(220,80,80,0.85)"/>
-            <circle cx="16"  cy="20"  r="4" fill="rgba(220,80,80,0.85)"/>
-            <circle cx="32"  cy="6"   r="3.5" fill="rgba(220,80,80,0.7)"/>
-          </motion.g>
-
-          {/* Ball glow halo */}
-          <motion.circle cx={0} cy={0} r={22} fill="rgba(255,255,255,0.08)" style={{ x:bx, y:by }}/>
-          {/* Shadow */}
-          <motion.circle cx={0} cy={0} r={5.5} fill="rgba(0,0,0,0.3)" style={{ x:bx, y:shadowY }}/>
-          {/* Ball */}
-          <motion.circle cx={0} cy={0} r={5.2} fill="white" style={{ x:bx, y:by }}/>
-          <motion.circle cx={0} cy={0} r={5.2} fill="none" stroke="rgba(30,30,30,0.25)" strokeWidth="0.7" style={{ x:bx, y:by }}/>
-
-          {/* Halftime overlay */}
-          {isHT && <>
-            <rect x="30" y="60" width="254" height="55" rx="12" fill="rgba(0,0,0,0.75)"/>
-            <text x="157" y="80"  fill="rgba(255,255,255,0.45)" fontSize="9"  fontWeight="600" textAnchor="middle" fontFamily="system-ui">ПЕРЕРЫВ</text>
-            <text x="157" y="104" fill="white"                  fontSize="22" fontWeight="700" textAnchor="middle" fontFamily="system-ui">{homeScore} : {awayScore}</text>
-          </>}
-        </svg>
-      </div>
-
-      {/* Event flash */}
-      <AnimatePresence>
-        {flash && !isHT && (
-          <motion.div key={flash}
-            initial={{ opacity:0, scale:0.88, y:6 }} animate={{ opacity:1, scale:1, y:0 }}
-            exit={{ opacity:0, y:-4, transition:{ duration:0.22 } }}
-            transition={{ type:'spring', stiffness:420, damping:28 }}
-            style={{ position:'absolute', top:'42%', left:'50%', transform:'translate(-50%,-50%)', zIndex:25, pointerEvents:'none' }}
-          >
-            <div style={{ background:'rgba(0,0,0,0.72)', backdropFilter:'blur(10px)', WebkitBackdropFilter:'blur(10px)', borderRadius:10, padding:'5px 13px', border:'1px solid rgba(255,255,255,0.14)' }}>
-              <span style={{ fontSize:12, fontWeight:700, color:'#fff', whiteSpace:'nowrap' }}>{flash}</span>
+          {/* Header */}
+          <div style={{ height: 44, display: 'flex', alignItems: 'center', padding: '0 14px', gap: 6 }}>
+            <span style={{ fontSize: 15, lineHeight: 1 }}>🇨🇮</span>
+            <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>КДИ</span>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span style={{ fontSize: 18, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{ms.score[0]}:{ms.score[1]}</span>
+              <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.4)', marginTop: 1 }}>{dispMin(ms.matchMin, ms.phase)}</span>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Live badge */}
-      {trackerState === 'live' && (
-        <div style={{ position:'absolute', top:8, left:10, zIndex:20, background:'rgba(0,0,0,0.6)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)', borderRadius:8, padding:'4px 9px', display:'flex', alignItems:'center', gap:5 }}>
-          <motion.div animate={{ opacity:[1,0.15,1] }} transition={{ duration:0.9, repeat:Infinity }} style={{ width:6, height:6, borderRadius:3, background:'#ff3333', flexShrink:0 }}/>
-          <span style={{ fontSize:10, fontWeight:800, color:'#ff4444', letterSpacing:0.5 }}>В ИГРЕ</span>
-          <span style={{ fontSize:10, color:'rgba(255,255,255,0.55)', marginLeft:3 }}>{placedLabel} · ×{placedOdds}</span>
-        </div>
-      )}
-
-      {/* Locked overlay */}
-      {locked && !isHT && (
-        <div style={{ position:'absolute', inset:0, background:'rgba(0,0,0,0.35)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:8 }}>
-          <div style={{ background:'rgba(0,0,0,0.6)', borderRadius:20, padding:'5px 14px', border:'1px solid rgba(255,255,255,0.1)' }}>
-            <span style={{ fontSize:12, fontWeight:600, color:'rgba(255,255,255,0.65)' }}>Маркет закрыт...</span>
+            <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>НОР</span>
+            <span style={{ fontSize: 15, lineHeight: 1 }}>🇳🇴</span>
           </div>
-        </div>
-      )}
 
-      {/* Win overlay */}
-      <AnimatePresence>
-        {trackerState === 'win' && (
-          <motion.div key="win" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.4 }}
-            style={{ position:'absolute', inset:0, background:'rgba(0,110,48,0.68)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
-            <CheckCircleSVG size={48}/>
-            <span style={{ fontSize:14, fontWeight:700, color:'#fff' }}>Ставка выиграла!</span>
-            <span style={{ fontSize:11, color:'rgba(255,255,255,0.55)' }}>{placedLabel} · ×{placedOdds}</span>
-          </motion.div>
-        )}
-        {trackerState === 'loss' && (
-          <motion.div key="loss" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.4 }}
-            style={{ position:'absolute', inset:0, background:'rgba(130,15,15,0.65)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
-            <div style={{ width:48, height:48, borderRadius:24, background:'rgba(255,80,80,0.18)', border:'1px solid rgba(255,80,80,0.4)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4L16 16M16 4L4 16" stroke="#ff6666" strokeWidth="2.5" strokeLinecap="round"/></svg>
-            </div>
-            <span style={{ fontSize:14, fontWeight:700, color:'#fff' }}>Не зашло</span>
-            <span style={{ fontSize:11, color:'rgba(255,255,255,0.55)' }}>{placedLabel} · ×{placedOdds}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
-
-// ── BET RESULT AREA (same as v2) ─────────────────────────────────────────────
-function BetResultArea({ betPlaced, betResult, betWon, placedLabel, placedOdds, onNext, nextLabel, ballX, ballY, ballRotate, ballScale }: {
-  betPlaced: boolean; betResult: boolean; betWon: boolean;
-  placedLabel: string; placedOdds: string;
-  onNext: () => void; nextLabel: string;
-  ballX: MotionValue<number>; ballY: MotionValue<number>;
-  ballRotate: MotionValue<number>; ballScale: MotionValue<number>;
-}) {
-  return (
-    <>
-      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.p key={betResult ? 'r' : 'w'} initial={{ opacity:0, y:-6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:6 }} transition={{ duration:0.25 }}
-            style={{ fontSize:18, fontWeight:700, color:'#fff', textAlign:'center', margin:0, whiteSpace:'nowrap' }}>
-            {betResult ? 'Ставка выиграла!' : 'Ожидаем результат:'}
-          </motion.p>
-        </AnimatePresence>
-        <div style={{ position:'relative', width:80, height:80, marginTop:16, flexShrink:0 }}>
-          <AnimatePresence>
-            {betPlaced && (
-              <motion.div key="ball" style={{ x:ballX, y:ballY, rotate:ballRotate, scale:ballScale, position:'absolute', top:0, left:0 }}
-                exit={{ scale:0.15, opacity:0, transition:{ duration:0.35 } }}>
-                <SoccerBallSVG size={80}/>
-              </motion.div>
-            )}
-            {betResult && (
-              <motion.div key="check" style={{ position:'absolute', top:-4, left:0 }}
-                initial={{ scale:0.3, opacity:0 }} animate={{ scale:1, opacity:1, transition:{ type:'spring', stiffness:260, damping:20 } }}>
-                <CheckCircleSVG size={80}/>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-        {betResult && (
-          <motion.p initial={{ opacity:0, y:4 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3, duration:0.3 }}
-            style={{ fontSize:12, fontWeight:400, color:'rgba(238,239,243,0.7)', textAlign:'center', marginTop:4, marginBottom:0 }}>
-            +{Math.round(parseFloat(placedOdds || '1') * 500)}₽ к твоему банку
-          </motion.p>
-        )}
-      </div>
-      <div style={{ paddingTop:16, width:'100%', position:'relative', zIndex:12 }}>
-        {betPlaced && (
-          <div style={{ height:60, borderRadius:24, border:'1px solid rgba(255,255,255,0.4)', background:'rgba(0,200,80,0.06)', display:'flex', alignItems:'center', padding:'0 14px', justifyContent:'space-between' }}>
-            <span style={{ fontSize:18, fontWeight:700, color:'#fff' }}>{placedLabel}</span>
-            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-              <span style={{ fontSize:14, fontWeight:600, color:'rgba(255,255,255,0.6)' }}>{placedOdds}</span>
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><circle cx="11" cy="11" r="11" fill="#00a344"/><path d="M6.5 11L9.5 14L15.5 8" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
-            </div>
+          {/* Tracker */}
+          <div style={{ padding: '0 8px' }}>
+            <Tracker3D ms={ms} cardType={card.type} selLabel={selLabel} betPlaced={betPlaced} betResult={betResult} betWon={betWon} />
           </div>
-        )}
-        {betResult && (
-          <motion.div initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.5, duration:0.3 }}
-            onClick={onNext} onPointerDown={e => e.stopPropagation()}
-            style={{ marginTop:8, height:56, background:'transparent', border:'1px solid rgba(255,255,255,0.7)', borderRadius:22, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', cursor:'pointer', pointerEvents:'auto' }}>
-            <span style={{ fontSize:16, fontWeight:700, color:'#fff' }}>{nextLabel}</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          </motion.div>
-        )}
-      </div>
-    </>
-  );
-}
 
-// ── CHIPS & BET SHEET (same as v2) ───────────────────────────────────────────
-const CHIP_DATA = [
-  { label:'Мин.',    value:50    },
-  { label:'100 ₽',  value:100   },
-  { label:'200 ₽',  value:200   },
-  { label:'500 ₽',  value:500   },
-  { label:'1 000 ₽',value:1000  },
-  { label:'Макс.',  value:5000  },
-  { label:'Весь банк', value:21214 },
-];
+          {/* Window timeline */}
+          {card.type === 'window' && <WindowTimeline matchMin={ms.matchMin} active={windowActive} />}
 
-function CardBetSheet({ sheetOpen, activeBet, onClear, onConfirm }: {
-  sheetOpen: boolean;
-  activeBet: { label:string; odds:string }|null;
-  onClear: () => void;
-  onConfirm: (amount: number) => void;
-}) {
-  const [chipIdx,    setChipIdx]    = useState<number|null>(null);
-  const [betAmount,  setBetAmount]  = useState(0);
-  const chipsRef   = useRef<HTMLDivElement>(null);
-  const chipsDrag  = useRef<{ startX:number; scrollLeft:number; moved:boolean }|null>(null);
-  const pressedChip = useRef<number|null>(null);
+          {/* Market body */}
+          <div style={{ padding: '10px 8px 12px', display: 'flex', flexDirection: 'column', minHeight: 195 }}>
+            {betPlaced ? (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+                <motion.div style={{ x: bX, y: bY, rotate: bR, scale: bS }}>
+                  <SoccerBallSVG size={52} />
+                </motion.div>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0 }}>Ожидаем результат...</p>
+                <div style={{ borderRadius: 18, height: 50, border: '1px solid rgba(255,255,255,0.28)', display: 'flex', alignItems: 'center', padding: '0 14px', justifyContent: 'space-between', width: '100%' }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{placedRef.current.label}</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>×{placedRef.current.odds}</span>
+                </div>
+              </div>
+            ) : betResult ? (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                <p style={{ fontSize: 17, fontWeight: 700, color: '#fff', margin: 0, textAlign: 'center' }}>
+                  {scResult ? '2-й шанс зашёл! 🎉' : betWon ? 'Ставка выиграла! 🎉' : 'Ставка не зашла'}
+                </p>
+                {(betWon || scResult) && (
+                  <p style={{ fontSize: 12, color: '#27db55', margin: 0 }}>
+                    +{Math.round(parseFloat(placedRef.current.odds) * placedRef.current.amount - placedRef.current.amount).toLocaleString('ru-RU')}₽
+                  </p>
+                )}
 
-  useEffect(() => { if (!sheetOpen) { setChipIdx(null); setBetAmount(0); } }, [sheetOpen]);
+                {!betWon && !scResult && scActive && !scPlaced && (
+                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                    style={{ width: '100%', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.28)', borderRadius: 14, padding: '10px 12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <span style={{ fontSize: 11, fontWeight: 800, color: '#f59e0b', background: 'rgba(245,158,11,0.15)', borderRadius: 10, padding: '2px 8px' }}>⚡ 2-й шанс</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: '#f59e0b', marginLeft: 'auto' }}>{scTimeLeft}с</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      {mkts.slice(0, 2).map((o, oi) => (
+                        <motion.div key={oi} whileTap={{ scale: 0.95 }}
+                          onClick={() => { setScSelIdx(oi); setTimeout(() => setScPlaced(true), 200); }}
+                          style={{ flex: 1, height: 50, background: scSelIdx===oi ? 'rgba(245,158,11,0.18)' : 'rgba(0,0,0,0.4)', border: `1px solid ${scSelIdx===oi?'rgba(245,158,11,0.5)':'rgba(255,255,255,0.08)'}`, borderRadius: 18, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: 2 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{o.label}</span>
+                          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.45)' }}>{o.odds.toFixed(2)}</span>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
 
-  return (
-    <motion.div
-      initial={false}
-      animate={{ height: sheetOpen ? 188 : 0 }}
-      transition={{ type:'spring', stiffness:340, damping:34, mass:0.9 }}
-      style={{ overflow:'hidden', pointerEvents:'auto', background:'#171C1F', borderRadius:'0 0 24px 24px' }}
-      data-nodrag="true"
-    >
-      {/* Chips row */}
-      <div ref={chipsRef}
-        style={{ display:'flex', gap:6, flexWrap:'nowrap', background:'#171C1F', padding:'12px 8px 4px', overflowX:'auto', scrollbarWidth:'none', cursor:'grab', userSelect:'none', touchAction:'none' } as React.CSSProperties}
-        onPointerDown={e => {
-          e.stopPropagation();
-          const el = chipsRef.current; if (!el) return;
-          chipsDrag.current = { startX:e.clientX, scrollLeft:el.scrollLeft, moved:false };
-          el.setPointerCapture(e.pointerId);
-        }}
-        onPointerMove={e => {
-          const d = chipsDrag.current; if (!d) return;
-          const dx = e.clientX - d.startX;
-          if (Math.abs(dx) > 4) d.moved = true;
-          if (chipsRef.current) chipsRef.current.scrollLeft = d.scrollLeft - dx;
-        }}
-        onPointerUp={() => {
-          if (!chipsDrag.current?.moved && pressedChip.current !== null) {
-            setChipIdx(pressedChip.current);
-            setBetAmount(CHIP_DATA[pressedChip.current].value);
-          }
-          chipsDrag.current = null; pressedChip.current = null;
-        }}
-      >
-        {CHIP_DATA.map((chip, idx) => (
-          <div key={chip.label} onPointerDown={() => { pressedChip.current = idx; }}
-            style={{ height:32, background:'rgba(255,255,255,0.07)', borderRadius:999, padding:'0 10px', display:'flex', alignItems:'center', whiteSpace:'nowrap', flexShrink:0, border: idx === chipIdx ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent', cursor:'pointer' }}>
-            <span style={{ fontSize:11, fontWeight:400, color: idx === chipIdx ? '#eeeff3' : '#929bae' }}>{chip.label}</span>
-          </div>
-        ))}
-      </div>
-      {/* Amount row */}
-      <div style={{ background:'#171C1F', padding:'8px 8px' }}>
-        <div style={{ height:56, background:'rgba(0,0,0,0.2)', borderRadius:22, border:'1px solid rgba(255,255,255,0.06)', display:'flex', alignItems:'center', padding:'0 14px', gap:8 }}>
-          <div style={{ flex:1, display:'flex', alignItems:'center', gap:5 }}>
-            {betAmount === 0 ? (
-              <span style={{ fontSize:16, fontWeight:400, color:'#555f71' }}>Выберите сумму</span>
+                {!betWon && scPlaced && scResult === null && (
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', margin: 0 }}>Ожидаем 2-й шанс...</p>
+                )}
+
+                <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
+                  onClick={resetCard}
+                  style={{ marginTop: 'auto', width: '100%', height: 46, background: 'transparent', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', cursor: 'pointer' }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Поставить ещё раз</span>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                </motion.div>
+              </div>
             ) : (
               <>
-                <span style={{ fontSize:16, fontWeight:600, color:'#eeeff3' }}>{betAmount.toLocaleString('ru-RU')}</span>
-                <svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5H11M11 5L7.5 1M11 5L7.5 9" stroke="#929bae" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                <span style={{ fontSize:16, fontWeight:600, color:'#929bae' }}>
-                  {activeBet ? Math.round(betAmount * parseFloat(activeBet.odds)).toLocaleString('ru-RU') : '—'}
-                </span>
-              </>
-            )}
-          </div>
-          <div style={{ width:1, alignSelf:'stretch', background:'rgba(255,255,255,0.1)', flexShrink:0, margin:'0 12px' }}/>
-          <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-end' }}>
-            <span style={{ fontSize:10, color:'#555f71', lineHeight:'13px' }}>Баланс</span>
-            <span style={{ fontSize:13, fontWeight:600, color:'#eeeff3', lineHeight:'16px' }}>21 214₽</span>
-          </div>
-        </div>
-      </div>
-      {/* Confirm button */}
-      <div style={{ background:'#171C1F', padding:'4px 8px 8px' }}>
-        <div onClick={() => { if (betAmount > 0 && activeBet) onConfirm(betAmount); }}
-          style={{ height:56, background: betAmount > 0 ? '#00a344' : 'rgba(0,163,68,0.3)', borderRadius:20, display:'flex', alignItems:'center', justifyContent:'center', cursor: betAmount > 0 ? 'pointer' : 'default', transition:'background 0.2s' }}>
-          <span style={{ fontSize:16, fontWeight:700, color: betAmount > 0 ? '#fff' : 'rgba(255,255,255,0.35)' }}>Сделать ставку</span>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-// ── SHARED CARD SHELL ─────────────────────────────────────────────────────────
-const STATIC_GLOW  = 'inset 0px 0px 20px 1px rgba(180,194,255,0.45), inset 0px 10px 40px 4px rgba(14,34,51,0.7)';
-const WIN_GLOW     = 'inset 0px 0px 18px 0px rgba(255,255,255,0.18), inset 0px 8px 30px 2px rgba(7,113,48,0.38)';
-const LOCK_GLOW    = 'inset 0px 0px 20px 1px rgba(80,80,80,0.5), inset 0px 10px 40px 4px rgba(10,10,10,0.7)';
-
-// ── NEXT EVENT CARD (permanent, immediate) ────────────────────────────────────
-function NextEventCard({ bx, by, phase, locked, flash, homeScore, awayScore, odds, matchMin }: {
-  bx: MotionValue<number>; by: MotionValue<number>;
-  phase: Phase; locked: boolean; flash: string|null;
-  homeScore: number; awayScore: number;
-  odds: { goal:number; corner:number; foul:number; out:number };
-  matchMin: number;
-}) {
-  const [activeBet, setActiveBet] = useState<{ label:string; odds:string }|null>(null);
-  const [betPlaced, setBetPlaced] = useState(false);
-  const [betResult, setBetResult] = useState(false);
-  const [betWon,    setBetWon]    = useState(true);
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
-  const placedBetRef = useRef({ label:'', odds:'' });
-
-  const ballX       = useMotionValue(0);
-  const ballYAnim   = useMotionValue(0);
-  const ballRotate  = useMotionValue(0);
-  const ballScale   = useMotionValue(1);
-
-  const sheetOpen = !!(activeBet && !betPlaced && !betResult);
-
-  // Ball animation while bet in play
-  useEffect(() => {
-    if (!betPlaced) { ballX.set(0); ballYAnim.set(0); ballRotate.set(0); ballScale.set(1); return; }
-    let alive = true; let phase2 = 0; let tid: ReturnType<typeof setTimeout>;
-    let active: { stop:()=>void }[] = [];
-    const run = () => {
-      if (!alive) return; active.forEach(a=>a.stop());
-      const p = phase2 % 5;
-      let anims: { stop:()=>void }[];
-      if (p===0) anims=[animate(ballYAnim,[0,-38,0],{duration:0.65,ease:[0.22,1,0.36,1]}),animate(ballRotate,[ballRotate.get(),ballRotate.get()+160],{duration:0.65})];
-      else if (p===1) anims=[animate(ballX,[0,-22,0],{duration:0.6}),animate(ballYAnim,[0,-12,0],{duration:0.6}),animate(ballRotate,[ballRotate.get(),ballRotate.get()-100],{duration:0.6})];
-      else if (p===2) anims=[animate(ballYAnim,[0,-24,2,0],{duration:0.7,ease:'easeOut'}),animate(ballScale,[1,1.18,0.88,1],{duration:0.7})];
-      else if (p===3) anims=[animate(ballX,[0,26,0],{duration:0.5}),animate(ballYAnim,[0,-8,0],{duration:0.5}),animate(ballRotate,[ballRotate.get(),ballRotate.get()+100],{duration:0.5})];
-      else anims=[animate(ballYAnim,[0,-32,0],{duration:0.75}),animate(ballRotate,[ballRotate.get(),ballRotate.get()-220],{duration:0.75}),animate(ballScale,[1,1.08,1],{duration:0.75})];
-      active=anims; phase2++;
-      Promise.all(anims).then(()=>{ if(!alive)return; tid=setTimeout(run,320); });
-    };
-    run();
-    return ()=>{ alive=false; clearTimeout(tid); active.forEach(a=>a.stop()); ballX.set(0); ballYAnim.set(0); ballRotate.set(0); ballScale.set(1); };
-  }, [betPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Auto-resolve bet after 5s
-  useEffect(() => {
-    if (!betPlaced) return;
-    const t = setTimeout(() => { setBetWon(true); setBetPlaced(false); setBetResult(true); }, 5000);
-    return () => clearTimeout(t);
-  }, [betPlaced]);
-
-  const handleBet = (label: string, oddsVal: string) => {
-    if (locked) return;
-    setActiveBet({ label, odds: oddsVal });
-  };
-  const handleClear = () => setActiveBet(null);
-  const handleConfirm = (amount: number) => {
-    if (!activeBet || amount === 0) return;
-    placedBetRef.current = { label:activeBet.label, odds:activeBet.odds };
-    setBetPlaced(true); setActiveBet(null);
-  };
-  const handleNext = () => { setBetResult(false); setBetWon(true); };
-
-  const glowShadow = (betPlaced || betResult) ? WIN_GLOW : locked ? LOCK_GLOW : STATIC_GLOW;
-
-  const btns = [
-    { label:'Гол',     odds:odds.goal.toFixed(2)   },
-    { label:'Угловой', odds:odds.corner.toFixed(2) },
-    { label:'Фол',     odds:odds.foul.toFixed(2)   },
-    { label:'Аут',     odds:odds.out.toFixed(2)    },
-  ];
-
-  return (
-    <motion.div
-      animate={{ borderRadius: sheetOpen ? '32px 32px 0 0' : 32, background: sheetOpen ? '#171C1F' : '#121214' }}
-      transition={{ duration:0.25 }}
-      style={{ width:'100%', borderRadius:32, background:'#121214', position:'relative', overflow:'hidden' }}
-    >
-      <div style={{ position:'relative', isolation:'isolate' }}>
-        <TeamHeader homeScore={homeScore} awayScore={awayScore} matchMin={matchMin} phase={phase}/>
-        <FieldSlot bx={bx} by={by} phase={phase} locked={locked && !betPlaced} flash={flash}
-          homeScore={homeScore} awayScore={awayScore} collapse keyboardOpen={keyboardOpen}
-          betPlaced={betPlaced} betResult={betResult} betWon={betWon}
-          placedLabel={placedBetRef.current.label} placedOdds={placedBetRef.current.odds}/>
-
-        <div style={{ background: sheetOpen ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: sheetOpen ? 0 : '0 0 32px 32px', display:'flex', flexDirection:'column', alignItems:'center', padding:'16px 8px 8px', minHeight: (betPlaced||betResult) ? 230 : sheetOpen ? 200 : 230 }}>
-
-          {(betPlaced || betResult) ? (
-            <BetResultArea betPlaced={betPlaced} betResult={betResult} betWon={betWon}
-              placedLabel={placedBetRef.current.label} placedOdds={placedBetRef.current.odds}
-              onNext={handleNext} nextLabel="Поставить ещё раз"
-              ballX={ballX} ballY={ballYAnim} ballRotate={ballRotate} ballScale={ballScale}/>
-          ) : <>
-            {/* Badge */}
-            <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
-              <span style={{ fontSize:10, fontWeight:700, color:'#f4a019', background:'rgba(244,160,25,0.15)', borderRadius:10, padding:'3px 10px', letterSpacing:0.3 }}>⚡ СЛЕДУЮЩЕЕ СОБЫТИЕ</span>
-            </div>
-            <p style={{ fontSize:18, fontWeight:700, color:'#fff', textAlign:'center', margin:0, lineHeight:'22px' }}>
-              Что произойдет следующим?
-            </p>
-
-            <div style={{ width:'100%', marginTop:'auto', paddingTop:12, position:'relative', zIndex:11 }}>
-              <AnimatePresence mode="wait" initial={false}>
-                {activeBet ? (
-                  <motion.div key="sel" initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.95 }} transition={{ duration:0.2 }}
-                    onPointerDown={e=>e.stopPropagation()}
-                    style={{ position:'relative', borderRadius:24, height:60, border:'1px solid rgba(255,255,255,0.35)', background:'transparent', display:'flex', alignItems:'center', padding:'0 14px', justifyContent:'space-between', overflow:'hidden', pointerEvents:'auto' }}>
-                    <span style={{ fontSize:18, fontWeight:700, color:'#fff' }}>{activeBet.label}</span>
-                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <span style={{ fontSize:14, fontWeight:600, color:'rgba(255,255,255,0.8)' }}>{activeBet.odds}</span>
-                      <div onPointerDown={e=>e.stopPropagation()} onClick={handleClear} style={{ cursor:'pointer', flexShrink:0, pointerEvents:'auto' }}>
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="rgba(255,255,255,0.15)"/><path d="M7 7L13 13M13 7L7 13" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div key="grid" initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.95 }} transition={{ duration:0.2 }}>
-                    <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-                      {btns.map((btn, bi) => (
-                        <div key={bi}
-                          onClick={() => handleBet(btn.label, btn.odds)}
-                          style={{ width:'calc(50% - 4px)', height:62, background:'rgba(0,0,0,0.65)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:24, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', cursor: locked ? 'default' : 'pointer', backdropFilter:'blur(27px)', WebkitBackdropFilter:'blur(27px)', position:'relative', overflow:'hidden', opacity: locked ? 0.45 : 1 }}>
-                          <div style={{ position:'absolute', inset:0, borderRadius:24, background:'linear-gradient(225deg, rgba(255,255,255,0.07) 0%, transparent 40%)', pointerEvents:'none' }}/>
-                          <span style={{ fontSize:18, fontWeight:700, color:'#fff', position:'relative' }}>{btn.label}</span>
-                          <span style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.4)', position:'relative' }}>{btn.odds}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </>}
-        </div>
-
-        {/* Inset glow */}
-        <div style={{ position:'absolute', inset:0, pointerEvents:'none', zIndex:10, borderRadius:32, boxShadow: glowShadow }}/>
-      </div>
-      <CardBetSheet sheetOpen={sheetOpen} activeBet={activeBet} onClear={handleClear} onConfirm={handleConfirm}/>
-    </motion.div>
-  );
-}
-
-// ── NEXT RANGE CARD (permanent, time range) ───────────────────────────────────
-function NextRangeCard({ bx, by, phase, locked, flash, homeScore, awayScore, odds, matchMin }: {
-  bx: MotionValue<number>; by: MotionValue<number>;
-  phase: Phase; locked: boolean; flash: string|null;
-  homeScore: number; awayScore: number;
-  odds: { goal:number; corner:number; foul:number; out:number };
-  matchMin: number;
-}) {
-  const [activeBet, setActiveBet] = useState<{ label:string; odds:string }|null>(null);
-  const [betPlaced, setBetPlaced] = useState(false);
-  const [betResult, setBetResult] = useState(false);
-  const [betWon,    setBetWon]    = useState(true);
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
-  const placedBetRef = useRef({ label:'', odds:'' });
-
-  const ballX       = useMotionValue(0);
-  const ballYAnim   = useMotionValue(0);
-  const ballRotate  = useMotionValue(0);
-  const ballScale   = useMotionValue(1);
-
-  const sheetOpen = !!(activeBet && !betPlaced && !betResult);
-
-  useEffect(() => {
-    if (!betPlaced) { ballX.set(0); ballYAnim.set(0); ballRotate.set(0); ballScale.set(1); return; }
-    let alive=true; let ph=0; let tid: ReturnType<typeof setTimeout>; let active: {stop:()=>void}[]=[];
-    const run=()=>{
-      if(!alive)return; active.forEach(a=>a.stop());
-      const p=ph%5; let anims:{stop:()=>void}[];
-      if(p===0)anims=[animate(ballYAnim,[0,-38,0],{duration:0.65,ease:[0.22,1,0.36,1]}),animate(ballRotate,[ballRotate.get(),ballRotate.get()+160],{duration:0.65})];
-      else if(p===1)anims=[animate(ballX,[0,-22,0],{duration:0.6}),animate(ballYAnim,[0,-12,0],{duration:0.6})];
-      else if(p===2)anims=[animate(ballYAnim,[0,-24,2,0],{duration:0.7}),animate(ballScale,[1,1.18,0.88,1],{duration:0.7})];
-      else if(p===3)anims=[animate(ballX,[0,26,0],{duration:0.5}),animate(ballYAnim,[0,-8,0],{duration:0.5})];
-      else anims=[animate(ballYAnim,[0,-32,0],{duration:0.75}),animate(ballRotate,[ballRotate.get(),ballRotate.get()-220],{duration:0.75})];
-      active=anims; ph++;
-      Promise.all(anims).then(()=>{ if(!alive)return; tid=setTimeout(run,320); });
-    };
-    run();
-    return()=>{ alive=false; clearTimeout(tid); active.forEach(a=>a.stop()); ballX.set(0); ballYAnim.set(0); ballRotate.set(0); ballScale.set(1); };
-  }, [betPlaced]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (!betPlaced) return;
-    const t = setTimeout(() => { setBetWon(true); setBetPlaced(false); setBetResult(true); }, 6000);
-    return () => clearTimeout(t);
-  }, [betPlaced]);
-
-  const handleBet = (label: string, oddsVal: string) => {
-    if (locked) return;
-    setActiveBet({ label, odds: oddsVal });
-  };
-  const handleConfirm = (amount: number) => {
-    if (!activeBet || amount === 0) return;
-    placedBetRef.current = { label:activeBet.label, odds:activeBet.odds };
-    setBetPlaced(true); setActiveBet(null);
-  };
-  const handleNext = () => { setBetResult(false); setBetWon(true); };
-
-  const rangeStart = Math.floor(matchMin / 10) * 10;
-  const rangeEnd   = rangeStart + 10;
-  const rangeLabel = `${rangeStart}:00 — ${rangeEnd}:00`;
-
-  const comboOdds1 = +Math.max(1.5, (1/(1/odds.goal + 1/odds.corner)) * 0.95).toFixed(2);
-  const comboOdds2 = +Math.max(1.3, (1/(1/odds.foul  + 1/odds.out))   * 0.95).toFixed(2);
-
-  const glowShadow = (betPlaced || betResult) ? WIN_GLOW : locked ? LOCK_GLOW : STATIC_GLOW;
-
-  return (
-    <motion.div
-      animate={{ borderRadius: sheetOpen ? '32px 32px 0 0' : 32, background: sheetOpen ? '#171C1F' : '#121214' }}
-      transition={{ duration:0.25 }}
-      style={{ width:'100%', borderRadius:32, background:'#121214', position:'relative', overflow:'hidden' }}
-    >
-      <div style={{ position:'relative', isolation:'isolate' }}>
-        <TeamHeader homeScore={homeScore} awayScore={awayScore} matchMin={matchMin} phase={phase}/>
-        <FieldSlot bx={bx} by={by} phase={phase} locked={locked && !betPlaced} flash={flash}
-          homeScore={homeScore} awayScore={awayScore} collapse keyboardOpen={keyboardOpen}
-          betPlaced={betPlaced} betResult={betResult} betWon={betWon}
-          placedLabel={placedBetRef.current.label} placedOdds={placedBetRef.current.odds}/>
-
-        <div style={{ background: sheetOpen ? 'linear-gradient(#131214 calc(100% - 8px), #171C1F calc(100% - 8px))' : '#121214', borderRadius: sheetOpen ? 0 : '0 0 32px 32px', display:'flex', flexDirection:'column', alignItems:'center', padding:'16px 8px 8px', minHeight:(betPlaced||betResult)?230:sheetOpen?200:230 }}>
-
-          {(betPlaced || betResult) ? (
-            <BetResultArea betPlaced={betPlaced} betResult={betResult} betWon={betWon}
-              placedLabel={placedBetRef.current.label} placedOdds={placedBetRef.current.odds}
-              onNext={handleNext} nextLabel="Поставить ещё раз"
-              ballX={ballX} ballY={ballYAnim} ballRotate={ballRotate} ballScale={ballScale}/>
-          ) : <>
-            {/* Badge with time range */}
-            <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:6 }}>
-              <span style={{ fontSize:10, fontWeight:700, color:'#63b3ff', background:'rgba(99,179,255,0.12)', borderRadius:10, padding:'3px 10px', letterSpacing:0.3 }}>🕐 {rangeLabel}</span>
-            </div>
-            <p style={{ fontSize:18, fontWeight:700, color:'#fff', textAlign:'center', margin:0, lineHeight:'22px' }}>
-              Что произойдет следующим?
-            </p>
-
-            <div style={{ width:'100%', marginTop:'auto', paddingTop:12, position:'relative', zIndex:11 }}>
-              <AnimatePresence mode="wait" initial={false}>
-                {activeBet ? (
-                  <motion.div key="sel" initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.95 }} transition={{ duration:0.2 }}
-                    onPointerDown={e=>e.stopPropagation()}
-                    style={{ borderRadius:24, height:60, border:'1px solid rgba(255,255,255,0.35)', display:'flex', alignItems:'center', padding:'0 14px', justifyContent:'space-between', pointerEvents:'auto' }}>
-                    <span style={{ fontSize:16, fontWeight:700, color:'#fff' }}>{activeBet.label}</span>
-                    <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                      <span style={{ fontSize:14, fontWeight:600, color:'rgba(255,255,255,0.8)' }}>{activeBet.odds}</span>
-                      <div onPointerDown={e=>e.stopPropagation()} onClick={() => setActiveBet(null)} style={{ cursor:'pointer' }}>
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="rgba(255,255,255,0.15)"/><path d="M7 7L13 13M13 7L7 13" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div key="btns" initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.95 }} transition={{ duration:0.2 }}>
-                    <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
-                      {[
-                        { label:'Гол или Угловой', odds: comboOdds1.toString() },
-                        { label:'Фол или Аут',     odds: comboOdds2.toString() },
-                      ].map((btn, bi) => (
-                        <div key={bi}
-                          onClick={() => handleBet(btn.label, btn.odds)}
-                          style={{ width:'100%', height:62, background:'rgba(0,0,0,0.65)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:24, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', cursor: locked ? 'default' : 'pointer', backdropFilter:'blur(27px)', WebkitBackdropFilter:'blur(27px)', position:'relative', overflow:'hidden', opacity: locked ? 0.45 : 1 }}>
-                          <div style={{ position:'absolute', inset:0, borderRadius:24, background:'linear-gradient(225deg, rgba(255,255,255,0.07) 0%, transparent 40%)', pointerEvents:'none' }}/>
-                          <span style={{ fontSize:18, fontWeight:700, color:'#fff', position:'relative' }}>{btn.label}</span>
-                          <span style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.4)', position:'relative' }}>{btn.odds}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </>}
-        </div>
-
-        <div style={{ position:'absolute', inset:0, pointerEvents:'none', zIndex:10, borderRadius:32, boxShadow: glowShadow }}/>
-      </div>
-      <CardBetSheet sheetOpen={sheetOpen} activeBet={activeBet} onClear={() => setActiveBet(null)} onConfirm={handleConfirm}/>
-    </motion.div>
-  );
-}
-
-// ── PENALTY CARD (situational, same visual as v2) ─────────────────────────────
-function PenaltyCard({ penRound, onSeriesEnd }: {
-  penRound: number; onSeriesEnd: () => void;
-}) {
-  const [activeBet,      setActiveBet]      = useState<{ label:string; odds:string }|null>(null);
-  const [betPlaced,      setBetPlaced]      = useState(false);
-  const [betResult,      setBetResult]      = useState(false);
-  const [betWon,         setBetWon]         = useState(true);
-  const [penScore,       setPenScore]       = useState({ home:0, away:0 });
-  const [roundIdx,       setRoundIdx]       = useState(penRound);
-  const [seriesOver,     setSeriesOver]     = useState(false);
-  const placedBetRef = useRef({ label:'', odds:'' });
-  const ballX = useMotionValue(0); const ballYAnim = useMotionValue(0);
-  const ballRotate = useMotionValue(0); const ballScale = useMotionValue(1);
-
-  useEffect(() => { setRoundIdx(penRound); }, [penRound]);
-
-  useEffect(() => {
-    if (!betPlaced) return;
-    const round = SHOTS[roundIdx];
-    const userYes = placedBetRef.current.label === 'Да';
-    const won = round.scored ? userYes : !userYes;
-    const t = setTimeout(() => { setBetWon(won); setBetPlaced(false); setBetResult(true); }, 4000);
-    return () => clearTimeout(t);
-  }, [betPlaced, roundIdx]);
-
-  const handleNext = () => {
-    const round = SHOTS[roundIdx];
-    const newHome = penScore.home + (round.team==='home' && round.scored ? 1 : 0);
-    const newAway = penScore.away + (round.team==='away' && round.scored ? 1 : 0);
-    setPenScore({ home:newHome, away:newAway });
-    if (roundIdx >= SHOTS.length - 1) { setSeriesOver(true); return; }
-    setBetResult(false); setBetWon(true); setActiveBet(null);
-    setRoundIdx(r => r + 1);
-  };
-
-  const round = SHOTS[Math.min(roundIdx, SHOTS.length-1)];
-
-  const Dot = ({ kick, idx }: { kick: typeof SHOTS[number]; idx: number }) => {
-    const done    = idx < roundIdx || betResult;
-    const current = idx === roundIdx && !betResult;
-    const col     = done ? (kick.scored ? '#27db55' : '#ff4444') : 'rgba(255,255,255,0.12)';
-    if (current) return <div style={{ width:18, height:18, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}><SoccerBallSVG size={18}/></div>;
-    return (
-      <div style={{ width:16, height:16, borderRadius:'50%', background:col, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'background 0.3s' }}>
-        {done && <span style={{ fontSize:8, fontWeight:800, color:'#fff' }}>{kick.scored?'✓':'✗'}</span>}
-      </div>
-    );
-  };
-
-  const homeKicks = SHOTS.map((s,i)=>({ ...s, idx:i })).filter(s=>s.team==='home');
-  const awayKicks = SHOTS.map((s,i)=>({ ...s, idx:i })).filter(s=>s.team==='away');
-
-  return (
-    <motion.div
-      initial={{ y:80, opacity:0, scale:0.95 }}
-      animate={{ y:0, opacity:1, scale:1 }}
-      exit={{ y:80, opacity:0, scale:0.92, transition:{ duration:0.3 } }}
-      transition={{ type:'spring', stiffness:280, damping:26 }}
-      style={{ width:'100%', borderRadius:32, background:'#121214', position:'relative', overflow:'hidden' }}
-    >
-      <div style={{ position:'relative', isolation:'isolate' }}>
-        {/* Header */}
-        <div style={{ height:50, display:'flex', alignItems:'center', padding:'0 10px', gap:4 }}>
-          <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'flex-end', gap:6 }}>
-            <span style={{ fontSize:9, color:'#eeeff3' }}>{HOME.name}</span>
-            <div style={{ width:24, height:24, borderRadius:'50%', background:HOME.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>{HOME.flag}</div>
-          </div>
-          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', minWidth:70 }}>
-            <span style={{ fontSize:20, fontWeight:500, color:'#fff' }}>{penScore.home}:{penScore.away}</span>
-            <span style={{ fontSize:8, color:'#eeeff3', whiteSpace:'nowrap', marginTop:2 }}>Серия пенальти</span>
-          </div>
-          <div style={{ flex:1, display:'flex', alignItems:'center', gap:6 }}>
-            <div style={{ width:24, height:24, borderRadius:'50%', background:AWAY.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>{AWAY.flag}</div>
-            <span style={{ fontSize:9, color:'#eeeff3' }}>{AWAY.name}</span>
-          </div>
-        </div>
-
-        {/* Video placeholder */}
-        <div style={{ height:155, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', position:'relative' }}>
-          <div style={{ fontSize:48, opacity:0.3 }}>⚽</div>
-          <div style={{ position:'absolute', top:8, left:10, background:'rgba(220,20,20,0.85)', borderRadius:6, padding:'3px 8px' }}>
-            <span style={{ fontSize:10, fontWeight:800, color:'#fff', letterSpacing:0.5 }}>ПЕНАЛЬТИ</span>
-          </div>
-        </div>
-
-        <div style={{ background:'#121214', borderRadius:'0 0 32px 32px', display:'flex', flexDirection:'column', alignItems:'center', padding:'10px 8px 8px', minHeight:268 }}>
-          {seriesOver ? (
-            <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', width:'100%' }}>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:10 }}>
-                <div style={{ fontSize:10, fontWeight:700, color:'#ff6b6b', background:'rgba(220,50,50,0.15)', border:'1px solid rgba(220,50,50,0.3)', borderRadius:20, padding:'3px 12px', letterSpacing:0.6 }}>⚽ СЕРИЯ ЗАВЕРШЕНА</div>
-                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                  <span style={{ fontSize:24 }}>{HOME.flag}</span>
-                  <span style={{ fontSize:34, fontWeight:800, color:'#fff', letterSpacing:-1 }}>{penScore.home} : {penScore.away}</span>
-                  <span style={{ fontSize:24 }}>{AWAY.flag}</span>
-                </div>
-                <p style={{ fontSize:18, fontWeight:800, color:'#00c958', margin:0, textAlign:'center' }}>
-                  {penScore.home > penScore.away ? HOME.name : AWAY.name} выигрывает!
-                </p>
-              </div>
-              <div style={{ width:'100%', paddingTop:8 }}>
-                <div onClick={onSeriesEnd} onPointerDown={e=>e.stopPropagation()} style={{ height:56, background:'transparent', border:'1px solid rgba(255,255,255,0.4)', borderRadius:22, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', cursor:'pointer' }}>
-                  <span style={{ fontSize:16, fontWeight:700, color:'#fff' }}>К маркетам</span>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </div>
-              </div>
-            </div>
-          ) : betPlaced ? (
-            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:10, width:'100%' }}>
-              {/* Tracker dots */}
-              <div style={{ width:'100%', background:'rgba(255,255,255,0.04)', borderRadius:14, padding:'6px 12px', display:'flex', flexDirection:'column', gap:4 }}>
-                {[{ team:HOME, kicks:homeKicks }, { team:AWAY, kicks:awayKicks }].map(({ team, kicks }) => (
-                  <div key={team.name} style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5, width:80, flexShrink:0 }}>
-                      <div style={{ width:16, height:16, borderRadius:'50%', background:team.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10 }}>{team.flag}</div>
-                      <span style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.55)' }}>{team.abbr}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, flex:1 }}>
-                      {kicks.map(k => <Dot key={k.idx} kick={k} idx={k.idx}/>)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
-                <motion.div style={{ x:ballX, y:ballYAnim, rotate:ballRotate, scale:ballScale }}>
-                  <SoccerBallSVG size={56}/>
-                </motion.div>
-                <p style={{ fontSize:15, fontWeight:700, color:'#fff', margin:0 }}>Ожидаем результат...</p>
-              </div>
-              <div style={{ width:'100%', borderRadius:24, height:60, border:'1px solid rgba(255,255,255,0.35)', display:'flex', alignItems:'center', padding:'0 14px', justifyContent:'space-between', flexShrink:0 }}>
-                <span style={{ fontSize:18, fontWeight:700, color:'#fff' }}>{placedBetRef.current.label}</span>
-                <span style={{ fontSize:14, fontWeight:600, color:'rgba(255,255,255,0.7)' }}>{placedBetRef.current.odds}</span>
-              </div>
-            </motion.div>
-          ) : betResult ? (
-            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} style={{ width:'100%', flex:1, display:'flex', flexDirection:'column', alignItems:'center' }}>
-              {/* Dots */}
-              <div style={{ width:'100%', background:'rgba(255,255,255,0.04)', borderRadius:14, padding:'6px 12px', display:'flex', flexDirection:'column', gap:4, marginBottom:6 }}>
-                {[{ team:HOME, kicks:homeKicks }, { team:AWAY, kicks:awayKicks }].map(({ team, kicks }) => (
-                  <div key={team.name} style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5, width:80, flexShrink:0 }}>
-                      <div style={{ width:16, height:16, borderRadius:'50%', background:team.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10 }}>{team.flag}</div>
-                      <span style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.55)' }}>{team.abbr}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, flex:1 }}>
-                      {kicks.map(k=><Dot key={k.idx} kick={k} idx={k.idx}/>)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8 }}>
-                <div style={{ width:56, height:56, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                  {round.scored ? <SoccerBallSVG size={56}/> : (
-                    <svg width="56" height="56" viewBox="0 0 88 88" fill="none"><circle cx="44" cy="44" r="37" fill="rgba(220,50,50,0.18)" stroke="rgba(220,50,50,0.35)" strokeWidth="1.5"/><path d="M30 30L58 58M58 30L30 58" stroke="#e04444" strokeWidth="3.5" strokeLinecap="round"/></svg>
-                  )}
-                </div>
-                <p style={{ fontSize:16, fontWeight:700, color:'#fff', margin:0, textAlign:'center' }}>
-                  {round.scored ? `${round.p} забил! ⚽` : `${round.p} не забил`}
-                </p>
-                {placedBetRef.current.label && (
-                  <span style={{ fontSize:13, color: betWon ? '#00c958' : 'rgba(238,239,243,0.45)' }}>
-                    {betWon ? '✓ Ставка выиграла!' : 'Ставка не зашла'}
+                {/* Market title + status */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: AccentColor }}>
+                    {card.type === 'instant' ? '⚡' : card.type === 'window' ? '🕐' : '⚠️'}
                   </span>
-                )}
-              </div>
-              <div style={{ width:'100%', paddingTop:6 }} onPointerDown={e=>e.stopPropagation()}>
-                <motion.div initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.45 }}
-                  onClick={handleNext}
-                  style={{ height:56, background:'transparent', border:'1px solid rgba(255,255,255,0.45)', borderRadius:22, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 18px', cursor:'pointer' }}>
-                  <span style={{ fontSize:15, fontWeight:700, color:'#fff' }}>
-                    {roundIdx >= SHOTS.length-1 ? 'Результат серии' : `Следующий удар · ${roundIdx+2}/${SHOTS.length}`}
+                  <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.3, flex: 1 }}>
+                    {card.type === 'instant' ? 'Что произойдёт следующим?' :
+                     card.type === 'window'  ? `Что первым с ${WIN_MIN}:00 по ${WIN_MAX}:00?` :
+                     'Забьёт пенальти?'}
                   </span>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </motion.div>
-              </div>
-            </motion.div>
-          ) : (
-            <>
-              {/* Dots */}
-              <div style={{ width:'100%', background:'rgba(255,255,255,0.04)', borderRadius:14, padding:'6px 12px', display:'flex', flexDirection:'column', gap:4, marginBottom:6 }}>
-                {[{ team:HOME, kicks:homeKicks }, { team:AWAY, kicks:awayKicks }].map(({ team, kicks }) => (
-                  <div key={team.name} style={{ display:'flex', alignItems:'center', gap:8 }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:5, width:80, flexShrink:0 }}>
-                      <div style={{ width:16, height:16, borderRadius:'50%', background:team.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:10 }}>{team.flag}</div>
-                      <span style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.55)' }}>{team.abbr}</span>
-                    </div>
-                    <div style={{ display:'flex', gap:4, flex:1 }}>
-                      {kicks.map(k=><Dot key={k.idx} kick={k} idx={k.idx}/>)}
-                    </div>
+                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {disabled ? (
+                      <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.22)' }}>
+                        {ms.block !== 'none' ? 'ПАУЗА' :
+                         ms.phase === 'halftime' ? 'ПЕРЕРЫВ' :
+                         card.type === 'window' && ms.matchMin < WIN_MIN ? `в ${WIN_MIN}′` : 'ЗАКРЫТ'}
+                      </span>
+                    ) : (
+                      <>
+                        <motion.div animate={{ opacity: [1,0.2,1] }} transition={{ duration: 1.2, repeat: Infinity }}
+                          style={{ width: 6, height: 6, borderRadius: 3, background: AccentColor }} />
+                        <span style={{ fontSize: 9, fontWeight: 700, color: AccentColor }}>ОТКРЫТ</span>
+                      </>
+                    )}
                   </div>
-                ))}
-              </div>
-              <p style={{ fontSize:18, fontWeight:700, color:'#fff', margin:0, marginTop:4, textAlign:'center' }}>Забьёт пенальти?</p>
-              <div style={{ display:'flex', alignItems:'center', gap:5, marginTop:4 }}>
-                <div style={{ width:15, height:15, borderRadius:'50%', background:round.team==='home'?HOME.color:AWAY.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:9 }}>
-                  {round.team==='home'?HOME.flag:AWAY.flag}
                 </div>
-                <span style={{ fontSize:11, color:'rgba(255,255,255,0.4)' }}>{round.team==='home'?HOME.abbr:AWAY.abbr} бьёт · {round.p}</span>
-              </div>
-              <div style={{ width:'100%', marginTop:'auto', paddingTop:7, position:'relative', zIndex:11 }}>
+
+                {/* Outcome buttons / selected */}
                 <AnimatePresence mode="wait" initial={false}>
-                  {activeBet ? (
-                    <motion.div key="sel" initial={{ opacity:0, scale:0.95 }} animate={{ opacity:1, scale:1 }} exit={{ opacity:0, scale:0.95 }} transition={{ duration:0.2 }}
-                      onPointerDown={e=>e.stopPropagation()}
-                      style={{ borderRadius:24, height:60, border:'1px solid rgba(255,255,255,0.35)', display:'flex', alignItems:'center', padding:'0 14px', justifyContent:'space-between', pointerEvents:'auto' }}>
-                      <span style={{ fontSize:18, fontWeight:700, color:'#fff' }}>{activeBet.label}</span>
-                      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                        <span style={{ fontSize:14, fontWeight:600, color:'rgba(255,255,255,0.8)' }}>{activeBet.odds}</span>
-                        <div onPointerDown={e=>e.stopPropagation()} onClick={() => setActiveBet(null)} style={{ cursor:'pointer' }}>
-                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="rgba(255,255,255,0.15)"/><path d="M7 7L13 13M13 7L7 13" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  {selIdx !== null ? (
+                    <motion.div key="sel" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.16 }}
+                      style={{ borderRadius: 18, height: 50, border: '1px solid rgba(255,255,255,0.32)', display: 'flex', alignItems: 'center', padding: '0 12px', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: '#fff' }}>{mkts[selIdx].label}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>{mkts[selIdx].odds.toFixed(2)}</span>
+                        <div onClick={() => { setSelIdx(null); setChipIdx(null); setAmount(0); }} style={{ cursor: 'pointer' }}>
+                          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="rgba(255,255,255,0.1)"/><path d="M7 7L13 13M13 7L7 13" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round"/></svg>
                         </div>
                       </div>
                     </motion.div>
                   ) : (
-                    <motion.div key="btns" initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }} transition={{ duration:0.15 }} style={{ display:'flex', gap:8 }}>
-                      {[{ label:'Да', odds:round.yes, pct:round.pct }, { label:'Нет', odds:round.no, pct:'' }].map((btn, bi) => (
-                        <div key={bi} onClick={() => setActiveBet({ label:btn.label, odds:btn.odds })} onPointerDown={e=>e.stopPropagation()}
-                          style={{ flex:1, height:92, background:'rgba(0,0,0,0.65)', border:'1px solid rgba(255,255,255,0.08)', borderRadius:28, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'flex-start', paddingTop:14, paddingBottom:10, gap:4, position:'relative', cursor:'pointer', backdropFilter:'blur(27px)', WebkitBackdropFilter:'blur(27px)' }}>
-                          <div style={{ position:'absolute', inset:0, borderRadius:28, overflow:'hidden', background:'linear-gradient(225deg, rgba(255,255,255,0.09) 0%, transparent 40%)', pointerEvents:'none' }}/>
-                          {btn.pct && <div style={{ position:'absolute', top:-7, left:'50%', transform:'translateX(-50%)', background:'#262a33', borderRadius:16, height:14, padding:'0 5px', display:'flex', alignItems:'center' }}>
-                            <span style={{ fontSize:10, fontWeight:600, color:'#929bae' }}>{btn.pct}</span>
-                          </div>}
-                          <div style={{ height:34, display:'flex', alignItems:'center', flexShrink:0 }}>
-                            <span style={{ fontSize:24, fontWeight:700, color:'#fff', lineHeight:1 }}>{btn.label}</span>
-                          </div>
-                          <span style={{ fontSize:14, fontWeight:600, color:'rgba(238,239,243,0.65)' }}>{btn.odds}</span>
-                        </div>
-                      ))}
+                    <motion.div key="grid" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.16 }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 }}>
+                        {mkts.map((o, oi) => {
+                          const fullWidth = mkts.length === 2 || (mkts.length === 4 ? false : true);
+                          return (
+                            <div key={oi}
+                              onClick={() => { if (!disabled) setSelIdx(oi); }}
+                              data-nodrag="true"
+                              style={{
+                                width: fullWidth ? '100%' : 'calc(50% - 3px)',
+                                height: 62, background: 'rgba(0,0,0,0.65)',
+                                border: '1px solid rgba(255,255,255,0.08)', borderRadius: 22,
+                                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                justifyContent: 'flex-start', paddingTop: 11, paddingBottom: 8, gap: 2,
+                                position: 'relative', cursor: disabled ? 'default' : 'pointer',
+                                overflow: 'hidden', backdropFilter: 'blur(27px)',
+                                opacity: disabled ? 0.42 : 1,
+                              }}>
+                              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(225deg, rgba(255,255,255,0.07) 0%, transparent 40%)', pointerEvents: 'none' }} />
+                              <div style={{ position: 'absolute', bottom: 0, left: 0, width: `${o.pct}%`, height: 3, background: `rgba(${r},${g},${b},0.55)`, borderRadius: '0 2px 0 0' }} />
+                              <span style={{ fontSize: 15, fontWeight: 700, color: '#fff', position: 'relative' }}>{o.label}</span>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', position: 'relative' }}>{o.odds.toFixed(2)}</span>
+                              <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.28)', position: 'relative' }}>{o.pct}%</span>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </div>
-              {activeBet && (
-                <CardBetSheet sheetOpen={!!activeBet && !betPlaced && !betResult}
-                  activeBet={activeBet} onClear={() => setActiveBet(null)}
-                  onConfirm={(amount) => {
-                    if (!activeBet || amount===0) return;
-                    placedBetRef.current = { label:activeBet.label, odds:activeBet.odds };
-                    setBetPlaced(true); setActiveBet(null);
-                  }}/>
-              )}
-            </>
-          )}
-        </div>
 
-        <div style={{ position:'absolute', inset:0, pointerEvents:'none', zIndex:10, borderRadius:32, boxShadow: STATIC_GLOW }}/>
-      </div>
+                {/* Chips + confirm */}
+                <AnimatePresence>
+                  {selIdx !== null && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.18 }} style={{ overflow: 'hidden' }}>
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 7 }} data-nodrag="true">
+                        {CHIP_VALS.map((v, ci) => (
+                          <motion.div key={v} whileTap={{ scale: 0.93 }}
+                            onClick={() => { setChipIdx(ci); setAmount(v); }}
+                            style={{ flex: 1, height: 34, borderRadius: 11, border: chipIdx===ci ? `1.5px solid ${AccentColor}` : '1px solid rgba(255,255,255,0.1)', background: chipIdx===ci ? `rgba(${r},${g},${b},0.14)` : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: chipIdx===ci ? AccentColor : 'rgba(255,255,255,0.5)' }}>{v >= 1000 ? `${v/1000}К` : v}</span>
+                          </motion.div>
+                        ))}
+                      </div>
+                      <motion.div whileTap={{ scale: 0.98 }} onClick={placeBet} data-nodrag="true"
+                        style={{ height: 50, borderRadius: 18, background: amount > 0 ? '#00a344' : 'rgba(0,163,68,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: amount > 0 ? 'pointer' : 'default', transition: 'background 0.2s' }}>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: amount > 0 ? '#fff' : 'rgba(255,255,255,0.28)' }}>
+                          {amount > 0 ? `Поставить ${amount.toLocaleString('ru-RU')}₽ · ×${mkts[selIdx!].odds.toFixed(2)}` : 'Выберите сумму'}
+                        </span>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
+          </div>
+
+          </div>{/* /Content above glow */}
+
+          {/* Glow layer */}
+          <motion.div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10, borderRadius: 32,
+            boxShadow: glowShadow,
+          }} animate={{ opacity: betResult ? 0 : 1 }} transition={{ opacity: { duration: 0.4 } }} />
+          {betResult && betWon  && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 11, borderRadius: 32, boxShadow: 'inset 0px 0px 18px 0px rgba(255,255,255,0.18), inset 0px 8px 30px 2px rgba(7,113,48,0.38)' }} />}
+          {betResult && !betWon && <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 11, borderRadius: 32, boxShadow: 'inset 0px 0px 18px 0px rgba(255,255,255,0.12), inset 0px 8px 30px 2px rgba(200,50,50,0.28)' }} />}
+        </div>
+      </motion.div>
     </motion.div>
   );
 }
 
-// ── MAIN PAGE ─────────────────────────────────────────────────────────────────
+// ── Page ─────────────────────────────────────────────────────────────────────
+type BetHistoryItem = { id: number; won: boolean; label: string; odds: string; amount: number; market: string; pnl: number };
+
 export default function MicrobetLiveV3() {
-  const [realSec,    setRealSec]    = useState(0);
-  const [running,    setRunning]    = useState(false);
-  const [homeScore,  setHomeScore]  = useState(0);
-  const [awayScore,  setAwayScore]  = useState(0);
-  const [lockSec,    setLockSec]    = useState(0);
-  const [flash,      setFlash]      = useState<string|null>(null);
-  const [odds,       setOdds]       = useState(() => computeOdds(157, 87.5));
-  const [penRound,   setPenRound]   = useState(0);
-  const [penVisible, setPenVisible] = useState(false);
+  const [ms, setMs] = useState<MatchState>({
+    phase: 'first_half', block: 'none', score: [0,0], matchMin: 0,
+    momentum: 55, eventFlash: null, ballTx: 157, ballTy: 98,
+    cornersHome: 0, cornersAway: 0, yellowsHome: 0, yellowsAway: 0, shotsHome: 0, shotsAway: 0,
+  });
 
-  const realSecRef = useRef(0);
-  const lockSecRef = useRef(0);
-  const firedEvents = useRef(new Set<string>());
-  const flashTimer  = useRef<ReturnType<typeof setTimeout>|null>(null);
-  const bx = useMotionValue(157);
-  const by = useMotionValue(87.5);
+  const [betHistory, setBetHistory] = useState<BetHistoryItem[]>([
+    { id: 1, won: true,  label: 'Фол',          odds: '2.21', amount: 250, market: 'Что произойдёт следующим?',  pnl: 302  },
+    { id: 2, won: false, label: 'Гол или Аут',  odds: '1.69', amount: 100, market: `Что первым с 48:00 по 58:00?`, pnl: -100 },
+    { id: 3, won: true,  label: 'Угловой',      odds: '8.34', amount: 100, market: 'Что произойдёт следующим?',  pnl: 734  },
+  ]);
+  const historyIdRef = useRef(4);
+  const [bottomTab, setBottomTab] = useState<'stats' | 'history'>('stats');
+  const [sessionPnL, setSessionPnL] = useState(936);
+  const startRef    = useRef(Date.now());
+  const evtFired    = useRef(new Set<number>());
+  const blockTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flashTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const penShown    = useRef(false);
+  const addPenRef   = useRef<(() => void) | null>(null);
+  const remPenRef   = useRef<(() => void) | null>(null);
 
-  const phase    = getPhase(realSec);
-  const matchMin = getMatchMin(realSec);
-  const locked   = lockSec > 0;
-  const isPen    = phase === 'PEN';
-  const isFT     = phase === 'FT';
+  // Carousel
+  const [liveCards, setLiveCards] = useState<CardData[]>([...BASE_CARDS]);
+  const liveCardsRef = useRef<CardData[]>([...BASE_CARDS]);
+  const liveNRef     = useRef(2);
+  const liveN        = liveCards.length;
+  liveNRef.current   = liveN;
 
-  // Odds update every 4s based on ball pos
+  const liveVirtual = liveN > 0 ? [liveCards[liveN-1], ...liveCards, liveCards[0]] : [];
+
+  const [vIdx, setVIdx]       = useState(1);
+  const [dragging, setDragging] = useState(false);
+  const vIdxRef      = useRef(1);
+  const dragTrackRef = useRef(false);
+  const wasDragRef   = useRef(false);
+  const startX       = useRef(0);
+  const x            = useMotionValue(getX(1));
+  const animCtrl     = useRef<{ stop: () => void } | null>(null);
+
+  const snapTo = (v: number) => {
+    animCtrl.current?.stop(); animCtrl.current = null;
+    const ctrl = animate(x, getX(v), SPRING);
+    animCtrl.current = ctrl;
+    ctrl.then(() => {
+      if (animCtrl.current !== ctrl) return;
+      animCtrl.current = null;
+      const n = liveNRef.current;
+      if (v === 0)     { x.set(getX(n)); vIdxRef.current = n; setVIdx(n); }
+      if (v === n + 1) { x.set(getX(1)); vIdxRef.current = 1; setVIdx(1); }
+    });
+    vIdxRef.current = v; setVIdx(v);
+  };
+
+  const onDownCapture = (e: React.PointerEvent) => {
+    if (liveNRef.current <= 1) return;
+    const t = e.target as HTMLElement;
+    if (t.closest('[data-nodrag]')) return;
+    wasDragRef.current = false; dragTrackRef.current = true; startX.current = e.clientX;
+  };
+  const onMoveCapture = (e: React.PointerEvent) => {
+    if (!dragTrackRef.current) return;
+    const dx = e.clientX - startX.current;
+    if (!wasDragRef.current && Math.abs(dx) > 8) {
+      wasDragRef.current = true; setDragging(true);
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      animCtrl.current?.stop(); animCtrl.current = null;
+      const n = liveNRef.current;
+      if (vIdxRef.current === 0)   { x.set(getX(n)); vIdxRef.current = n; setVIdx(n); }
+      if (vIdxRef.current === n+1) { x.set(getX(1)); vIdxRef.current = 1; setVIdx(1); }
+    }
+    if (wasDragRef.current) x.set(getX(vIdxRef.current) + dx);
+  };
+  const onUpCapture = (e: React.PointerEvent) => {
+    if (!dragTrackRef.current) return;
+    dragTrackRef.current = false;
+    if (!wasDragRef.current) return;
+    setDragging(false);
+    const offset = e.clientX - startX.current;
+    let next = vIdxRef.current;
+    if (offset < -50) next++; else if (offset > 50) next--;
+    snapTo(Math.max(0, Math.min(liveNRef.current + 1, next)));
+  };
+  const onClickCapture = (e: React.MouseEvent) => {
+    if (wasDragRef.current) { e.stopPropagation(); wasDragRef.current = false; }
+  };
+
+  // Expose add/remove penalty via refs so simulation can call them
+  addPenRef.current = () => {
+    if (penShown.current) return;
+    penShown.current = true;
+    const newCards = [...liveCardsRef.current, PENALTY_CARD];
+    const pos = newCards.length;
+    liveCardsRef.current = newCards;
+    vIdxRef.current = pos;
+    flushSync(() => { setLiveCards(newCards); setVIdx(pos); });
+    x.set(getX(pos));
+  };
+  remPenRef.current = () => {
+    if (!penShown.current) return;
+    penShown.current = false;
+    const newCards = liveCardsRef.current.filter(c => c.id !== 99);
+    liveCardsRef.current = newCards;
+    const newV = Math.max(1, Math.min(vIdxRef.current, newCards.length));
+    vIdxRef.current = newV;
+    flushSync(() => { setLiveCards(newCards); setVIdx(newV); });
+    x.set(getX(newV));
+  };
+
+  // Ball drift
   useEffect(() => {
     const id = setInterval(() => {
-      setOdds(computeOdds(bx.get(), by.get()));
-    }, 4000);
+      setMs(p => {
+        if (p.phase === 'halftime' || p.phase === 'full_time') return p;
+        return {
+          ...p,
+          ballTx: Math.max(14, Math.min(300, 40 + Math.random() * 234)),
+          ballTy: Math.max(14, Math.min(180, 20 + Math.random() * 156)),
+        };
+      });
+    }, 1500 + Math.random() * 800);
     return () => clearInterval(id);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Main simulation
+  // Momentum drift
   useEffect(() => {
-    if (!running) return;
     const id = setInterval(() => {
-      setRealSec(prev => {
-        const next = +(prev + 0.1).toFixed(1);
-        realSecRef.current = next;
+      setMs(p => {
+        const drift = (55 - p.momentum) * 0.08;
+        const next = Math.max(32, Math.min(72, p.momentum + drift + (Math.random() - 0.5) * 14));
+        return { ...p, momentum: Math.round(next) };
+      });
+    }, 1100);
+    return () => clearInterval(id);
+  }, []);
 
-        if (lockSecRef.current > 0) {
-          lockSecRef.current = +Math.max(0, lockSecRef.current - 0.1).toFixed(1);
-          setLockSec(lockSecRef.current);
-        }
+  // Match tick
+  useEffect(() => {
+    startRef.current = Date.now();
+    const id = setInterval(() => {
+      const elapsed = Date.now() - startRef.current;
+      const matchMin = Math.min(TOTAL_MIN, Math.floor(elapsed / MS_PER_MIN));
+      const phase    = getPhase(matchMin);
 
-        EVENTS.forEach(ev => {
-          if (!firedEvents.current.has(ev.id) && next >= ev.t) {
-            firedEvents.current.add(ev.id);
-            lockSecRef.current = ev.lock;
-            setLockSec(ev.lock);
-            // Move ball
-            animate(bx, ev.bx, { duration:0.9, ease:[0.4,0,0.2,1] });
-            animate(by, ev.by, { duration:0.9, ease:[0.4,0,0.2,1] });
-            // Flash
-            if (flashTimer.current) clearTimeout(flashTimer.current);
-            setFlash(ev.title);
-            flashTimer.current = setTimeout(() => setFlash(null), 2800);
-            // Score
-            if (SCORE_EVENTS[ev.id]) {
-              const [h,a] = SCORE_EVENTS[ev.id];
-              setHomeScore(h); setAwayScore(a);
-            }
+      EVENTS.forEach(evt => {
+        if (evtFired.current.has(evt.min) || matchMin < evt.min) return;
+        evtFired.current.add(evt.min);
+
+        const flashLabel = evt.label ?? (
+          evt.kind === 'corner' ? `Угловой — ${evt.team === 'home' ? 'КДИ' : 'НОР'}` :
+          evt.kind === 'foul'   ? `Фол — ${evt.team === 'home' ? 'КДИ' : 'НОР'}` :
+          `Событие — ${evt.team === 'home' ? 'КДИ' : 'НОР'}`
+        );
+
+        setMs(prev => {
+          const newScore: [number, number] = [...prev.score] as [number, number];
+          if (evt.kind === 'goal' || evt.kind === 'penalty_scored') {
+            if (evt.team === 'home') newScore[0]++; else newScore[1]++;
           }
+          const newBlock: Block = evt.blockMs === 0 ? 'penalty' : (evt.blockMs ?? 0) > 0 ? (evt.kind === 'var' ? 'var' : 'goal') : prev.block;
+          return { ...prev, score: newScore, block: newBlock, eventFlash: flashLabel };
         });
 
-        // Show penalty card when PEN phase starts
-        if (next >= T_XT && !firedEvents.current.has('__pen__')) {
-          firedEvents.current.add('__pen__');
-          setPenVisible(true);
-        }
+        if (flashTimer.current) clearTimeout(flashTimer.current);
+        flashTimer.current = setTimeout(() => setMs(p => ({ ...p, eventFlash: null })), 2800);
 
-        // Advance penalty round every 2.6 real seconds
-        if (next >= T_XT && next < T_END) {
-          const elapsed = next - T_XT;
-          const newRound = Math.min(Math.floor(elapsed / 2.6), SHOTS.length - 1);
-          setPenRound(newRound);
-        }
+        if (evt.kind === 'penalty_awarded') addPenRef.current?.();
+        if (evt.kind === 'penalty_scored')  setTimeout(() => remPenRef.current?.(), 4000);
 
-        // Random ball movement between events
-        if (lockSecRef.current <= 0 && Math.random() < 0.03 && next < T_XT) {
-          const tx = 20 + Math.random() * 274;
-          const ty = 14 + Math.random() * 147;
-          animate(bx, tx, { duration:1.2, ease:[0.4,0,0.2,1] });
-          animate(by, ty, { duration:1.2, ease:[0.4,0,0.2,1] });
+        if ((evt.blockMs ?? 0) > 0) {
+          if (blockTimer.current) clearTimeout(blockTimer.current);
+          blockTimer.current = setTimeout(() => setMs(p => ({ ...p, block: 'none' })), evt.blockMs);
+        } else if (evt.blockMs !== 0) {
+          // no block
         }
-
-        if (next >= T_END) { clearInterval(id); return T_END; }
-        return next;
       });
+
+      setMs(prev => ({
+        ...prev, matchMin, phase,
+        block: phase === 'halftime' ? 'halftime' : phase === 'full_time' ? 'ended' : prev.block,
+      }));
     }, 100);
-    return () => clearInterval(id);
-  }, [running]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    return () => {
+      clearInterval(id);
+      blockTimer.current && clearTimeout(blockTimer.current);
+      flashTimer.current && clearTimeout(flashTimer.current);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const realIdx = liveN > 0 ? ((vIdx - 1) % liveN + liveN) % liveN : 0;
 
   return (
-    <div style={{ minHeight:'100vh', background:'#111214', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px 16px', fontFamily:"'Inter', -apple-system, BlinkMacSystemFont, sans-serif", boxSizing:'border-box' }}>
-      <style>{`@keyframes cursor-blink{0%,49%{opacity:1}50%,100%{opacity:0}}`}</style>
+    <div style={{ minHeight: '100vh', background: '#111214', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", boxSizing: 'border-box' }}>
+      <style>{`* { -webkit-tap-highlight-color: transparent; }`}</style>
 
-      {/* Phone frame */}
-      <div style={{ width:360, height:800, position:'relative', overflow:'hidden', borderRadius:40, flexShrink:0 }}>
+      {/* Phone */}
+      <div style={{ width: 360, height: 800, position: 'relative', overflow: 'hidden', borderRadius: 40, flexShrink: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`${BASE}/img/microbet-bg.png`} alt="" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', pointerEvents:'none' }}/>
+        <img src={`${BASE}/img/microbet-bg.png`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
 
-        <div style={{ position:'absolute', top:44, left:0, right:0, bottom:0, background:'#0a0c0b', borderRadius:'32px 32px 0 0', display:'flex', flexDirection:'column', alignItems:'center' }}>
-          <div style={{ width:134, height:5, background:'#fff', borderRadius:100, marginTop:13, flexShrink:0 }}/>
+        <div style={{ position: 'absolute', top: 44, left: 0, right: 0, bottom: 0, background: '#0a0c0b', borderRadius: '32px 32px 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowY: 'auto', scrollbarWidth: 'none' } as React.CSSProperties}>
+          <div style={{ width: 134, height: 5, background: '#fff', borderRadius: 100, marginTop: 13, flexShrink: 0 }} />
 
-          {/* Scrollable cards area */}
-          <div style={{ width:'100%', flex:1, overflowY:'auto', scrollbarWidth:'none', paddingBottom:16 } as React.CSSProperties}>
-            <div style={{ padding:'8px 23px', display:'flex', flexDirection:'column', gap:12 }}>
+          {/* Carousel */}
+          <div style={{ width: '100%', marginTop: 6, flexShrink: 0, overflow: 'hidden', position: 'relative', zIndex: 2 }}
+            onPointerDownCapture={onDownCapture}
+            onPointerMoveCapture={onMoveCapture}
+            onPointerUpCapture={onUpCapture}
+            onPointerCancelCapture={onUpCapture}
+            onClickCapture={onClickCapture}
+          >
+            <motion.div style={{ display: 'flex', gap: GAP, x, cursor: liveN <= 1 ? 'default' : dragging ? 'grabbing' : 'grab', userSelect: 'none' }}>
+              {liveVirtual.map((card, i) => {
+                const isGhost = i === 0 || i === liveN + 1;
+                if (liveN <= 1 && isGhost) return <div key={`g-${i}`} style={{ width: CARD_W, flexShrink: 0 }} />;
+                return (
+                  <VirtualCard
+                    key={`${isGhost ? 'g' : 'r'}-${card.id}-${i}`}
+                    card={card} i={i} x={x} vIdx={vIdx} ms={ms}
+                    onBetResult={() => {}}
+                  />
+                );
+              })}
+            </motion.div>
+          </div>
 
-              {/* Permanent markets (hidden during PEN phase) */}
-              <AnimatePresence>
-                {!isPen && !isFT && (
-                  <motion.div key="permanent" initial={false} exit={{ opacity:0, y:20 }} transition={{ duration:0.3 }}
-                    style={{ display:'flex', flexDirection:'column', gap:12 }}>
-                    <NextEventCard bx={bx} by={by} phase={phase} locked={locked} flash={flash}
-                      homeScore={homeScore} awayScore={awayScore} odds={odds} matchMin={matchMin}/>
-                    <NextRangeCard bx={bx} by={by} phase={phase} locked={locked} flash={flash}
-                      homeScore={homeScore} awayScore={awayScore} odds={odds} matchMin={matchMin}/>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+          {/* Dots */}
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+            {liveCards.map((_, i) => (
+              <div key={i} onClick={() => snapTo(i + 1)}
+                style={{ width: i === realIdx ? 18 : 6, height: 6, borderRadius: 3, background: i === realIdx ? '#fff' : 'rgba(255,255,255,0.3)', transition: 'width 0.3s, background 0.3s', cursor: 'pointer' }} />
+            ))}
+          </div>
 
-              {/* Penalty card (situational) */}
-              <AnimatePresence>
-                {penVisible && isPen && (
-                  <PenaltyCard key="penalty" penRound={penRound}
-                    onSeriesEnd={() => setPenVisible(false)}/>
-                )}
-              </AnimatePresence>
-
-              {/* FT screen */}
-              {isFT && (
-                <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5 }}
-                  style={{ borderRadius:32, background:'#121214', padding:'32px 20px', display:'flex', flexDirection:'column', alignItems:'center', gap:16 }}>
-                  <span style={{ fontSize:12, fontWeight:700, color:'rgba(255,255,255,0.35)', letterSpacing:2 }}>МАТЧ ЗАВЕРШЁН</span>
-                  <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-                    <span style={{ fontSize:28 }}>{HOME.flag}</span>
-                    <span style={{ fontSize:42, fontWeight:800, color:'#fff', letterSpacing:-2 }}>{homeScore} : {awayScore}</span>
-                    <span style={{ fontSize:28 }}>{AWAY.flag}</span>
+          {/* Match status bar */}
+          <div style={{ marginTop: 12, width: 312, flexShrink: 0 }}>
+            <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 44 }}>
+                <span style={{ fontSize: 18, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{ms.score[0]}:{ms.score[1]}</span>
+                <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{dispMin(ms.matchMin, ms.phase)}</span>
+              </div>
+              <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>КДИ 🇨🇮</span>
+                  <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+                    <motion.div animate={{ width: `${ms.momentum}%` }} transition={{ duration: 0.8 }}
+                      style={{ height: '100%', background: 'rgba(60,200,120,0.65)', borderRadius: 2 }} />
                   </div>
-                  <span style={{ fontSize:14, color:'rgba(255,255,255,0.35)' }}>По серии пенальти</span>
-                  <div onClick={() => {
-                    setRealSec(0); setRunning(false); setHomeScore(0); setAwayScore(0);
-                    setLockSec(0); setFlash(null); firedEvents.current.clear();
-                    setPenRound(0); setPenVisible(false); bx.set(157); by.set(87.5);
-                  }} style={{ marginTop:8, height:52, width:'100%', background:'transparent', border:'1px solid rgba(255,255,255,0.4)', borderRadius:20, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
-                    <span style={{ fontSize:16, fontWeight:700, color:'#fff' }}>Сыграть ещё раз</span>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Start button */}
-              {!running && !isFT && realSec === 0 && (
-                <div onClick={() => setRunning(true)}
-                  style={{ height:56, background:'#00a344', borderRadius:20, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', marginTop:4 }}>
-                  <span style={{ fontSize:16, fontWeight:700, color:'#fff' }}>▶ Запустить матч (3 мин)</span>
+                  <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>🇳🇴 НОР</span>
                 </div>
-              )}
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>{ms.momentum}% владение</span>
+                  <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.25)' }}>{100 - ms.momentum}%</span>
+                </div>
+              </div>
             </div>
           </div>
+
+          <div style={{ height: 20 }} />
         </div>
       </div>
     </div>
