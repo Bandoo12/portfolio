@@ -3,7 +3,6 @@ import Link from 'next/link';
 import type { CSSProperties } from 'react';
 import SiteHeader from '@/components/SiteHeader';
 import RevealText from '@/components/RevealText';
-import PasswordGate from '@/components/PasswordGate';
 import CaseButton from '@/components/CaseButton';
 import HeadScrollButton from '@/components/HeadScrollButton';
 import ScrollToSection from '@/components/ScrollToSection';
@@ -84,7 +83,6 @@ function GridIcon({ dark = false }: { dark?: boolean }) {
 
 export default function Home() {
   return (
-    <PasswordGate>
     <main className="snap-container">
       <ScrollToSection />
 
@@ -797,6 +795,5 @@ export default function Home() {
         </div>
       </section>
     </main>
-    </PasswordGate>
   );
 }
