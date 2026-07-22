@@ -5,8 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const IMG = `${BASE}/img/lucky-numbers-v2`;
 
-const DESIGN_W = 1447;
-const DESIGN_H = 808;
 const COLS = 6;
 const ROWS = 5;
 const WIN_THRESHOLD = 8;
@@ -20,13 +18,64 @@ const INITIAL_GRID = [
   9, 8, 11, 11, 1, 1,
 ];
 
-const COL_LEFT = [333, 463.33, 593.67, 724, 854.33, 984.67];
-const ROW_TOP = [111, 226, 341, 456, 571];
-const CELL_W = 130.33;
-const CELL_H = 115;
-const GRID_TOP = ROW_TOP[0];
-const GRID_HEIGHT = ROWS * CELL_H;
-const DIVIDER_X = [...COL_LEFT.map(x => x + CELL_W)];
+type LayoutMode = 'desktop' | 'mobile-portrait';
+
+interface Layout {
+  W: number; H: number;
+  colLeft: number[]; rowTop: number[]; cellW: number; cellH: number;
+  bg: string; reelFrame: string;
+  reelFramePos: { left: number; top: number; width: number; height: number };
+  showCharacter: boolean;
+  charPos: { left: number; top: number; width: number; height: number };
+  coefBar: { left: number; top: number; width: number; height: number };
+  showCoefLabel: boolean;
+  coefDicePos: { left: number; top: number };
+  coefAvatarPos: { left: number; top: number };
+  menuPos: { left: number; top: number; width: number };
+  paytablePos: { left: number; top: number; width: number };
+  paytableSingleCol: boolean;
+}
+
+const DESKTOP_LAYOUT: Layout = {
+  W: 1447, H: 808,
+  colLeft: [333, 463.33, 593.67, 724, 854.33, 984.67],
+  rowTop: [111, 226, 341, 456, 571],
+  cellW: 130.33, cellH: 115,
+  bg: 'bg.jpg', reelFrame: 'reel-frame.png',
+  reelFramePos: { left: 211, top: -18, width: 1025, height: 826 },
+  showCharacter: true,
+  charPos: { left: 723, top: 120, width: 853, height: 687 },
+  coefBar: { left: 543, top: 22, width: 362, height: 67 },
+  showCoefLabel: true,
+  coefDicePos: { left: 146, top: 14 },
+  coefAvatarPos: { left: 289, top: 0 },
+  menuPos: { left: 543, top: 407, width: 255 },
+  paytablePos: { left: 469, top: 234, width: 510 },
+  paytableSingleCol: false,
+};
+
+const MOBILE_PORTRAIT_LAYOUT: Layout = {
+  W: 375, H: 812,
+  colLeft: [38, 88, 138, 188, 238, 288],
+  rowTop: [203, 247, 291, 335, 379],
+  cellW: 50, cellH: 44,
+  bg: 'bg-mobile-portrait.png', reelFrame: 'reel-frame-mobile-portrait.png',
+  reelFramePos: { left: -8, top: 155, width: 392, height: 315 },
+  showCharacter: false,
+  charPos: { left: 0, top: 0, width: 0, height: 0 },
+  coefBar: { left: 7, top: 7, width: 362, height: 67 },
+  showCoefLabel: false,
+  coefDicePos: { left: 31, top: 20 },
+  coefAvatarPos: { left: 296, top: 7 },
+  menuPos: { left: 7, top: 130, width: 362 },
+  paytablePos: { left: 7, top: 100, width: 362 },
+  paytableSingleCol: true,
+};
+
+const LAYOUTS: Record<LayoutMode, Layout> = {
+  desktop: DESKTOP_LAYOUT,
+  'mobile-portrait': MOBILE_PORTRAIT_LAYOUT,
+};
 
 const CELL_COUNT = COLS * ROWS;
 const WIN_CHANCE = 0.5;
@@ -149,10 +198,10 @@ function generateFinalGrid(): number[] {
   return grid;
 }
 
-function cellCenter(i: number) {
+function cellCenter(i: number, layout: Layout) {
   const row = Math.floor(i / COLS);
   const col = i % COLS;
-  return [COL_LEFT[col] + CELL_W / 2, ROW_TOP[row] + CELL_H / 2] as const;
+  return [layout.colLeft[col] + layout.cellW / 2, layout.rowTop[row] + layout.cellH / 2] as const;
 }
 
 // Jagged midpoint-offset polyline between two cell centers — reads as a lightning bolt.
@@ -174,11 +223,11 @@ function boltPath(x1: number, y1: number, x2: number, y2: number) {
   return `M ${pts.map(p => p.join(',')).join(' L ')}`;
 }
 
-function buildLightning(winningIndices: number[]) {
+function buildLightning(winningIndices: number[], layout: Layout) {
   const paths: string[] = [];
   for (let i = 0; i < winningIndices.length - 1; i++) {
-    const [x1, y1] = cellCenter(winningIndices[i]);
-    const [x2, y2] = cellCenter(winningIndices[i + 1]);
+    const [x1, y1] = cellCenter(winningIndices[i], layout);
+    const [x2, y2] = cellCenter(winningIndices[i + 1], layout);
     paths.push(boltPath(x1, y1, x2, y2));
   }
   return paths;
@@ -210,6 +259,8 @@ export default function LuckyNumbersV2Page() {
     window.setTimeout(() => setShowSplash(false), 500);
   }, []);
   const [scale, setScale] = useState(1);
+  const [layoutMode, setLayoutMode] = useState<LayoutMode>('desktop');
+  const layout = LAYOUTS[layoutMode];
   const [grid, setGrid] = useState<number[]>(INITIAL_GRID);
   const [spinning, setSpinning] = useState(false);
   const [winValue, setWinValue] = useState<number | null>(null);
@@ -313,8 +364,12 @@ export default function LuckyNumbersV2Page() {
 
   useLayoutEffect(() => {
     function update() {
-      const s = Math.min(window.innerWidth / DESIGN_W, window.innerHeight / DESIGN_H);
-      setScale(s);
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const mode: LayoutMode = w < 700 && h > w ? 'mobile-portrait' : 'desktop';
+      const active = LAYOUTS[mode];
+      setLayoutMode(mode);
+      setScale(Math.min(w / active.W, h / active.H));
     }
     update();
     window.addEventListener('resize', update);
@@ -391,7 +446,7 @@ export default function LuckyNumbersV2Page() {
           if (v === winner) acc.push(i);
           return acc;
         }, []);
-        setLightning(buildLightning(winIdx));
+        setLightning(buildLightning(winIdx, layout));
 
         const { mult, d1, d2 } = rollMultiplier(winIdx.length);
         setBalance(b => b + Math.round(bet * mult));
@@ -405,7 +460,7 @@ export default function LuckyNumbersV2Page() {
       }
     }, totalDuration);
     timeoutIds.current.push(doneId);
-  }, [spinning, bet, balance, revealed]);
+  }, [spinning, bet, balance, revealed, layout]);
 
   const winningIndices = useMemo(
     () => (winValue === null ? [] : grid.reduce<number[]>((acc, v, i) => (v === winValue ? [...acc, i] : acc), [])),
@@ -421,12 +476,12 @@ export default function LuckyNumbersV2Page() {
         .ln-splash video { width:100%; height:100%; object-fit:contain; }
         @keyframes ln-splash-fade { from { opacity:0; } to { opacity:1; } }
         @keyframes ln-splash-out { from { opacity:1; } to { opacity:0; } }
-        .ln-stage { position:relative; width:${DESIGN_W}px; height:${DESIGN_H}px; overflow:hidden; flex-shrink:0; background:#000; font-family:var(--font-manrope), Manrope, sans-serif; }
+        .ln-stage { position:relative; width:${layout.W}px; height:${layout.H}px; overflow:hidden; flex-shrink:0; background:#000; font-family:var(--font-manrope), Manrope, sans-serif; }
         .ln-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
         .ln-plate { position:absolute; background:rgba(217,242,244,0.546); }
-        .ln-reel-frame { position:absolute; left:211px; top:-18px; width:1025px; height:826px; pointer-events:none; }
+        .ln-reel-frame { position:absolute; left:${layout.reelFramePos.left}px; top:${layout.reelFramePos.top}px; width:${layout.reelFramePos.width}px; height:${layout.reelFramePos.height}px; pointer-events:none; }
         .ln-divider { position:absolute; width:2px; background:rgba(255,255,255,0.24); }
-        .ln-character { position:absolute; left:723px; top:120px; width:853px; height:687px; object-fit:contain; pointer-events:none; }
+        .ln-character { position:absolute; left:${layout.charPos.left}px; top:${layout.charPos.top}px; width:${layout.charPos.width}px; height:${layout.charPos.height}px; object-fit:contain; pointer-events:none; }
 
         .ln-cell { position:absolute; display:grid; place-items:center; }
         .ln-cell img { grid-area:1 / 1; }
@@ -444,7 +499,7 @@ export default function LuckyNumbersV2Page() {
           animation:ln-flicker 0.4s steps(2) infinite; }
         @keyframes ln-flicker { 0% { opacity:1; } 30% { opacity:0.55; } 55% { opacity:1; } 80% { opacity:0.7; } 100% { opacity:1; } }
 
-        .ln-multiplier { position:absolute; left:${COL_LEFT[0] + (COLS * CELL_W) / 2}px; top:${GRID_TOP + GRID_HEIGHT / 2}px;
+        .ln-multiplier { position:absolute; left:${layout.colLeft[0] + (COLS * layout.cellW) / 2}px; top:${layout.rowTop[0] + (ROWS * layout.cellH) / 2}px;
           transform:translate(-50%,-50%); z-index:7; pointer-events:none;
           font-weight:700; font-size:110px; line-height:1; letter-spacing:-3px;
           background:linear-gradient(180deg,#FCF7B3 10%,#E8C468 45%,#BA8551 100%);
@@ -458,18 +513,18 @@ export default function LuckyNumbersV2Page() {
           100% { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
         }
 
-        .ln-coef-bar { position:absolute; left:543px; top:22px; width:362px; height:67px; box-sizing:border-box;
+        .ln-coef-bar { position:absolute; left:${layout.coefBar.left}px; top:${layout.coefBar.top}px; width:${layout.coefBar.width}px; height:${layout.coefBar.height}px; box-sizing:border-box;
           border-radius:24px; background:rgba(24,101,113,0.5); border:1px solid rgba(255,255,255,0.02);
           backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); color:#fff; overflow:hidden; z-index:5; }
         .ln-coef-block { position:absolute; left:24px; top:10px; display:flex; flex-direction:column; gap:4px; }
         .ln-coef-label-row { display:flex; align-items:center; gap:4px; }
-        .ln-coef-dice { position:absolute; left:146px; top:14px; display:flex; align-items:center; }
-        .ln-coef-avatar { position:absolute; left:289px; top:0; width:73px; height:67px; display:flex; align-items:center; justify-content:flex-end; }
+        .ln-coef-dice { position:absolute; left:${layout.coefDicePos.left}px; top:${layout.coefDicePos.top}px; display:flex; align-items:center; }
+        .ln-coef-avatar { position:absolute; left:${layout.coefAvatarPos.left}px; top:${layout.coefAvatarPos.top}px; width:73px; height:67px; display:flex; align-items:center; justify-content:flex-end; }
         .ln-coef-avatar img { width:67px; height:67px; object-fit:cover; }
 
         .ln-icon-btn { background:none; border:none; padding:0; margin:0; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 
-        .ln-menu { position:absolute; left:543px; top:407px; width:255px; box-sizing:border-box; z-index:20;
+        .ln-menu { position:absolute; left:${layout.menuPos.left}px; top:${layout.menuPos.top}px; width:${layout.menuPos.width}px; box-sizing:border-box; z-index:20;
           border-radius:20px; overflow:hidden; background:rgba(32,47,45,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
         .ln-menu-row { display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box;
           padding:16px 20px; background:none; border:none; border-bottom:1px solid rgba(255,255,255,0.08); cursor:pointer;
@@ -481,10 +536,12 @@ export default function LuckyNumbersV2Page() {
         .ln-toggle.ln-toggle-on { justify-content:flex-end; background:rgba(61,255,160,0.4); }
         .ln-toggle-knob { width:16px; height:16px; border-radius:50%; background:#fff; display:block; }
 
-        .ln-paytable { position:absolute; left:469px; top:234px; width:510px; box-sizing:border-box; z-index:20;
-          border-radius:28px; overflow:hidden; background:rgba(32,47,45,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:#fff; }
-        .ln-paytable-head { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; font-weight:600; font-size:18px; }
-        .ln-paytable-cols { display:flex; }
+        .ln-paytable { position:absolute; left:${layout.paytablePos.left}px; top:${layout.paytablePos.top}px; width:${layout.paytablePos.width}px;
+          max-height:${layout.H - layout.paytablePos.top - 20}px; box-sizing:border-box; z-index:20;
+          border-radius:28px; overflow:hidden; background:rgba(32,47,45,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:#fff;
+          display:flex; flex-direction:column; }
+        .ln-paytable-head { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; font-weight:600; font-size:18px; flex-shrink:0; }
+        .ln-paytable-cols { display:flex; overflow-y:auto; }
         .ln-paytable-col { flex:1; display:flex; flex-direction:column; }
         .ln-paytable-row { display:flex; align-items:center; justify-content:space-between; padding:8px 20px;
           font-weight:600; font-size:16px; border-top:1px solid rgba(255,255,255,0.1); }
@@ -493,6 +550,19 @@ export default function LuckyNumbersV2Page() {
           border-radius:99px; background:rgba(53,119,137,0.1); border:1px solid rgba(255,255,255,0.02);
           backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px);
           display:flex; align-items:center; justify-content:space-between; padding-left:16px; color:#fff; }
+
+        .ln-bar-mobile { position:absolute; left:7px; top:551px; width:362px; box-sizing:border-box; display:flex; flex-direction:column; gap:12px; color:#fff; }
+        .ln-bar-mobile-row { display:flex; align-items:center; justify-content:space-between; gap:8px;
+          background:rgba(53,119,137,0.1); border:1px solid rgba(255,255,255,0.02); border-radius:24px;
+          backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); padding:8px 16px; }
+        .ln-menu-btn { display:flex; flex-direction:column; align-items:center; gap:4px; }
+        .ln-menu-btn span { font-size:10px; font-weight:800; letter-spacing:0.4px; }
+        .ln-spin-outer-mobile { width:76px; height:76px; }
+        .ln-chip-row { display:flex; gap:8px; }
+        .ln-chip { flex:1; height:54px; border-radius:16px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.05);
+          color:#fff; font-weight:700; font-size:16px; cursor:pointer; }
+        .ln-chip.ln-chip-active { border-color:#FFC93D; background:rgba(255,201,61,0.15); }
+        .ln-chip:disabled { opacity:0.5; cursor:default; }
 
         .ln-left-group { display:flex; align-items:center; gap:14px; }
         .ln-balance { display:flex; align-items:center; gap:16px; background:rgba(0,0,0,0.2); border-radius:28px; padding:12px; }
@@ -536,14 +606,14 @@ export default function LuckyNumbersV2Page() {
       )}
 
       <div className="ln-stage" style={{ transform: `scale(${scale})` }}>
-        <img className="ln-bg" src={`${IMG}/bg.jpg`} alt="" />
+        <img className="ln-bg" src={`${IMG}/${layout.bg}`} alt="" />
         <div
           className="ln-plate"
-          style={{ left: COL_LEFT[0], top: GRID_TOP, width: COLS * CELL_W, height: GRID_HEIGHT }}
+          style={{ left: layout.colLeft[0], top: layout.rowTop[0], width: COLS * layout.cellW, height: ROWS * layout.cellH }}
         />
 
-        {DIVIDER_X.map((x, i) => (
-          <div key={i} className="ln-divider" style={{ left: x, top: GRID_TOP, height: GRID_HEIGHT }} />
+        {layout.colLeft.map(x => x + layout.cellW).map((x, i) => (
+          <div key={i} className="ln-divider" style={{ left: x, top: layout.rowTop[0], height: ROWS * layout.cellH }} />
         ))}
 
         {grid.map((val, i) => {
@@ -555,7 +625,7 @@ export default function LuckyNumbersV2Page() {
             <div
               key={i}
               className="ln-cell"
-              style={{ left: COL_LEFT[col], top: ROW_TOP[row], width: CELL_W, height: CELL_H }}
+              style={{ left: layout.colLeft[col], top: layout.rowTop[row], width: layout.cellW, height: layout.cellH }}
             >
               <AnimatePresence initial={false}>
                 {revealed ? (
@@ -586,7 +656,7 @@ export default function LuckyNumbersV2Page() {
         })}
 
         {lightning.length > 0 && winningIndices.length > 1 && (
-          <svg className="ln-lightning-svg" width={DESIGN_W} height={DESIGN_H}>
+          <svg className="ln-lightning-svg" width={layout.W} height={layout.H}>
             {lightning.map((d, i) => (
               <path key={`glow-${i}`} d={d} className="ln-bolt-glow" style={{ animationDelay: `${i * 0.06}s` }} />
             ))}
@@ -599,15 +669,20 @@ export default function LuckyNumbersV2Page() {
         {multiplierTarget !== null && <div className="ln-multiplier">×{multiplierDisplay.toFixed(1)}</div>}
 
         <div className="ln-coef-bar">
-          <div className="ln-coef-block">
-            <div className="ln-coef-label-row">
-              <span className="ln-label">Коэф.</span>
-              <button type="button" className="ln-icon-btn" onClick={() => setPaytableOpen(v => !v)} aria-label="Таблица выплат">
-                <img src={`${IMG}/icon-info-circle.svg`} width={16} height={16} alt="" />
-              </button>
+          {layout.showCoefLabel && (
+            <div className="ln-coef-block">
+              <div className="ln-coef-label-row">
+                <span className="ln-label">Коэф.</span>
+                <button type="button" className="ln-icon-btn" onClick={() => setPaytableOpen(v => !v)} aria-label="Таблица выплат">
+                  <img src={`${IMG}/icon-info-circle.svg`} width={16} height={16} alt="" />
+                </button>
+              </div>
+              <span className="ln-bet-value">{(lastWinMult ?? 0).toFixed(1)}</span>
             </div>
-            <span className="ln-bet-value">{(lastWinMult ?? 0).toFixed(1)}</span>
-          </div>
+          )}
+          {!layout.showCoefLabel && (
+            <button type="button" className="ln-icon-btn" style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }} onClick={() => setPaytableOpen(v => !v)} aria-label="Таблица выплат" />
+          )}
           <div className="ln-coef-dice">
             <DiceIcon face={lastWinDice[0]} />
             <DiceIcon face={lastWinDice[1]} />
@@ -617,19 +692,24 @@ export default function LuckyNumbersV2Page() {
           </div>
         </div>
 
-        <img className="ln-reel-frame" src={`${IMG}/reel-frame.png`} alt="" />
+        <img className="ln-reel-frame" src={`${IMG}/${layout.reelFrame}`} alt="" />
 
-        <video
-          ref={characterVideoRef}
-          src={`${IMG}/character-stacked.mp4`}
-          autoPlay
-          loop
-          muted
-          playsInline
-          style={{ position: 'absolute', left: 723, top: 120, width: 853, height: 687, opacity: 0, pointerEvents: 'none' }}
-        />
-        <canvas ref={characterCanvasRef} className="ln-character" />
+        {layout.showCharacter && (
+          <>
+            <video
+              ref={characterVideoRef}
+              src={`${IMG}/character-stacked.mp4`}
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={{ position: 'absolute', left: layout.charPos.left, top: layout.charPos.top, width: layout.charPos.width, height: layout.charPos.height, opacity: 0, pointerEvents: 'none' }}
+            />
+            <canvas ref={characterCanvasRef} className="ln-character" />
+          </>
+        )}
 
+        {layoutMode === 'desktop' && (
         <div className="ln-bar">
           <div className="ln-left-group">
             <button type="button" className="ln-icon-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Меню">
@@ -687,6 +767,64 @@ export default function LuckyNumbersV2Page() {
             </div>
           </div>
         </div>
+        )}
+
+        {layoutMode === 'mobile-portrait' && (
+          <div className="ln-bar-mobile">
+            <div className="ln-bar-mobile-row">
+              <button type="button" className="ln-icon-btn ln-menu-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Меню">
+                <img src={`${IMG}/icon-burger.svg`} width={24} height={24} alt="" />
+                <span>МЕНЮ</span>
+              </button>
+              <button className="ln-spin-outer ln-spin-outer-mobile" onClick={spin} disabled={spinning} aria-label="Крутить">
+                <div className="ln-spin-inner">
+                  <img
+                    src={`${IMG}/icon-reload.svg`}
+                    alt=""
+                    className={spinning ? 'ln-spinning' : ''}
+                  />
+                </div>
+              </button>
+              <div className="ln-text-block">
+                <span className="ln-label">СТАВКА</span>
+                <span className="ln-bet-value">{bet}₽</span>
+              </div>
+              <div className="ln-chevrons">
+                <button
+                  type="button"
+                  className="ln-chevron-btn"
+                  onClick={() => changeBet(BET_STEP)}
+                  disabled={spinning || bet >= BET_MAX}
+                  aria-label="Увеличить ставку"
+                >
+                  <img src={`${IMG}/icon-chevron-up.svg`} width={16} height={16} alt="" />
+                </button>
+                <button
+                  type="button"
+                  className="ln-chevron-btn"
+                  onClick={() => changeBet(-BET_STEP)}
+                  disabled={spinning || bet <= BET_MIN}
+                  aria-label="Уменьшить ставку"
+                >
+                  <img src={`${IMG}/icon-chevron-down.svg`} width={16} height={16} alt="" />
+                </button>
+              </div>
+            </div>
+            <div className="ln-chip-row">
+              {[100, 500, 1000, 2000].map(v => (
+                <button
+                  key={v}
+                  type="button"
+                  className={`ln-chip${bet === v ? ' ln-chip-active' : ''}`}
+                  onClick={() => setBet(Math.max(BET_MIN, Math.min(BET_MAX, v)))}
+                  disabled={spinning}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {menuOpen && (
           <div className="ln-menu">
@@ -729,21 +867,23 @@ export default function LuckyNumbersV2Page() {
             </div>
             <div className="ln-paytable-cols">
               <div className="ln-paytable-col">
-                {PAYTABLE.slice(0, 8).map(([n, v]) => (
+                {(layout.paytableSingleCol ? PAYTABLE : PAYTABLE.slice(0, 8)).map(([n, v]) => (
                   <div className="ln-paytable-row" key={n}>
                     <span>{n}</span>
                     <span>{v}</span>
                   </div>
                 ))}
               </div>
-              <div className="ln-paytable-col">
-                {PAYTABLE.slice(8).map(([n, v]) => (
-                  <div className="ln-paytable-row" key={n}>
-                    <span>{n}</span>
-                    <span>{v}</span>
-                  </div>
-                ))}
-              </div>
+              {!layout.paytableSingleCol && (
+                <div className="ln-paytable-col">
+                  {PAYTABLE.slice(8).map(([n, v]) => (
+                    <div className="ln-paytable-row" key={n}>
+                      <span>{n}</span>
+                      <span>{v}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
