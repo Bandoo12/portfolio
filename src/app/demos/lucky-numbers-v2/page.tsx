@@ -160,6 +160,12 @@ function bubbleFloatStyle(i: number, isWin: boolean): React.CSSProperties {
 }
 
 export default function LuckyNumbersV2Page() {
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashEnding, setSplashEnding] = useState(false);
+  const endSplash = useCallback(() => {
+    setSplashEnding(true);
+    window.setTimeout(() => setShowSplash(false), 500);
+  }, []);
   const [scale, setScale] = useState(1);
   const [grid, setGrid] = useState<number[]>(INITIAL_GRID);
   const [spinning, setSpinning] = useState(false);
@@ -357,6 +363,11 @@ export default function LuckyNumbersV2Page() {
     <div className="ln-root">
       <style>{`
         .ln-root { min-height:100vh; background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+        .ln-splash { position:fixed; inset:0; z-index:100; background:#000; display:flex; align-items:center; justify-content:center; cursor:pointer; animation:ln-splash-fade 0.4s ease forwards; }
+        .ln-splash.ln-splash-out { animation:ln-splash-out 0.5s ease forwards; pointer-events:none; }
+        .ln-splash video { width:100%; height:100%; object-fit:contain; }
+        @keyframes ln-splash-fade { from { opacity:0; } to { opacity:1; } }
+        @keyframes ln-splash-out { from { opacity:1; } to { opacity:0; } }
         .ln-stage { position:relative; width:${DESIGN_W}px; height:${DESIGN_H}px; overflow:hidden; flex-shrink:0; background:#000; font-family:var(--font-manrope), Manrope, sans-serif; }
         .ln-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
         .ln-plate { position:absolute; background:rgba(217,242,244,0.546); }
@@ -424,6 +435,21 @@ export default function LuckyNumbersV2Page() {
         .ln-spin-inner img.ln-spinning { animation:ln-spin 0.5s linear infinite; }
         @keyframes ln-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
       `}</style>
+
+      {showSplash && (
+        <div
+          className={`ln-splash${splashEnding ? ' ln-splash-out' : ''}`}
+          onClick={endSplash}
+        >
+          <video
+            src={`${IMG}/splash.mp4`}
+            autoPlay
+            muted
+            playsInline
+            onEnded={endSplash}
+          />
+        </div>
+      )}
 
       <div className="ln-stage" style={{ transform: `scale(${scale})` }}>
         <img className="ln-bg" src={`${IMG}/bg.jpg`} alt="" />
