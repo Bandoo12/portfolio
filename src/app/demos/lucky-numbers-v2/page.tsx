@@ -32,6 +32,14 @@ const CELL_COUNT = COLS * ROWS;
 const WIN_CHANCE = 0.5;
 const WIN_MAX_MATCHES = 14;
 
+// Static reference paytable shown in the "Совпадения" info panel (matches -> multiplier).
+const PAYTABLE: [number, string][] = [
+  [5, '0,93'], [6, '1,12'], [7, '1,84'], [8, '3,89'],
+  [9, '9,73'], [10, '27,72'], [11, '88,68'], [12, '317,66'],
+  [13, '1274,15'], [14, '5000,00'], [15, '5000,00'], [16, '5000,00'],
+  [17, '5000,00'], [18, '5000,00'], [19, '5000,00'], [20, '5000,00'],
+];
+
 const BET_STEP = 50;
 const BET_MIN = 50;
 const BET_MAX = 2000;
@@ -39,10 +47,15 @@ const INITIAL_BALANCE = 10000;
 const INITIAL_BET = 100;
 
 // Fractional payout multiplier — scales with match count, never a round number.
-function computeMultiplier(matchCount: number): number {
+// The fine jitter on top of the match-count base is rolled as two dice, whose
+// faces are shown in the header as a nod to provable fairness.
+function rollMultiplier(matchCount: number): { mult: number; d1: number; d2: number } {
+  const d1 = 1 + Math.floor(Math.random() * 6);
+  const d2 = 1 + Math.floor(Math.random() * 6);
   const base = 1.2 + (matchCount - WIN_THRESHOLD) * 0.9;
-  const jitter = Math.random() * 1.5;
-  return Math.round((base + jitter) * 10) / 10;
+  const jitter = ((d1 + d2 - 2) / 10) * 1.5;
+  const mult = Math.round((base + jitter) * 10) / 10;
+  return { mult, d1, d2 };
 }
 
 // Pop-reveal: bubbles hold as question marks, then burst open in a diagonal
@@ -61,6 +74,36 @@ function popDelay(i: number) {
   const row = Math.floor(i / COLS);
   const col = i % COLS;
   return (row + col) * POP_STAGGER;
+}
+
+const DICE_PIPS: Record<number, [number, number][]> = {
+  1: [[1, 1]],
+  2: [[0, 0], [2, 2]],
+  3: [[0, 0], [1, 1], [2, 2]],
+  4: [[0, 0], [0, 2], [2, 0], [2, 2]],
+  5: [[0, 0], [0, 2], [1, 1], [2, 0], [2, 2]],
+  6: [[0, 0], [1, 0], [2, 0], [0, 2], [1, 2], [2, 2]],
+};
+const DICE_POS = [12.9167, 20, 27.0833];
+
+function ChevronIcon() {
+  return (
+    <svg width={18} height={18} viewBox="0 0 18 18" fill="none">
+      <path d="M6.75 3.75L11.25 9L6.75 14.25" stroke="white" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function DiceIcon({ face, size = 40 }: { face: number; size?: number }) {
+  const dots = DICE_PIPS[face] || [];
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <rect x="5" y="5" width="30" height="30" rx="8" stroke="white" strokeWidth="3" strokeLinejoin="round" />
+      {dots.map(([r, c], i) => (
+        <path key={i} d={`M${DICE_POS[c]} ${DICE_POS[r]} H${DICE_POS[c] + 0.01}`} stroke="white" strokeWidth="3" strokeLinecap="round" />
+      ))}
+    </svg>
+  );
 }
 
 function randDigit() {
@@ -172,6 +215,14 @@ export default function LuckyNumbersV2Page() {
   const [winValue, setWinValue] = useState<number | null>(null);
   const [lightning, setLightning] = useState<string[]>([]);
   const [multiplierTarget, setMultiplierTarget] = useState<number | null>(null);
+  // Persists across spins — the header shows the multiplier (and dice that rolled
+  // it) of the last win, not the transient in-round badge.
+  const [lastWinMult, setLastWinMult] = useState<number | null>(null);
+  const [lastWinDice, setLastWinDice] = useState<[number, number]>([6, 4]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [paytableOpen, setPaytableOpen] = useState(false);
+  const [musicOn, setMusicOn] = useState(true);
+  const [soundOn, setSoundOn] = useState(true);
   const [multiplierDisplay, setMultiplierDisplay] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [balance, setBalance] = useState(INITIAL_BALANCE);
@@ -342,8 +393,10 @@ export default function LuckyNumbersV2Page() {
         }, []);
         setLightning(buildLightning(winIdx));
 
-        const mult = computeMultiplier(winIdx.length);
+        const { mult, d1, d2 } = rollMultiplier(winIdx.length);
         setBalance(b => b + Math.round(bet * mult));
+        setLastWinMult(mult);
+        setLastWinDice([d1, d2]);
 
         const multId = window.setTimeout(() => {
           setMultiplierTarget(mult);
@@ -404,6 +457,37 @@ export default function LuckyNumbersV2Page() {
           65% { opacity:1; transform:translate(-50%,-50%) scale(1.18) rotate(3deg); }
           100% { opacity:1; transform:translate(-50%,-50%) scale(1) rotate(0deg); }
         }
+
+        .ln-coef-bar { position:absolute; left:543px; top:22px; width:362px; height:67px; box-sizing:border-box;
+          border-radius:24px; background:rgba(24,101,113,0.5); border:1px solid rgba(255,255,255,0.02);
+          backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); color:#fff; overflow:hidden; z-index:5; }
+        .ln-coef-block { position:absolute; left:24px; top:10px; display:flex; flex-direction:column; gap:4px; }
+        .ln-coef-label-row { display:flex; align-items:center; gap:4px; }
+        .ln-coef-dice { position:absolute; left:146px; top:14px; display:flex; align-items:center; }
+        .ln-coef-avatar { position:absolute; left:289px; top:0; width:73px; height:67px; display:flex; align-items:center; justify-content:flex-end; }
+        .ln-coef-avatar img { width:67px; height:67px; object-fit:cover; }
+
+        .ln-icon-btn { background:none; border:none; padding:0; margin:0; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+
+        .ln-menu { position:absolute; left:543px; top:407px; width:255px; box-sizing:border-box; z-index:20;
+          border-radius:20px; overflow:hidden; background:rgba(32,47,45,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
+        .ln-menu-row { display:flex; align-items:center; justify-content:space-between; width:100%; box-sizing:border-box;
+          padding:16px 20px; background:none; border:none; border-bottom:1px solid rgba(255,255,255,0.08); cursor:pointer;
+          color:#fff; font-family:inherit; font-weight:600; font-size:16px; }
+        .ln-menu-row:last-of-type { border-bottom:none; }
+        .ln-menu-toggles { display:flex; align-items:center; gap:10px; padding:16px 20px; color:#fff; font-weight:600; font-size:14px; flex-wrap:wrap; }
+        .ln-toggle { width:36px; height:20px; border-radius:999px; background:rgba(0,0,0,0.4); border:none; padding:2px; cursor:pointer;
+          display:flex; align-items:center; justify-content:flex-start; }
+        .ln-toggle.ln-toggle-on { justify-content:flex-end; background:rgba(61,255,160,0.4); }
+        .ln-toggle-knob { width:16px; height:16px; border-radius:50%; background:#fff; display:block; }
+
+        .ln-paytable { position:absolute; left:469px; top:234px; width:510px; box-sizing:border-box; z-index:20;
+          border-radius:28px; overflow:hidden; background:rgba(32,47,45,0.8); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); color:#fff; }
+        .ln-paytable-head { display:flex; align-items:center; justify-content:space-between; padding:15px 20px; font-weight:600; font-size:18px; }
+        .ln-paytable-cols { display:flex; }
+        .ln-paytable-col { flex:1; display:flex; flex-direction:column; }
+        .ln-paytable-row { display:flex; align-items:center; justify-content:space-between; padding:8px 20px;
+          font-weight:600; font-size:16px; border-top:1px solid rgba(255,255,255,0.1); }
 
         .ln-bar { position:absolute; left:370px; top:684px; width:682px; height:98px; box-sizing:border-box;
           border-radius:99px; background:rgba(53,119,137,0.1); border:1px solid rgba(255,255,255,0.02);
@@ -514,6 +598,25 @@ export default function LuckyNumbersV2Page() {
 
         {multiplierTarget !== null && <div className="ln-multiplier">×{multiplierDisplay.toFixed(1)}</div>}
 
+        <div className="ln-coef-bar">
+          <div className="ln-coef-block">
+            <div className="ln-coef-label-row">
+              <span className="ln-label">Коэф.</span>
+              <button type="button" className="ln-icon-btn" onClick={() => setPaytableOpen(v => !v)} aria-label="Таблица выплат">
+                <img src={`${IMG}/icon-info-circle.svg`} width={16} height={16} alt="" />
+              </button>
+            </div>
+            <span className="ln-bet-value">{(lastWinMult ?? 0).toFixed(1)}</span>
+          </div>
+          <div className="ln-coef-dice">
+            <DiceIcon face={lastWinDice[0]} />
+            <DiceIcon face={lastWinDice[1]} />
+          </div>
+          <div className="ln-coef-avatar">
+            <img src={`${IMG}/avatar.png`} alt="" />
+          </div>
+        </div>
+
         <img className="ln-reel-frame" src={`${IMG}/reel-frame.png`} alt="" />
 
         <video
@@ -529,7 +632,9 @@ export default function LuckyNumbersV2Page() {
 
         <div className="ln-bar">
           <div className="ln-left-group">
-            <img src={`${IMG}/icon-burger.svg`} width={32} height={32} alt="" />
+            <button type="button" className="ln-icon-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Меню">
+              <img src={`${IMG}/icon-burger.svg`} width={32} height={32} alt="" />
+            </button>
             <div className="ln-balance">
               <div className="ln-text-block">
                 <span className="ln-label">БАЛАНС</span>
@@ -582,6 +687,66 @@ export default function LuckyNumbersV2Page() {
             </div>
           </div>
         </div>
+
+        {menuOpen && (
+          <div className="ln-menu">
+            <button type="button" className="ln-menu-row" onClick={() => setMenuOpen(false)}>
+              <span>Правила игры</span>
+              <ChevronIcon />
+            </button>
+            <button type="button" className="ln-menu-row" onClick={() => setMenuOpen(false)}>
+              <span>Обучение</span>
+              <ChevronIcon />
+            </button>
+            <button type="button" className="ln-menu-row" onClick={() => setMenuOpen(false)}>
+              <span>История</span>
+              <ChevronIcon />
+            </button>
+            <button type="button" className="ln-menu-row" onClick={() => setMenuOpen(false)}>
+              <span>Прогноз на исход</span>
+              <ChevronIcon />
+            </button>
+            <div className="ln-menu-toggles">
+              <button type="button" className={`ln-toggle${musicOn ? ' ln-toggle-on' : ''}`} onClick={() => setMusicOn(v => !v)}>
+                <span className="ln-toggle-knob" />
+              </button>
+              <span>Музыка</span>
+              <button type="button" className={`ln-toggle${soundOn ? ' ln-toggle-on' : ''}`} onClick={() => setSoundOn(v => !v)}>
+                <span className="ln-toggle-knob" />
+              </button>
+              <span>Звук</span>
+            </div>
+          </div>
+        )}
+
+        {paytableOpen && (
+          <div className="ln-paytable">
+            <div className="ln-paytable-head">
+              <span>Совпадения</span>
+              <button type="button" className="ln-icon-btn" onClick={() => setPaytableOpen(false)} aria-label="Закрыть">
+                <img src={`${IMG}/icon-close.svg`} width={24} height={24} alt="" />
+              </button>
+            </div>
+            <div className="ln-paytable-cols">
+              <div className="ln-paytable-col">
+                {PAYTABLE.slice(0, 8).map(([n, v]) => (
+                  <div className="ln-paytable-row" key={n}>
+                    <span>{n}</span>
+                    <span>{v}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="ln-paytable-col">
+                {PAYTABLE.slice(8).map(([n, v]) => (
+                  <div className="ln-paytable-row" key={n}>
+                    <span>{n}</span>
+                    <span>{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
