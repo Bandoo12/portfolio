@@ -1,5 +1,7 @@
 import Image from 'next/image';
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 type Props = {
   src: string;
   alt: string;
@@ -23,7 +25,7 @@ export default function ResponsiveImage({
       style={{ aspectRatio: ratio }}
     >
       <Image
-        src={`/img/${src}`}
+        src={`${BASE}/img/${src}`}
         alt={alt}
         fill
         priority={priority}

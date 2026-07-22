@@ -5,6 +5,8 @@ import { motion, useMotionValue, useTransform, animate, MotionValue, AnimatePres
 
 /* Figma node 9813:102967 — MicroBet Live */
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 const IMG = {
   football:
     'https://s3-alpha-sig.figma.com/img/9d66/5bb6/8d34604a5a288c20bdbacb2954b119d1?Expires=1783296000&Key-Pair-Id=APKAQ4GOSFWCW27IBOMQ&Signature=drlD-KPKqCVRScY6kb3LCoN-MgQm~kRzM2~xfcHhrenvhm1dTlizMV2Y~j1g3V0nCPeFF9Hp4LWfbWNOfl355X4XKYvT5AEPS5aITctu4GikPjcVopEu7HL~jW0PEiicju0LQKf4t5s2ONdKc8FG5qbZzW65VOcNAdyg-gYVLr0~xcyWL6pQ1EAehyoDT3Y47R-koYWdfXr4xN6VYBjMOvl4kZT57d25zWwE2c~yv0ZWkvfq9nM3XUBBsKEMqd09i4ogFUgwh7ZDnWm2~3HrOGlLUYhhPLiL9K8dAZJ8sALnlaNN-c6~Ywcb2KOHiSXNQaKsPffu1MkVn9O5FeBNwQ__',
@@ -1337,13 +1339,13 @@ export default function MicrobetLive() {
     <div style={{ minHeight: '100vh', background: '#1c1c1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
       <style>{`@keyframes cursor-blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }`}</style>
       {/* Single shared video — all card canvases mirror this for perfect sync */}
-      <video ref={sharedVideoRef} src="/img/microbet-match.mp4" autoPlay muted loop playsInline style={{ position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }} />
+      <video ref={sharedVideoRef} src={`${BASE}/img/microbet-match.mp4`} autoPlay muted loop playsInline style={{ position: 'fixed', width: 1, height: 1, opacity: 0, pointerEvents: 'none', top: 0, left: 0 }} />
 
       <div style={{ width: 360, height: 800, position: 'relative', overflow: 'hidden', borderRadius: 40 }}>
 
         {/* Background — Figma screenshot with app screen + dark overlay */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/img/microbet-bg.png" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
+        <img src={`${BASE}/img/microbet-bg.png`} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }} />
 
         {/* Bottom sheet (шторка) */}
         <div style={{ position: 'absolute', top: 44, left: 0, right: 0, bottom: 0, background: '#0a0c0b', borderRadius: '32px 32px 0 0', display: 'flex', flexDirection: 'column', alignItems: 'center', overflow: 'hidden' }}>

@@ -6,7 +6,8 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
    Drop PNG frames into public/img/zayats-run/<folder>/frame-1.png, frame-2.png, ...
    (any count up to maxFrames) and they replace the placeholder shapes automatically. */
 
-const SPRITE_BASE = '/img/zayats-run';
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+const SPRITE_BASE = `${BASE}/img/zayats-run`;
 const ANIMS = {
   hareWalk: { folder: 'hare-walk', fps: 25, maxFrames: 64 },
   hareIdle: { folder: 'hare-idle', fps: 2, maxFrames: 4 },

@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 function NavButton({ href, label, baseBg, baseColor }: { href: string; label: string; baseBg: string; baseColor: string }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -45,7 +47,7 @@ export default function SiteHeader({ theme = 'dark' }: { theme?: 'dark' | 'light
       <div className="mx-auto max-w-[1512px] flex items-center justify-between">
         <Link href="/" className="flex items-center gap-6" onClick={handleLogoClick}>
           <Image
-            src="/img/logo.png"
+            src={`${BASE}/img/logo.png`}
             alt="Kovalchuk Anton logo"
             width={63}
             height={62}

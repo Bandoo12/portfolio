@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState, CSSProperties } from 'react';
 import Image from 'next/image';
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 const cards = [
-  { src: '/img/card-1.webp', title: 'Ставки от дартса\nдо тенниса',            subtitle: 'Улучшай продукт\nдля фанатов спорта' },
-  { src: '/img/card-2.webp', title: 'Библиотека из 45 000 игр',                subtitle: 'Работай с масштабной\nигровой платформой' },
-  { src: '/img/card-3.webp', title: 'Провайдеры с мировым именем',             subtitle: 'Участвуй в проектах\nс ведущими студиями' },
-  { src: '/img/card-4.webp', title: 'Присутствие\nна 5 континентах',           subtitle: 'Предлагай решения\nдля глобальной аудитории' },
-  { src: '/img/card-5.webp', title: 'Новые стандарты индустрии',               subtitle: 'Влияй на будущее\nв сфере iGaming' },
+  { src: `${BASE}/img/card-1.webp`, title: 'Ставки от дартса\nдо тенниса',            subtitle: 'Улучшай продукт\nдля фанатов спорта' },
+  { src: `${BASE}/img/card-2.webp`, title: 'Библиотека из 45 000 игр',                subtitle: 'Работай с масштабной\nигровой платформой' },
+  { src: `${BASE}/img/card-3.webp`, title: 'Провайдеры с мировым именем',             subtitle: 'Участвуй в проектах\nс ведущими студиями' },
+  { src: `${BASE}/img/card-4.webp`, title: 'Присутствие\nна 5 континентах',           subtitle: 'Предлагай решения\nдля глобальной аудитории' },
+  { src: `${BASE}/img/card-5.webp`, title: 'Новые стандарты индустрии',               subtitle: 'Влияй на будущее\nв сфере iGaming' },
 ];
 
 const STEPS = cards.length;
@@ -211,7 +213,7 @@ export default function Containers01TechDemo() {
                 opacity: 0.55,
               }}
             >
-              <source src="/img/containers-bg.mp4" type="video/mp4" />
+              <source src={`${BASE}/img/containers-bg.mp4`} type="video/mp4" />
             </video>
 
             {/* Header fade */}

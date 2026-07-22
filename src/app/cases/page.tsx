@@ -3,6 +3,8 @@ import Image from 'next/image';
 import SiteHeader from '@/components/SiteHeader';
 import { casesData } from '@/content/casesData';
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 export default function CasesPage() {
   const items = Object.values(casesData);
 
@@ -23,7 +25,7 @@ export default function CasesPage() {
             >
               <div className="relative w-full" style={{ aspectRatio: '4/3' }}>
                 <Image
-                  src={`/img/${c.imgs.viz}`}
+                  src={`${BASE}/img/${c.imgs.viz}`}
                   alt={c.title}
                   fill
                   style={{ objectFit: 'cover', objectPosition: 'top' }}

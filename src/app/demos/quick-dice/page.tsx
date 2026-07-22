@@ -20,7 +20,9 @@ const CHIPS: { label: string; value: number }[] = [
   { label: '50к', value: 50000 },
 ];
 
-const BG_VIDEO_SOURCES = ['/img/quick-dice-figma/bg.mp4', '/img/quick-dice-figma/bg2.mp4'];
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
+const BG_VIDEO_SOURCES = [`${BASE}/img/quick-dice-figma/bg.mp4`, `${BASE}/img/quick-dice-figma/bg2.mp4`];
 
 const ODDS_NUMBER = 34;
 const BET_SECONDS = 15;
@@ -394,7 +396,7 @@ export default function QuickDice() {
               {totalStaked.toLocaleString('ru-RU')}₽
             </span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/img/quick-dice-figma/arrow-sm-right.svg" alt="" width={18} height={18} />
+            <img src={`${BASE}/img/quick-dice-figma/arrow-sm-right.svg`} alt="" width={18} height={18} />
             <span style={{ fontFamily: FONT, fontWeight: 600, fontSize: 16, lineHeight: '17.6px', color: '#3dbdff' }}>
               {possibleWin.toLocaleString('ru-RU')}₽
             </span>
@@ -445,7 +447,7 @@ export default function QuickDice() {
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/img/quick-dice-figma/chevron-right.svg" alt="" width={10} height={17} style={{ transform: 'scaleX(-1)' }} />
+            <img src={`${BASE}/img/quick-dice-figma/chevron-right.svg`} alt="" width={10} height={17} style={{ transform: 'scaleX(-1)' }} />
           </div>
           <div
             style={{
@@ -454,7 +456,7 @@ export default function QuickDice() {
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/img/quick-dice-figma/chevron-right.svg" alt="" width={10} height={17} />
+            <img src={`${BASE}/img/quick-dice-figma/chevron-right.svg`} alt="" width={10} height={17} />
           </div>
         </div>
       </div>

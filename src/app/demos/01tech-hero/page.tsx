@@ -3,16 +3,18 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 const slides = [
   {
-    video: '/img/hero-bg-1.mp4',
+    video: `${BASE}/img/hero-bg-1.mp4`,
     num: '01',
     title: 'Be the 01 —\nбудь первым',
     subtitle: 'Присоединяйся к лидерам iGaming',
     label: 'Будь первым',
   },
   {
-    video: '/img/hero-bg.mp4',
+    video: `${BASE}/img/hero-bg.mp4`,
     num: '02',
     title: 'Влияй на среду\nвокруг себя',
     subtitle: 'Делимся друг с другом опытом и знаниями',

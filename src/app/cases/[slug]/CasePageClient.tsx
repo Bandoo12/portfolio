@@ -7,6 +7,8 @@ import { useRef, useEffect, useState } from 'react';
 import SiteHeader from '@/components/SiteHeader';
 import type { CaseData } from '@/content/casesData';
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 /* ── Helpers ── */
 const ease: [number, number, number, number] = [0.33, 1, 0.68, 1];
 
@@ -146,7 +148,7 @@ export default function CasePageClient({ d, slug }: { d: CaseData; slug: string 
           transition={{ duration: 0.8, ease }}
         >
           <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: '1512/759' }}>
-            <Image src={`/img/${d.imgs.viz}`} alt={`${d.title} — ключевой экран`} fill priority style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:1600px) 100vw, 1512px" />
+            <Image src={`${BASE}/img/${d.imgs.viz}`} alt={`${d.title} — ключевой экран`} fill priority style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:1600px) 100vw, 1512px" />
           </div>
         </motion.section>
       )}
@@ -214,7 +216,7 @@ export default function CasePageClient({ d, slug }: { d: CaseData; slug: string 
           transition={{ duration: 0.7, ease }}
         >
           <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: '1512/497' }}>
-            <Image src={`/img/${d.imgs.situation}`} alt="Исходная ситуация" fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:1600px) 100vw, 1512px" />
+            <Image src={`${BASE}/img/${d.imgs.situation}`} alt="Исходная ситуация" fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:1600px) 100vw, 1512px" />
           </div>
           <AnimResearchRow label={d.situationLabel} index={0}>
             <p style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', maxWidth: '538px' }}>{nbr(d.situationText)}</p>
@@ -232,7 +234,7 @@ export default function CasePageClient({ d, slug }: { d: CaseData; slug: string 
           transition={{ duration: 0.7, ease }}
         >
           <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: '1512/759' }}>
-            <Image src={`/img/${d.imgs.roles}`} alt={d.rolesLabel} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:1600px) 100vw, 1512px" />
+            <Image src={`${BASE}/img/${d.imgs.roles}`} alt={d.rolesLabel} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:1600px) 100vw, 1512px" />
           </div>
           <AnimResearchRow label={d.rolesLabel} index={0}>
             <p style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', maxWidth: '539px', whiteSpace: 'pre-line' }}>{nbr(d.rolesText)}</p>
@@ -254,7 +256,7 @@ export default function CasePageClient({ d, slug }: { d: CaseData; slug: string 
               <motion.div key={i} variants={fadeUp} custom={i} className="flex-1 flex flex-col gap-5">
                 {rc.img && (
                   <div className="relative w-full rounded-3xl overflow-hidden" style={{ aspectRatio: '731/497' }}>
-                    <Image src={`/img/${rc.img}`} alt={rc.title} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="50vw" />
+                    <Image src={`${BASE}/img/${rc.img}`} alt={rc.title} fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="50vw" />
                   </div>
                 )}
                 <p style={{ fontSize: '18px', fontWeight: 400, color: 'rgba(255,255,255,0.7)', whiteSpace: 'pre-line' }}>{nbr(rc.text)}</p>
@@ -272,7 +274,7 @@ export default function CasePageClient({ d, slug }: { d: CaseData; slug: string 
             viewport={{ once: true }}
             transition={{ duration: 0.7, ease }}
           >
-            <Image src={`/img/${d.imgs.results}`} alt="Результаты" fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:1600px) 100vw, 1512px" />
+            <Image src={`${BASE}/img/${d.imgs.results}`} alt="Результаты" fill style={{ objectFit: 'cover', objectPosition: 'top' }} sizes="(max-width:1600px) 100vw, 1512px" />
           </motion.div>
         </section>
       ) : null}

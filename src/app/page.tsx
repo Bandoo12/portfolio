@@ -7,6 +7,8 @@ import CaseButton from '@/components/CaseButton';
 import HeadScrollButton from '@/components/HeadScrollButton';
 import ScrollToSection from '@/components/ScrollToSection';
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
+
 /* ─── data ─────────────────────────────────────────────────── */
 
 const features = [
@@ -94,7 +96,7 @@ export default function Home() {
         <div className="absolute inset-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/img/hero-bg-solo.png"
+            src={`${BASE}/img/hero-bg-solo.png`}
             alt=""
             fetchPriority="high"
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
@@ -151,7 +153,7 @@ export default function Home() {
                     flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
-                  <Image src="/img/btn-icon-head.png" alt="" width={36} height={36} />
+                  <Image src={`${BASE}/img/btn-icon-head.png`} alt="" width={36} height={36} />
                 </div>
                 <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', whiteSpace: 'pre-line', maxWidth: '123px' }}>
                   {'пойдем дальше—\nтам интереснее'}
@@ -170,7 +172,7 @@ export default function Home() {
       >
         <div className="case-bg-img absolute inset-0" style={{ left: '-102px', top: '4%', width: '113%', height: '96%', maxWidth: 'none' }}>
           <Image
-            src="/img/home-rsb-img.png"
+            src={`${BASE}/img/home-rsb-img.png`}
             alt="Свой Бизнес"
             fill
             style={{ objectFit: 'cover', objectPosition: 'top left' }}
@@ -204,7 +206,7 @@ export default function Home() {
                 className="case-feature-item flex items-center flex-1"
                 style={{ height: '64px', padding: '0 8px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px' }}
               >
-                <Image src={`/img/${item.icon}`} alt="" width={48} height={48} style={{ borderRadius: '16px', flexShrink: 0 }} />
+                <Image src={`${BASE}/img/${item.icon}`} alt="" width={48} height={48} style={{ borderRadius: '16px', flexShrink: 0 }} />
                 <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{item.label}</span>
               </div>
             ))}
@@ -225,7 +227,7 @@ export default function Home() {
           style={{ left: '312px', top: '20%', width: '1288px', height: '80%', maxWidth: 'none' }}
         >
           <Image
-            src="/img/home-hrcrm-img.png"
+            src={`${BASE}/img/home-hrcrm-img.png`}
             alt="HR-CRM"
             fill
             style={{ objectFit: 'cover', objectPosition: 'top left' }}
@@ -266,7 +268,7 @@ export default function Home() {
                     background: 'rgba(255,255,255,0.04)',
                   }}
                 >
-                  <Image src={`/img/${item.icon}`} alt="" width={48} height={48} style={{ borderRadius: '16px', flexShrink: 0 }} />
+                  <Image src={`${BASE}/img/${item.icon}`} alt="" width={48} height={48} style={{ borderRadius: '16px', flexShrink: 0 }} />
                   <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{item.label}</span>
                 </div>
               ))}
@@ -296,7 +298,7 @@ export default function Home() {
           style={{ left: '-15px', top: '27.3%', width: 'calc(100% + 15px)', height: '72.7%' }}
         >
           <Image
-            src="/img/eurochem-bg.png"
+            src={`${BASE}/img/eurochem-bg.png`}
             alt="Eurochem"
             fill
             style={{ objectFit: 'cover', objectPosition: 'top left' }}
@@ -332,7 +334,7 @@ export default function Home() {
                 className="case-feature-item flex items-center flex-1"
                 style={{ height: '64px', padding: '0 8px', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px' }}
               >
-                <Image src={`/img/${item.icon}`} alt="" width={48} height={48} style={{ borderRadius: '16px', flexShrink: 0 }} />
+                <Image src={`${BASE}/img/${item.icon}`} alt="" width={48} height={48} style={{ borderRadius: '16px', flexShrink: 0 }} />
                 <span style={{ fontSize: '20px', fontWeight: 400, color: '#fff', marginLeft: '12px' }}>{item.label}</span>
               </div>
             ))}
@@ -638,7 +640,7 @@ export default function Home() {
                 {steps.map((s, i) => (
                   <div key={s.num} className="process-step-item flex items-center gap-4">
                     <Image
-                      src={`/img/step-el-${[1,1,3,3,4][i]}.png`}
+                      src={`${BASE}/img/step-el-${[1,1,3,3,4][i]}.png`}
                       alt=""
                       width={83}
                       height={83}
@@ -671,7 +673,7 @@ export default function Home() {
                   </p>
                 </div>
                 <Image
-                  src="/img/risks-ellipses.png"
+                  src={`${BASE}/img/risks-ellipses.png`}
                   alt=""
                   width={319}
                   height={109}
@@ -693,7 +695,7 @@ export default function Home() {
                   </p>
                 </div>
                 <Image
-                  src="/img/speed-ellipses.png"
+                  src={`${BASE}/img/speed-ellipses.png`}
                   alt=""
                   width={299}
                   height={89}
