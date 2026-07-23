@@ -283,6 +283,27 @@ export default function LuckyNumbersV2Page() {
   const rafIds = useRef<number[]>([]);
   const characterVideoRef = useRef<HTMLVideoElement>(null);
   const characterCanvasRef = useRef<HTMLCanvasElement>(null);
+  const bgMusicRef = useRef<HTMLAudioElement>(null);
+  const soundOnRef = useRef(soundOn);
+  useEffect(() => { soundOnRef.current = soundOn; }, [soundOn]);
+
+  const playPop = useCallback(() => {
+    if (!soundOnRef.current) return;
+    const a = new Audio(`${IMG}/bubble-pop.mp3`);
+    a.volume = 0.5;
+    a.play().catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const music = bgMusicRef.current;
+    if (!music) return;
+    if (musicOn && !showSplash) {
+      music.volume = 0.35;
+      music.play().catch(() => {});
+    } else {
+      music.pause();
+    }
+  }, [musicOn, showSplash]);
 
   // The character video is pre-keyed offline (adaptive per-frame chroma key,
   // since the green-screen source drifted color frame to frame) into a stacked
@@ -427,6 +448,7 @@ export default function LuckyNumbersV2Page() {
     const popId = window.setTimeout(() => {
       setGrid(finalGrid);
       setRevealed(true);
+      playPop();
     }, swapSpan + POP_REVEAL_DELAY);
     timeoutIds.current.push(popId);
 
@@ -460,7 +482,7 @@ export default function LuckyNumbersV2Page() {
       }
     }, totalDuration);
     timeoutIds.current.push(doneId);
-  }, [spinning, bet, balance, revealed, layout]);
+  }, [spinning, bet, balance, revealed, layout, playPop]);
 
   const winningIndices = useMemo(
     () => (winValue === null ? [] : grid.reduce<number[]>((acc, v, i) => (v === winValue ? [...acc, i] : acc), [])),
@@ -519,7 +541,8 @@ export default function LuckyNumbersV2Page() {
         .ln-coef-block { position:absolute; left:24px; top:10px; display:flex; flex-direction:column; gap:4px; }
         .ln-coef-label-row { display:flex; align-items:center; gap:4px; }
         .ln-coef-dice { position:absolute; left:${layout.coefDicePos.left}px; top:${layout.coefDicePos.top}px; display:flex; align-items:center; }
-        .ln-coef-avatar { position:absolute; left:${layout.coefAvatarPos.left}px; top:${layout.coefAvatarPos.top}px; width:73px; height:67px; display:flex; align-items:center; justify-content:flex-end; }
+        .ln-coef-avatar { position:absolute; left:${layout.coefBar.left + layout.coefAvatarPos.left}px; top:${layout.coefBar.top + layout.coefAvatarPos.top}px;
+          width:73px; height:67px; display:flex; align-items:center; justify-content:flex-end; z-index:6; pointer-events:none; }
         .ln-coef-avatar img { width:67px; height:67px; object-fit:cover; }
 
         .ln-icon-btn { background:none; border:none; padding:0; margin:0; cursor:pointer; display:flex; align-items:center; justify-content:center; }
@@ -606,6 +629,7 @@ export default function LuckyNumbersV2Page() {
       )}
 
       <div className="ln-stage" style={{ transform: `scale(${scale})` }}>
+        <audio ref={bgMusicRef} src={`${IMG}/bg-music.mp3`} loop />
         <img className="ln-bg" src={`${IMG}/${layout.bg}`} alt="" />
         <div
           className="ln-plate"
@@ -687,9 +711,9 @@ export default function LuckyNumbersV2Page() {
             <DiceIcon face={lastWinDice[0]} />
             <DiceIcon face={lastWinDice[1]} />
           </div>
-          <div className="ln-coef-avatar">
-            <img src={`${IMG}/avatar.png`} alt="" />
-          </div>
+        </div>
+        <div className="ln-coef-avatar">
+          <img src={`${IMG}/avatar.png`} alt="" />
         </div>
 
         <img className="ln-reel-frame" src={`${IMG}/${layout.reelFrame}`} alt="" />
