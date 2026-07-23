@@ -305,6 +305,25 @@ export default function LuckyNumbersV2Page() {
     }
   }, [musicOn, showSplash]);
 
+  // Browsers block unmuted audio.play() until a real user gesture has landed
+  // on the page (the silent autoplaying splash video doesn't count) — retry
+  // once on the first click/tap/key anywhere.
+  useEffect(() => {
+    const tryStart = () => {
+      const music = bgMusicRef.current;
+      if (music && musicOn && music.paused) {
+        music.volume = 0.35;
+        music.play().catch(() => {});
+      }
+    };
+    window.addEventListener('pointerdown', tryStart, { once: true });
+    window.addEventListener('keydown', tryStart, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', tryStart);
+      window.removeEventListener('keydown', tryStart);
+    };
+  }, [musicOn]);
+
   // The character video is pre-keyed offline (adaptive per-frame chroma key,
   // since the green-screen source drifted color frame to frame) into a stacked
   // clip: color on top, a clean 0/255 luma alpha mask on the bottom half. We
@@ -448,9 +467,15 @@ export default function LuckyNumbersV2Page() {
     const popId = window.setTimeout(() => {
       setGrid(finalGrid);
       setRevealed(true);
-      playPop();
     }, swapSpan + POP_REVEAL_DELAY);
     timeoutIds.current.push(popId);
+
+    // Each bubble gets its own pop sound, timed to the same diagonal-wave
+    // delay the visual pop animation uses (popDelay), not one shared cue.
+    for (let i = 0; i < CELL_COUNT; i++) {
+      const soundId = window.setTimeout(playPop, swapSpan + POP_REVEAL_DELAY + popDelay(i) * 1000);
+      timeoutIds.current.push(soundId);
+    }
 
     const totalDuration = swapSpan + POP_REVEAL_DELAY + POP_MAX_STAGGER_MS + POP_SETTLE_MS;
     const doneId = window.setTimeout(() => {
