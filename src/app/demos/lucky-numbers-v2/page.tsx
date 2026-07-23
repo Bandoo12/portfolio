@@ -252,6 +252,11 @@ function bubbleFloatStyle(i: number, isWin: boolean): React.CSSProperties {
 }
 
 export default function LuckyNumbersV2Page() {
+  // Browsers only allow audio.play() with sound inside a real user gesture —
+  // this gate is that gesture. Tapping it starts the splash video AND the
+  // background music in the same click handler, so music reads as starting
+  // "immediately on entering the game" rather than needing a second click.
+  const [gateOpen, setGateOpen] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
   const [splashEnding, setSplashEnding] = useState(false);
   const endSplash = useCallback(() => {
@@ -294,16 +299,25 @@ export default function LuckyNumbersV2Page() {
     a.play().catch(() => {});
   }, []);
 
+  const passGate = useCallback(() => {
+    setGateOpen(false);
+    const music = bgMusicRef.current;
+    if (music && musicOn) {
+      music.volume = 0.35;
+      music.play().catch(() => {});
+    }
+  }, [musicOn]);
+
   useEffect(() => {
     const music = bgMusicRef.current;
     if (!music) return;
-    if (musicOn && !showSplash) {
+    if (musicOn && !gateOpen) {
       music.volume = 0.35;
       music.play().catch(() => {});
-    } else {
+    } else if (!musicOn) {
       music.pause();
     }
-  }, [musicOn, showSplash]);
+  }, [musicOn, gateOpen]);
 
   // Browsers block unmuted audio.play() until a real user gesture has landed
   // on the page (the silent autoplaying splash video doesn't count) — retry
@@ -523,6 +537,11 @@ export default function LuckyNumbersV2Page() {
         .ln-splash video { width:100%; height:100%; object-fit:contain; }
         @keyframes ln-splash-fade { from { opacity:0; } to { opacity:1; } }
         @keyframes ln-splash-out { from { opacity:1; } to { opacity:0; } }
+        .ln-gate { position:fixed; inset:0; z-index:101; background:#050d14; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+        .ln-gate-btn { padding:18px 36px; border-radius:999px; background:linear-gradient(180deg,#FCF7B3,#BA8551);
+          color:#2a1400; font-weight:800; font-size:18px; letter-spacing:0.2px; box-shadow:0 8px 24px rgba(0,0,0,0.5);
+          animation:ln-gate-pulse 1.6s ease-in-out infinite; }
+        @keyframes ln-gate-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.04); } }
         .ln-stage { position:relative; width:${layout.W}px; height:${layout.H}px; overflow:hidden; flex-shrink:0; background:#000; font-family:var(--font-manrope), Manrope, sans-serif; }
         .ln-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
         .ln-plate { position:absolute; background:rgba(217,242,244,0.546); }
@@ -633,12 +652,18 @@ export default function LuckyNumbersV2Page() {
         .ln-spin-outer:disabled { cursor:default; }
         .ln-spin-inner { width:100%; height:100%; border-radius:999px; background:linear-gradient(180deg,#298385,#164961);
           display:flex; align-items:center; justify-content:center; }
-        .ln-spin-inner img { width:56px; height:56px; }
-        .ln-spin-inner img.ln-spinning { animation:ln-spin 0.5s linear infinite; }
+        .ln-spin-label { color:#fff; font-weight:800; font-size:16px; letter-spacing:0.2px; text-align:center; text-transform:uppercase; }
+        .ln-spin-label.ln-spinning { opacity:0.6; }
         @keyframes ln-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
       `}</style>
 
-      {showSplash && (
+      {gateOpen && (
+        <div className="ln-gate" onClick={passGate}>
+          <div className="ln-gate-btn">Нажмите, чтобы начать</div>
+        </div>
+      )}
+
+      {!gateOpen && showSplash && (
         <div
           className={`ln-splash${splashEnding ? ' ln-splash-out' : ''}`}
           onClick={endSplash}
@@ -764,16 +789,6 @@ export default function LuckyNumbersV2Page() {
             <button type="button" className="ln-icon-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Меню">
               <img src={`${IMG}/icon-burger.svg`} width={32} height={32} alt="" />
             </button>
-            <div className="ln-balance">
-              <div className="ln-text-block">
-                <span className="ln-label">БАЛАНС</span>
-                <span className="ln-balance-value">{balance.toLocaleString('ru-RU')}₽</span>
-              </div>
-              <svg width={28} height={28} viewBox="0 0 28 28" fill="none">
-                <path d="M21 9.33334V8.4C21 7.09322 21 6.43982 20.7457 5.9407C20.522 5.50164 20.165 5.14469 19.726 4.92099C19.2269 4.66667 18.5734 4.66667 17.2667 4.66667H7.23333C5.92654 4.66667 5.27315 4.66667 4.77402 4.92099C4.33497 5.14469 3.97802 5.50164 3.75432 5.9407C3.5 6.43982 3.5 7.09322 3.5 8.4V9.33334M3.5 9.33334V19.6C3.5 20.9068 3.5 21.5602 3.75432 22.0593C3.97802 22.4984 4.33497 22.8554 4.77402 23.079C5.27315 23.3333 5.92654 23.3333 7.23333 23.3333H20.7667C22.0734 23.3333 22.7269 23.3333 23.226 23.079C23.665 22.8554 24.022 22.4984 24.2457 22.0593C24.5 21.5602 24.5 20.9068 24.5 19.6V13.0667C24.5 11.7599 24.5 11.1065 24.2457 10.6074C24.022 10.1683 23.665 9.81136 23.226 9.58766C22.7269 9.33334 22.0734 9.33334 20.7667 9.33334H3.5ZM24.5 14H22.1667C20.878 14 19.8333 15.0446 19.8333 16.3333C19.8333 17.622 20.878 18.6667 22.1667 18.6667H24.5"
-                  stroke="white" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
           </div>
 
           <div className="ln-right-group">
@@ -806,11 +821,7 @@ export default function LuckyNumbersV2Page() {
               </div>
               <button className="ln-spin-outer" onClick={spin} disabled={spinning} aria-label="Крутить">
                 <div className="ln-spin-inner">
-                  <img
-                    src={`${IMG}/icon-reload.svg`}
-                    alt=""
-                    className={spinning ? 'ln-spinning' : ''}
-                  />
+                  <span className={`ln-spin-label${spinning ? ' ln-spinning' : ''}`}>СТАВКА</span>
                 </div>
               </button>
             </div>
@@ -827,11 +838,7 @@ export default function LuckyNumbersV2Page() {
               </button>
               <button className="ln-spin-outer ln-spin-outer-mobile" onClick={spin} disabled={spinning} aria-label="Крутить">
                 <div className="ln-spin-inner">
-                  <img
-                    src={`${IMG}/icon-reload.svg`}
-                    alt=""
-                    className={spinning ? 'ln-spinning' : ''}
-                  />
+                  <span className={`ln-spin-label${spinning ? ' ln-spinning' : ''}`}>СТАВКА</span>
                 </div>
               </button>
               <div className="ln-text-block">
