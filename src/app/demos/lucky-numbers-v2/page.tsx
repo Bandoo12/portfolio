@@ -118,6 +118,10 @@ const POP_SETTLE_MS = 480;
 const POP_MAX_STAGGER_MS = (ROWS - 1 + COLS - 1) * POP_STAGGER * 1000;
 const POP_STREAM_MS = 8000;
 
+// Logo reveal: beam grows in, logo scales/fades up on top of it, then holds
+// steady with a slow breathing glow — ends on a settled frame, not mid-motion.
+const SPLASH_DURATION_MS = 3000;
+
 // Swap: when numbers are already showing, they slide out left while fresh
 // question marks slide in from the right — softens the old instant-cut reset.
 // (Fast/synced — unrelated to the slow per-cell stream-in below.)
@@ -330,7 +334,8 @@ export default function LuckyNumbersV2Page() {
       music.volume = 0.35;
       music.play().catch(() => {});
     }
-  }, [musicOn]);
+    window.setTimeout(endSplash, SPLASH_DURATION_MS);
+  }, [musicOn, endSplash]);
 
   useEffect(() => {
     const music = bgMusicRef.current;
@@ -561,7 +566,15 @@ export default function LuckyNumbersV2Page() {
         .ln-root { min-height:100vh; background:#000; display:flex; align-items:center; justify-content:center; overflow:hidden; }
         .ln-splash { position:fixed; inset:0; z-index:100; background:#000; display:flex; align-items:center; justify-content:center; cursor:pointer; animation:ln-splash-fade 0.4s ease forwards; }
         .ln-splash.ln-splash-out { animation:ln-splash-out 0.5s ease forwards; pointer-events:none; }
-        .ln-splash video { width:100%; height:100%; object-fit:contain; }
+        .ln-splash-logo { width:100%; height:100%; object-fit:cover;
+          animation:ln-logo-in 3s cubic-bezier(0.16,1,0.3,1) forwards; }
+        @keyframes ln-logo-in {
+          0% { opacity:0; transform:scale(1.1); filter:brightness(0.6); }
+          35% { opacity:1; transform:scale(1.035); filter:brightness(1.15); }
+          55% { transform:scale(0.99); filter:brightness(1); }
+          75% { transform:scale(1.006); }
+          100% { opacity:1; transform:scale(1); filter:brightness(1); }
+        }
         @keyframes ln-splash-fade { from { opacity:0; } to { opacity:1; } }
         @keyframes ln-splash-out { from { opacity:1; } to { opacity:0; } }
         .ln-gate { position:fixed; inset:0; z-index:101; background:#050d14; display:flex; align-items:center; justify-content:center; cursor:pointer; }
@@ -695,13 +708,7 @@ export default function LuckyNumbersV2Page() {
           className={`ln-splash${splashEnding ? ' ln-splash-out' : ''}`}
           onClick={endSplash}
         >
-          <video
-            src={`${IMG}/splash.mp4`}
-            autoPlay
-            muted
-            playsInline
-            onEnded={endSplash}
-          />
+          <img className="ln-splash-logo" src={`${IMG}/splash-logo-full.png`} alt="Liga Game" />
         </div>
       )}
 
