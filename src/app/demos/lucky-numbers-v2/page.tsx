@@ -107,22 +107,45 @@ function rollMultiplier(matchCount: number): { mult: number; d1: number; d2: num
   return { mult, d1, d2 };
 }
 
-// Pop-reveal: bubbles hold as question marks, then burst open in a diagonal
-// wave to reveal the landed numbers underneath.
+// Pop-reveal: bubbles hold as question marks, then burst open to reveal the
+// landed numbers underneath. This mirrors the real backend, which resolves
+// the 30 cells one at a time over ~7s rather than delivering the whole grid
+// at once — so instead of a quick synced wave, each bubble pops on its own
+// randomized moment spread across POP_STREAM_MS, like results streaming in.
 const POP_REVEAL_DELAY = 260;
 const POP_STAGGER = 0.035;
 const POP_SETTLE_MS = 480;
 const POP_MAX_STAGGER_MS = (ROWS - 1 + COLS - 1) * POP_STAGGER * 1000;
+const POP_STREAM_MS = 8000;
 
 // Swap: when numbers are already showing, they slide out left while fresh
 // question marks slide in from the right — softens the old instant-cut reset.
+// (Fast/synced — unrelated to the slow per-cell stream-in below.)
 const SWAP_ANIM_MS = 340;
 const SWAP_TOTAL_MS = POP_MAX_STAGGER_MS + SWAP_ANIM_MS;
 
-function popDelay(i: number) {
+function swapDelay(i: number) {
   const row = Math.floor(i / COLS);
   const col = i % COLS;
   return (row + col) * POP_STAGGER;
+}
+
+// One randomized delay (seconds) per cell, spread across POP_STREAM_MS with a
+// little jitter, so bubbles pop one at a time in no particular visual order —
+// evoking results arriving asynchronously rather than a synced sweep.
+function makeStreamDelays(): number[] {
+  const order = Array.from({ length: CELL_COUNT }, (_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  const delays = new Array<number>(CELL_COUNT);
+  order.forEach((cellIdx, pos) => {
+    const base = (pos / CELL_COUNT) * POP_STREAM_MS;
+    const jitter = (Math.random() - 0.5) * 140;
+    delays[cellIdx] = Math.max(0, base + jitter) / 1000;
+  });
+  return delays;
 }
 
 const DICE_PIPS: Record<number, [number, number][]> = {
@@ -286,6 +309,7 @@ export default function LuckyNumbersV2Page() {
 
   const timeoutIds = useRef<number[]>([]);
   const rafIds = useRef<number[]>([]);
+  const [streamDelays, setStreamDelays] = useState<number[]>(() => makeStreamDelays());
   const characterVideoRef = useRef<HTMLVideoElement>(null);
   const characterCanvasRef = useRef<HTMLCanvasElement>(null);
   const bgMusicRef = useRef<HTMLAudioElement>(null);
@@ -470,28 +494,31 @@ export default function LuckyNumbersV2Page() {
     rafIds.current = [];
 
     const finalGrid = generateFinalGrid();
+    const newStreamDelays = makeStreamDelays();
+    setStreamDelays(newStreamDelays);
 
     // If numbers were already showing, let them swap out to question marks
     // (numbers slide left, questions slide in from the right) before holding
     // and popping — otherwise that reset would cut instantly.
     const swapSpan = wasRevealed ? SWAP_TOTAL_MS : 0;
 
-    // Hold on the question-mark bubbles for a beat, then pop them open in a
-    // diagonal wave to reveal the landed numbers underneath.
+    // Hold on the question-mark bubbles for a beat, then pop them open one at
+    // a time over POP_STREAM_MS, mirroring the real backend resolving the 30
+    // cells asynchronously rather than delivering the grid all at once.
     const popId = window.setTimeout(() => {
       setGrid(finalGrid);
       setRevealed(true);
     }, swapSpan + POP_REVEAL_DELAY);
     timeoutIds.current.push(popId);
 
-    // Each bubble gets its own pop sound, timed to the same diagonal-wave
-    // delay the visual pop animation uses (popDelay), not one shared cue.
+    // Each bubble gets its own pop sound, timed to its own randomized
+    // stream-in delay, not one shared cue.
     for (let i = 0; i < CELL_COUNT; i++) {
-      const soundId = window.setTimeout(playPop, swapSpan + POP_REVEAL_DELAY + popDelay(i) * 1000);
+      const soundId = window.setTimeout(playPop, swapSpan + POP_REVEAL_DELAY + newStreamDelays[i] * 1000);
       timeoutIds.current.push(soundId);
     }
 
-    const totalDuration = swapSpan + POP_REVEAL_DELAY + POP_MAX_STAGGER_MS + POP_SETTLE_MS;
+    const totalDuration = swapSpan + POP_REVEAL_DELAY + POP_STREAM_MS + POP_SETTLE_MS;
     const doneId = window.setTimeout(() => {
       setSpinning(false);
 
@@ -710,8 +737,8 @@ export default function LuckyNumbersV2Page() {
                     style={bubbleFloatStyle(i, isWin)}
                     initial={{ scale: 0.15, opacity: 0, rotate: -20 }}
                     animate={{ scale: 1, opacity: isDim ? 0.4 : 1, filter: isDim ? 'blur(2px)' : 'blur(0px)', rotate: 0, x: 0 }}
-                    exit={{ x: -60, opacity: 0, transition: { delay: popDelay(i), duration: SWAP_ANIM_MS / 1000, ease: 'easeIn' } }}
-                    transition={{ delay: popDelay(i), type: 'spring', stiffness: 320, damping: 15 }}
+                    exit={{ x: -60, opacity: 0, transition: { delay: swapDelay(i), duration: SWAP_ANIM_MS / 1000, ease: 'easeIn' } }}
+                    transition={{ delay: streamDelays[i], type: 'spring', stiffness: 320, damping: 15 }}
                   />
                 ) : (
                   <motion.img
@@ -720,8 +747,8 @@ export default function LuckyNumbersV2Page() {
                     alt="?"
                     style={bubbleFloatStyle(i, false)}
                     initial={{ x: 60, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1, transition: { delay: popDelay(i), duration: SWAP_ANIM_MS / 1000, ease: 'easeOut' } }}
-                    exit={{ scale: 1.6, opacity: 0, transition: { delay: popDelay(i), duration: 0.28, ease: 'easeOut' } }}
+                    animate={{ x: 0, opacity: 1, transition: { delay: swapDelay(i), duration: SWAP_ANIM_MS / 1000, ease: 'easeOut' } }}
+                    exit={{ scale: 1.6, opacity: 0, transition: { delay: streamDelays[i], duration: 0.28, ease: 'easeOut' } }}
                   />
                 )}
               </AnimatePresence>
