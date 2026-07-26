@@ -78,6 +78,8 @@ const LAYOUTS: Record<LayoutMode, Layout> = {
 };
 
 const CELL_COUNT = COLS * ROWS;
+const DICE_PAGE_SIZE = 4;
+const DICE_PAGE_COUNT = Math.ceil(CELL_COUNT / DICE_PAGE_SIZE);
 const WIN_CHANCE = 0.5;
 const WIN_MAX_MATCHES = 14;
 
@@ -158,9 +160,9 @@ const DICE_PIPS: Record<number, [number, number][]> = {
 };
 const DICE_POS = [12.9167, 20, 27.0833];
 
-function ChevronIcon() {
+function ChevronIcon({ flip = false }: { flip?: boolean }) {
   return (
-    <svg width={18} height={18} viewBox="0 0 18 18" fill="none">
+    <svg width={18} height={18} viewBox="0 0 18 18" fill="none" style={flip ? { transform: 'scaleX(-1)' } : undefined}>
       <path d="M6.75 3.75L11.25 9L6.75 14.25" stroke="white" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -275,11 +277,6 @@ function bubbleFloatStyle(i: number, isWin: boolean): React.CSSProperties {
 }
 
 export default function LuckyNumbersV2Page() {
-  // Browsers only allow audio.play() with sound inside a real user gesture —
-  // this gate is that gesture. Tapping it starts the splash video AND the
-  // background music in the same click handler, so music reads as starting
-  // "immediately on entering the game" rather than needing a second click.
-  const [gateOpen, setGateOpen] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
   const [splashEnding, setSplashEnding] = useState(false);
   const endSplash = useCallback(() => {
@@ -310,6 +307,12 @@ export default function LuckyNumbersV2Page() {
   const timeoutIds = useRef<number[]>([]);
   const rafIds = useRef<number[]>([]);
   const [streamDelays, setStreamDelays] = useState<number[]>(() => makeStreamDelays());
+  // Fairness/legal disclosure trail: one die per resolved cell, filling in
+  // order (unlike the randomized visual bubble-pop) over the same ~8s window,
+  // browsable via arrows once it overflows the visible window.
+  const [cellDice, setCellDice] = useState<number[]>(() => Array.from({ length: CELL_COUNT }, (_, i) => (i % 6) + 1));
+  const [revealedDiceCount, setRevealedDiceCount] = useState(CELL_COUNT);
+  const [dicePage, setDicePage] = useState(0);
   const characterVideoRef = useRef<HTMLVideoElement>(null);
   const characterCanvasRef = useRef<HTMLCanvasElement>(null);
   const bgMusicRef = useRef<HTMLAudioElement>(null);
@@ -323,25 +326,16 @@ export default function LuckyNumbersV2Page() {
     a.play().catch(() => {});
   }, []);
 
-  const passGate = useCallback(() => {
-    setGateOpen(false);
-    const music = bgMusicRef.current;
-    if (music && musicOn) {
-      music.volume = 0.35;
-      music.play().catch(() => {});
-    }
-  }, [musicOn]);
-
   useEffect(() => {
     const music = bgMusicRef.current;
     if (!music) return;
-    if (musicOn && !gateOpen) {
+    if (musicOn) {
       music.volume = 0.35;
       music.play().catch(() => {});
-    } else if (!musicOn) {
+    } else {
       music.pause();
     }
-  }, [musicOn, gateOpen]);
+  }, [musicOn]);
 
   // Browsers block unmuted audio.play() until a real user gesture has landed
   // on the page (the silent autoplaying splash video doesn't count) — retry
@@ -496,6 +490,9 @@ export default function LuckyNumbersV2Page() {
     const finalGrid = generateFinalGrid();
     const newStreamDelays = makeStreamDelays();
     setStreamDelays(newStreamDelays);
+    setCellDice(Array.from({ length: CELL_COUNT }, () => 1 + Math.floor(Math.random() * 6)));
+    setRevealedDiceCount(0);
+    setDicePage(0);
 
     // If numbers were already showing, let them swap out to question marks
     // (numbers slide left, questions slide in from the right) before holding
@@ -516,6 +513,15 @@ export default function LuckyNumbersV2Page() {
     for (let i = 0; i < CELL_COUNT; i++) {
       const soundId = window.setTimeout(playPop, swapSpan + POP_REVEAL_DELAY + newStreamDelays[i] * 1000);
       timeoutIds.current.push(soundId);
+    }
+
+    // Fairness dice trail fills in strict order 1..30, evenly across the same
+    // window — a separate, legible "throw log" next to the randomized visual
+    // bubble pop above.
+    for (let i = 0; i < CELL_COUNT; i++) {
+      const idx = i;
+      const dId = window.setTimeout(() => setRevealedDiceCount(c => Math.max(c, idx + 1)), swapSpan + POP_REVEAL_DELAY + (idx / CELL_COUNT) * POP_STREAM_MS);
+      timeoutIds.current.push(dId);
     }
 
     const totalDuration = swapSpan + POP_REVEAL_DELAY + POP_STREAM_MS + POP_SETTLE_MS;
@@ -564,11 +570,6 @@ export default function LuckyNumbersV2Page() {
         .ln-splash video { width:100%; height:100%; object-fit:contain; }
         @keyframes ln-splash-fade { from { opacity:0; } to { opacity:1; } }
         @keyframes ln-splash-out { from { opacity:1; } to { opacity:0; } }
-        .ln-gate { position:fixed; inset:0; z-index:101; background:#050d14; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-        .ln-gate-btn { padding:18px 36px; border-radius:999px; background:linear-gradient(180deg,#FCF7B3,#BA8551);
-          color:#2a1400; font-weight:800; font-size:18px; letter-spacing:0.2px; box-shadow:0 8px 24px rgba(0,0,0,0.5);
-          animation:ln-gate-pulse 1.6s ease-in-out infinite; }
-        @keyframes ln-gate-pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.04); } }
         .ln-stage { position:relative; width:${layout.W}px; height:${layout.H}px; overflow:hidden; flex-shrink:0; background:#000; font-family:var(--font-manrope), Manrope, sans-serif; }
         .ln-bg { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
         .ln-plate { position:absolute; background:rgba(217,242,244,0.546); }
@@ -611,7 +612,15 @@ export default function LuckyNumbersV2Page() {
           backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); color:#fff; overflow:hidden; z-index:5; }
         .ln-coef-block { position:absolute; left:24px; top:10px; display:flex; flex-direction:column; gap:4px; }
         .ln-coef-label-row { display:flex; align-items:center; gap:4px; }
-        .ln-coef-dice { position:absolute; left:${layout.coefDicePos.left}px; top:${layout.coefDicePos.top}px; display:flex; align-items:center; }
+        .ln-coef-dice { position:absolute; left:${layout.coefDicePos.left}px; top:${layout.coefDicePos.top}px; display:flex; align-items:center; gap:2px; }
+        .ln-dice-nav { background:none; border:none; padding:0; margin:0; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0.85; flex-shrink:0; }
+        .ln-dice-nav:disabled { opacity:0.2; cursor:default; }
+        .ln-dice-nav svg { width:12px; height:12px; }
+        .ln-dice-slots { display:flex; align-items:center; gap:2px; }
+        .ln-dice-slot { width:16px; height:16px; border-radius:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+          border:1px dashed rgba(255,255,255,0.25); }
+        .ln-dice-slot.ln-dice-revealed { border-style:solid; border-color:rgba(255,255,255,0.15); }
+        .ln-dice-placeholder { font-size:8px; font-weight:700; color:rgba(255,255,255,0.35); }
         .ln-coef-avatar { position:absolute; left:${layout.coefBar.left + layout.coefAvatarPos.left}px; top:${layout.coefBar.top + layout.coefAvatarPos.top}px;
           width:73px; height:67px; display:flex; align-items:center; justify-content:flex-end; z-index:6; pointer-events:none; }
         .ln-coef-avatar img { width:67px; height:67px; object-fit:cover; }
@@ -640,7 +649,7 @@ export default function LuckyNumbersV2Page() {
         .ln-paytable-row { display:flex; align-items:center; justify-content:space-between; padding:8px 20px;
           font-weight:600; font-size:16px; border-top:1px solid rgba(255,255,255,0.1); }
 
-        .ln-bar { position:absolute; left:370px; top:684px; width:682px; height:98px; box-sizing:border-box;
+        .ln-bar { position:absolute; left:543px; top:669px; width:362px; height:98px; box-sizing:border-box;
           border-radius:99px; background:rgba(53,119,137,0.1); border:1px solid rgba(255,255,255,0.02);
           backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px);
           display:flex; align-items:center; justify-content:space-between; padding-left:16px; color:#fff; }
@@ -679,18 +688,18 @@ export default function LuckyNumbersV2Page() {
         .ln-spin-outer:disabled { cursor:default; }
         .ln-spin-inner { width:100%; height:100%; border-radius:999px; background:linear-gradient(180deg,#298385,#164961);
           display:flex; align-items:center; justify-content:center; }
-        .ln-spin-label { color:#fff; font-weight:800; font-size:16px; letter-spacing:0.2px; text-align:center; text-transform:uppercase; }
-        .ln-spin-label.ln-spinning { opacity:0.6; }
+        .ln-spin-label { color:#fff; font-weight:800; font-size:16px; letter-spacing:0.2px; text-align:center; text-transform:uppercase; position:relative; z-index:1; }
+        .ln-spin-label.ln-spinning { opacity:0.75; }
+        .ln-spin-loader { position:absolute; inset:6px; border-radius:50%; pointer-events:none;
+          background:conic-gradient(from 0deg, rgba(252,247,179,0) 0%, rgba(252,247,179,0.95) 92%, rgba(252,247,179,0) 100%);
+          -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+          mask:radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
+          animation:ln-spin-ring 0.9s linear infinite; }
+        @keyframes ln-spin-ring { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         @keyframes ln-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
       `}</style>
 
-      {gateOpen && (
-        <div className="ln-gate" onClick={passGate}>
-          <div className="ln-gate-btn">Нажмите, чтобы начать</div>
-        </div>
-      )}
-
-      {!gateOpen && showSplash && (
+      {showSplash && (
         <div
           className={`ln-splash${splashEnding ? ' ln-splash-out' : ''}`}
           onClick={endSplash}
@@ -785,8 +794,35 @@ export default function LuckyNumbersV2Page() {
             <button type="button" className="ln-icon-btn" style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }} onClick={() => setPaytableOpen(v => !v)} aria-label="Таблица выплат" />
           )}
           <div className="ln-coef-dice">
-            <DiceIcon face={lastWinDice[0]} />
-            <DiceIcon face={lastWinDice[1]} />
+            <button
+              type="button"
+              className="ln-dice-nav"
+              onClick={() => setDicePage(p => Math.max(0, p - 1))}
+              disabled={dicePage === 0}
+              aria-label="Предыдущие броски"
+            >
+              <ChevronIcon flip />
+            </button>
+            <div className="ln-dice-slots">
+              {Array.from({ length: DICE_PAGE_SIZE }, (_, i) => {
+                const idx = dicePage * DICE_PAGE_SIZE + i;
+                const isRevealed = idx < revealedDiceCount;
+                return (
+                  <div key={idx} className={`ln-dice-slot${isRevealed ? ' ln-dice-revealed' : ''}`} title={`Бросок ${idx + 1}`}>
+                    {isRevealed ? <DiceIcon face={cellDice[idx]} size={14} /> : <span className="ln-dice-placeholder">{idx + 1}</span>}
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              className="ln-dice-nav"
+              onClick={() => setDicePage(p => Math.min(DICE_PAGE_COUNT - 1, p + 1))}
+              disabled={dicePage === DICE_PAGE_COUNT - 1}
+              aria-label="Следующие броски"
+            >
+              <ChevronIcon />
+            </button>
           </div>
         </div>
         <div className="ln-coef-avatar">
@@ -848,6 +884,7 @@ export default function LuckyNumbersV2Page() {
               </div>
               <button className="ln-spin-outer" onClick={spin} disabled={spinning} aria-label="Крутить">
                 <div className="ln-spin-inner">
+                  {spinning && <div className="ln-spin-loader" />}
                   <span className={`ln-spin-label${spinning ? ' ln-spinning' : ''}`}>СТАВКА</span>
                 </div>
               </button>
@@ -865,6 +902,7 @@ export default function LuckyNumbersV2Page() {
               </button>
               <button className="ln-spin-outer ln-spin-outer-mobile" onClick={spin} disabled={spinning} aria-label="Крутить">
                 <div className="ln-spin-inner">
+                  {spinning && <div className="ln-spin-loader" />}
                   <span className={`ln-spin-label${spinning ? ' ln-spinning' : ''}`}>СТАВКА</span>
                 </div>
               </button>
