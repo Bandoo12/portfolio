@@ -279,9 +279,14 @@ function bubbleFloatStyle(i: number, isWin: boolean): React.CSSProperties {
 export default function LuckyNumbersV2Page() {
   const [showSplash, setShowSplash] = useState(true);
   const [splashEnding, setSplashEnding] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
   const endSplash = useCallback(() => {
     setSplashEnding(true);
     window.setTimeout(() => setShowSplash(false), 500);
+    if (!window.localStorage.getItem('ln2-onboarding-seen')) {
+      window.setTimeout(() => setOnboardingOpen(true), 500);
+    }
   }, []);
   const [scale, setScale] = useState(1);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('desktop');
@@ -649,6 +654,28 @@ export default function LuckyNumbersV2Page() {
         .ln-paytable-row { display:flex; align-items:center; justify-content:space-between; padding:8px 20px;
           font-weight:600; font-size:16px; border-top:1px solid rgba(255,255,255,0.1); }
 
+        .ln-onboarding-backdrop { position:absolute; inset:0; z-index:30; background:rgba(0,0,0,0.55);
+          display:flex; align-items:center; justify-content:center; }
+        .ln-onboarding { position:relative; width:360px; max-width:calc(100% - 40px); box-sizing:border-box; padding:28px 24px 22px;
+          border-radius:28px; background:rgba(32,47,45,0.96); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+          color:#fff; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+        .ln-onboarding-close { position:absolute; right:16px; top:16px; }
+        .ln-onboarding-art { display:flex; align-items:center; justify-content:center; gap:10px; height:64px; margin-bottom:14px; }
+        .ln-onboarding-art img { width:56px; height:56px; object-fit:contain; }
+        .ln-onboarding-btn-demo { width:96px; height:96px; border-radius:999px; background:linear-gradient(180deg,#298385,#164961);
+          border:3px solid; border-image:linear-gradient(180deg,#FCF7B3,#BA8551) 1; display:flex; align-items:center; justify-content:center; }
+        .ln-onboarding-btn-label { font-weight:800; font-size:13px; letter-spacing:0.2px; text-transform:uppercase; }
+        .ln-onboarding h3 { margin:0 0 10px; font-size:20px; font-weight:800; }
+        .ln-onboarding p { margin:0; font-size:14px; line-height:1.5; color:rgba(255,255,255,0.85); }
+        .ln-onboarding-dots { display:flex; align-items:center; justify-content:center; gap:6px; margin:20px 0 18px; }
+        .ln-onboarding-dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.25); }
+        .ln-onboarding-dot.ln-onboarding-dot-active { background:#FFC93D; width:18px; border-radius:3px; }
+        .ln-onboarding-nav { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .ln-onboarding-btn-primary { flex:1; height:44px; border-radius:999px; border:none; cursor:pointer;
+          background:linear-gradient(180deg,#FCF7B3,#BA8551); color:#2a1400; font-weight:800; font-size:14px; }
+        .ln-onboarding-btn-secondary { height:44px; padding:0 18px; border-radius:999px; cursor:pointer;
+          background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#fff; font-weight:700; font-size:14px; }
+
         .ln-bar { position:absolute; left:543px; top:669px; width:362px; height:98px; box-sizing:border-box;
           border-radius:99px; background:rgba(53,119,137,0.1); border:1px solid rgba(255,255,255,0.02);
           backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px);
@@ -690,11 +717,9 @@ export default function LuckyNumbersV2Page() {
           display:flex; align-items:center; justify-content:center; }
         .ln-spin-label { color:#fff; font-weight:800; font-size:16px; letter-spacing:0.2px; text-align:center; text-transform:uppercase; position:relative; z-index:1; }
         .ln-spin-label.ln-spinning { opacity:0.75; }
-        .ln-spin-loader { position:absolute; inset:6px; border-radius:50%; pointer-events:none;
-          background:conic-gradient(from 0deg, rgba(252,247,179,0) 0%, rgba(252,247,179,0.95) 92%, rgba(252,247,179,0) 100%);
-          -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
-          mask:radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 4px));
-          animation:ln-spin-ring 0.9s linear infinite; }
+        .ln-spin-loader { position:absolute; inset:8px; border-radius:50%; pointer-events:none;
+          background:linear-gradient(180deg, rgba(252,246,178,0.9) 0%, rgba(252,246,178,0) 100%);
+          animation:ln-spin-ring 1.1s linear infinite; }
         @keyframes ln-spin-ring { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
         @keyframes ln-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
       `}</style>
@@ -949,11 +974,11 @@ export default function LuckyNumbersV2Page() {
 
         {menuOpen && (
           <div className="ln-menu">
-            <button type="button" className="ln-menu-row" onClick={() => setMenuOpen(false)}>
+            <button type="button" className="ln-menu-row" onClick={() => { setMenuOpen(false); setOnboardingStep(0); setOnboardingOpen(true); }}>
               <span>Правила игры</span>
               <ChevronIcon />
             </button>
-            <button type="button" className="ln-menu-row" onClick={() => setMenuOpen(false)}>
+            <button type="button" className="ln-menu-row" onClick={() => { setMenuOpen(false); setOnboardingStep(0); setOnboardingOpen(true); }}>
               <span>Обучение</span>
               <ChevronIcon />
             </button>
@@ -1005,6 +1030,78 @@ export default function LuckyNumbersV2Page() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {onboardingOpen && (
+          <div className="ln-onboarding-backdrop">
+            <div className="ln-onboarding">
+              <button
+                type="button"
+                className="ln-icon-btn ln-onboarding-close"
+                onClick={() => { window.localStorage.setItem('ln2-onboarding-seen', '1'); setOnboardingOpen(false); }}
+                aria-label="Закрыть"
+              >
+                <img src={`${IMG}/icon-close.svg`} width={20} height={20} alt="" />
+              </button>
+
+              {onboardingStep === 0 && (
+                <>
+                  <div className="ln-onboarding-art">
+                    <img src={`${IMG}/num-11.png`} alt="" />
+                    <img src={`${IMG}/num-11.png`} alt="" />
+                    <img src={`${IMG}/num-11.png`} alt="" style={{ outline: '2px solid #FFC93D', borderRadius: '50%' }} />
+                  </div>
+                  <h3>Как выиграть</h3>
+                  <p>На поле — 30 пузырей с числами. Наберите 8 и больше одинаковых чисел за один спин — и получите выплату по таблице совпадений.</p>
+                </>
+              )}
+              {onboardingStep === 1 && (
+                <>
+                  <div className="ln-onboarding-art">
+                    <div className="ln-onboarding-btn-demo">
+                      <span className="ln-onboarding-btn-label">СТАВКА</span>
+                    </div>
+                  </div>
+                  <h3>Кнопки</h3>
+                  <p><strong>СТАВКА</strong> — запускает спин. Стрелочки рядом меняют размер ставки. Значок ☰ открывает меню с правилами, историей и настройками звука.</p>
+                </>
+              )}
+              {onboardingStep === 2 && (
+                <>
+                  <div className="ln-onboarding-art">
+                    <DiceIcon face={3} size={32} />
+                    <DiceIcon face={5} size={32} />
+                    <DiceIcon face={1} size={32} />
+                  </div>
+                  <h3>Честная игра</h3>
+                  <p>Каждый из 30 бросков раунда фиксируется отдельно — полоска костей вверху экрана заполняется по мере расчёта. Пролистайте её стрелочками, чтобы увидеть все 30 результатов.</p>
+                </>
+              )}
+
+              <div className="ln-onboarding-dots">
+                {[0, 1, 2].map(i => (
+                  <span key={i} className={`ln-onboarding-dot${i === onboardingStep ? ' ln-onboarding-dot-active' : ''}`} />
+                ))}
+              </div>
+
+              <div className="ln-onboarding-nav">
+                {onboardingStep > 0 ? (
+                  <button type="button" className="ln-onboarding-btn-secondary" onClick={() => setOnboardingStep(s => s - 1)}>Назад</button>
+                ) : <span />}
+                {onboardingStep < 2 ? (
+                  <button type="button" className="ln-onboarding-btn-primary" onClick={() => setOnboardingStep(s => s + 1)}>Далее</button>
+                ) : (
+                  <button
+                    type="button"
+                    className="ln-onboarding-btn-primary"
+                    onClick={() => { window.localStorage.setItem('ln2-onboarding-seen', '1'); setOnboardingOpen(false); }}
+                  >
+                    Понятно, играть
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}
