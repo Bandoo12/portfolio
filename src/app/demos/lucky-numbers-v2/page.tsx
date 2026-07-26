@@ -717,10 +717,13 @@ export default function LuckyNumbersV2Page() {
           display:flex; align-items:center; justify-content:center; }
         .ln-spin-label { color:#fff; font-weight:800; font-size:16px; letter-spacing:0.2px; text-align:center; text-transform:uppercase; position:relative; z-index:1; }
         .ln-spin-label.ln-spinning { opacity:0.75; }
-        .ln-spin-loader { position:absolute; inset:8px; border-radius:50%; pointer-events:none;
+        .ln-spin-loader { position:absolute; top:50%; left:50%; width:32%; height:32%; border-radius:50%; pointer-events:none;
           background:linear-gradient(180deg, rgba(252,246,178,0.9) 0%, rgba(252,246,178,0) 100%);
           animation:ln-spin-ring 1.1s linear infinite; }
-        @keyframes ln-spin-ring { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+        @keyframes ln-spin-ring {
+          from { transform:translate(-50%,-50%) rotate(0deg); }
+          to { transform:translate(-50%,-50%) rotate(360deg); }
+        }
         @keyframes ln-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
       `}</style>
 
