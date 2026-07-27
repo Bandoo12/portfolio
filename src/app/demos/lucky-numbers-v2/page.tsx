@@ -12,10 +12,10 @@ const WIN_THRESHOLD = 8;
 // Exact starting grid from the Figma mockup (row-major, 6 cols x 5 rows).
 const INITIAL_GRID = [
   11, 3, 10, 8, 12, 11,
-  7, 6, 2, 8, 11, 1,
+  7, 6, 2, 8, 11, 7,
   11, 11, 2, 9, 4, 5,
   10, 2, 8, 8, 11, 10,
-  9, 8, 11, 11, 1, 1,
+  9, 8, 11, 11, 6, 3,
 ];
 
 type LayoutMode = 'desktop' | 'mobile-portrait';
@@ -47,8 +47,8 @@ const DESKTOP_LAYOUT: Layout = {
   charPos: { left: 723, top: 120, width: 853, height: 687 },
   coefBar: { left: 543, top: 22, width: 362, height: 67 },
   showCoefLabel: true,
-  coefDicePos: { left: 146, top: 14 },
-  coefAvatarPos: { left: 289, top: 0 },
+  coefDicePos: { left: 83, top: 9 },
+  coefAvatarPos: { left: 283, top: 0 },
   menuPos: { left: 543, top: 407, width: 255 },
   paytablePos: { left: 469, top: 234, width: 510 },
   paytableSingleCol: false,
@@ -78,8 +78,7 @@ const LAYOUTS: Record<LayoutMode, Layout> = {
 };
 
 const CELL_COUNT = COLS * ROWS;
-const DICE_PAGE_SIZE = 4;
-const DICE_PAGE_COUNT = Math.ceil(CELL_COUNT / DICE_PAGE_SIZE);
+const DICE_PAGE_COUNT = CELL_COUNT;
 const WIN_CHANCE = 0.5;
 const WIN_MAX_MATCHES = 14;
 
@@ -180,8 +179,17 @@ function DiceIcon({ face, size = 40 }: { face: number; size?: number }) {
   );
 }
 
+function DiceQuestionIcon({ size = 40 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
+      <rect x="5" y="5" width="30" height="30" rx="8" stroke="white" strokeOpacity="0.5" strokeWidth="3" strokeLinejoin="round" />
+      <text x="20" y="26" textAnchor="middle" fontSize="16" fontWeight="700" fill="white" fillOpacity="0.5">?</text>
+    </svg>
+  );
+}
+
 function randDigit() {
-  return 1 + Math.floor(Math.random() * 12);
+  return 2 + Math.floor(Math.random() * 11);
 }
 
 function randDigitExcept(exclude: number) {
@@ -281,6 +289,19 @@ export default function LuckyNumbersV2Page() {
   const [splashEnding, setSplashEnding] = useState(false);
   const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    } else {
+      document.documentElement.requestFullscreen().catch(() => {});
+    }
+  }, []);
   const endSplash = useCallback(() => {
     setSplashEnding(true);
     window.setTimeout(() => setShowSplash(false), 500);
@@ -299,7 +320,7 @@ export default function LuckyNumbersV2Page() {
   // Persists across spins — the header shows the multiplier (and dice that rolled
   // it) of the last win, not the transient in-round badge.
   const [lastWinMult, setLastWinMult] = useState<number | null>(null);
-  const [lastWinDice, setLastWinDice] = useState<[number, number]>([6, 4]);
+  const [lastWinAmount, setLastWinAmount] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const [paytableOpen, setPaytableOpen] = useState(false);
   const [musicOn, setMusicOn] = useState(true);
@@ -312,10 +333,14 @@ export default function LuckyNumbersV2Page() {
   const timeoutIds = useRef<number[]>([]);
   const rafIds = useRef<number[]>([]);
   const [streamDelays, setStreamDelays] = useState<number[]>(() => makeStreamDelays());
-  // Fairness/legal disclosure trail: one die per resolved cell, filling in
-  // order (unlike the randomized visual bubble-pop) over the same ~8s window,
-  // browsable via arrows once it overflows the visible window.
-  const [cellDice, setCellDice] = useState<number[]>(() => Array.from({ length: CELL_COUNT }, (_, i) => (i % 6) + 1));
+  // Fairness/legal disclosure trail: one throw (2 dice) per resolved cell,
+  // filling in order (unlike the randomized visual bubble-pop) over the same
+  // ~8s window. Shows "Бросок N" + live dice while spinning (auto-following
+  // the throw currently resolving), then "Результат: +N₽" once settled, with
+  // the page browsable via arrows to review any of the 30 throws.
+  const [cellDicePairs, setCellDicePairs] = useState<[number, number][]>(
+    () => Array.from({ length: CELL_COUNT }, (_, i) => [((i * 2) % 6) + 1, ((i * 3) % 6) + 1] as [number, number])
+  );
   const [revealedDiceCount, setRevealedDiceCount] = useState(CELL_COUNT);
   const [dicePage, setDicePage] = useState(0);
   const characterVideoRef = useRef<HTMLVideoElement>(null);
@@ -495,7 +520,7 @@ export default function LuckyNumbersV2Page() {
     const finalGrid = generateFinalGrid();
     const newStreamDelays = makeStreamDelays();
     setStreamDelays(newStreamDelays);
-    setCellDice(Array.from({ length: CELL_COUNT }, () => 1 + Math.floor(Math.random() * 6)));
+    setCellDicePairs(Array.from({ length: CELL_COUNT }, () => [1 + Math.floor(Math.random() * 6), 1 + Math.floor(Math.random() * 6)] as [number, number]));
     setRevealedDiceCount(0);
     setDicePage(0);
 
@@ -525,7 +550,10 @@ export default function LuckyNumbersV2Page() {
     // bubble pop above.
     for (let i = 0; i < CELL_COUNT; i++) {
       const idx = i;
-      const dId = window.setTimeout(() => setRevealedDiceCount(c => Math.max(c, idx + 1)), swapSpan + POP_REVEAL_DELAY + (idx / CELL_COUNT) * POP_STREAM_MS);
+      const dId = window.setTimeout(() => {
+        setRevealedDiceCount(c => Math.max(c, idx + 1));
+        setDicePage(idx);
+      }, swapSpan + POP_REVEAL_DELAY + (idx / CELL_COUNT) * POP_STREAM_MS);
       timeoutIds.current.push(dId);
     }
 
@@ -547,10 +575,11 @@ export default function LuckyNumbersV2Page() {
         }, []);
         setLightning(buildLightning(winIdx, layout));
 
-        const { mult, d1, d2 } = rollMultiplier(winIdx.length);
-        setBalance(b => b + Math.round(bet * mult));
+        const { mult } = rollMultiplier(winIdx.length);
+        const winAmount = Math.round(bet * mult);
+        setBalance(b => b + winAmount);
         setLastWinMult(mult);
-        setLastWinDice([d1, d2]);
+        setLastWinAmount(winAmount);
 
         const multId = window.setTimeout(() => {
           setMultiplierTarget(mult);
@@ -617,17 +646,14 @@ export default function LuckyNumbersV2Page() {
           backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); color:#fff; overflow:hidden; z-index:5; }
         .ln-coef-block { position:absolute; left:24px; top:10px; display:flex; flex-direction:column; gap:4px; }
         .ln-coef-label-row { display:flex; align-items:center; gap:4px; }
-        .ln-coef-dice { position:absolute; left:${layout.coefDicePos.left}px; top:${layout.coefDicePos.top}px; display:flex; align-items:center; gap:2px; }
-        .ln-dice-nav { background:none; border:none; padding:0; margin:0; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0.85; flex-shrink:0; }
+        .ln-coef-dice { position:absolute; left:${layout.coefDicePos.left}px; top:${layout.coefDicePos.top}px; width:196px; }
+        .ln-coef-result { display:block; text-align:center; font-size:12px; font-weight:500; color:#fff; margin-bottom:4px; }
+        .ln-dice-row { display:flex; align-items:center; justify-content:center; gap:12px; width:196px; }
+        .ln-dice-nav { background:none; border:none; padding:0; margin:0; cursor:pointer; display:flex; align-items:center; justify-content:center; opacity:0.85; flex-shrink:0; width:20px; height:20px; }
         .ln-dice-nav:disabled { opacity:0.2; cursor:default; }
-        .ln-dice-nav svg { width:12px; height:12px; }
-        .ln-dice-slots { display:flex; align-items:center; gap:2px; }
-        .ln-dice-slot { width:16px; height:16px; border-radius:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0;
-          border:1px dashed rgba(255,255,255,0.25); }
-        .ln-dice-slot.ln-dice-revealed { border-style:solid; border-color:rgba(255,255,255,0.15); }
-        .ln-dice-placeholder { font-size:8px; font-weight:700; color:rgba(255,255,255,0.35); }
+        .ln-dice-pair { display:flex; align-items:center; flex-shrink:0; }
         .ln-coef-avatar { position:absolute; left:${layout.coefBar.left + layout.coefAvatarPos.left}px; top:${layout.coefBar.top + layout.coefAvatarPos.top}px;
-          width:73px; height:67px; display:flex; align-items:center; justify-content:flex-end; z-index:6; pointer-events:none; }
+          width:79px; height:67px; display:flex; align-items:center; justify-content:flex-end; z-index:6; pointer-events:none; }
         .ln-coef-avatar img { width:67px; height:67px; object-fit:cover; }
 
         .ln-icon-btn { background:none; border:none; padding:0; margin:0; cursor:pointer; display:flex; align-items:center; justify-content:center; }
@@ -676,10 +702,14 @@ export default function LuckyNumbersV2Page() {
         .ln-onboarding-btn-secondary { height:44px; padding:0 18px; border-radius:999px; cursor:pointer;
           background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.12); color:#fff; font-weight:700; font-size:14px; }
 
-        .ln-bar { position:absolute; left:543px; top:669px; width:362px; height:98px; box-sizing:border-box;
+        .ln-bar { position:absolute; left:543px; top:669px; width:426px; height:98px; box-sizing:border-box;
           border-radius:99px; background:rgba(53,119,137,0.1); border:1px solid rgba(255,255,255,0.02);
           backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px);
-          display:flex; align-items:center; justify-content:space-between; padding-left:16px; color:#fff; }
+          display:flex; align-items:center; justify-content:space-between; padding-left:16px; padding-right:16px; color:#fff; }
+        .ln-bar.ln-bar-fullscreen { width:618px; }
+        .ln-fs-balance { display:flex; align-items:center; gap:16px; margin-left:14px; }
+        .ln-fs-balance-divider { width:1px; height:56px; background:rgba(255,255,255,0.15); }
+        .ln-fs-toggle { flex-shrink:0; }
 
         .ln-bar-mobile { position:absolute; left:7px; top:551px; width:362px; box-sizing:border-box; display:flex; flex-direction:column; gap:12px; color:#fff; }
         .ln-bar-mobile-row { display:flex; align-items:center; justify-content:space-between; gap:8px;
@@ -822,35 +852,42 @@ export default function LuckyNumbersV2Page() {
             <button type="button" className="ln-icon-btn" style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%' }} onClick={() => setPaytableOpen(v => !v)} aria-label="Таблица выплат" />
           )}
           <div className="ln-coef-dice">
-            <button
-              type="button"
-              className="ln-dice-nav"
-              onClick={() => setDicePage(p => Math.max(0, p - 1))}
-              disabled={dicePage === 0}
-              aria-label="Предыдущие броски"
-            >
-              <ChevronIcon flip />
-            </button>
-            <div className="ln-dice-slots">
-              {Array.from({ length: DICE_PAGE_SIZE }, (_, i) => {
-                const idx = dicePage * DICE_PAGE_SIZE + i;
-                const isRevealed = idx < revealedDiceCount;
-                return (
-                  <div key={idx} className={`ln-dice-slot${isRevealed ? ' ln-dice-revealed' : ''}`} title={`Бросок ${idx + 1}`}>
-                    {isRevealed ? <DiceIcon face={cellDice[idx]} size={14} /> : <span className="ln-dice-placeholder">{idx + 1}</span>}
-                  </div>
-                );
-              })}
+            <span className="ln-coef-result">
+              {spinning ? `Бросок ${dicePage + 1}` : `Результат: +${lastWinAmount.toLocaleString('ru-RU')}₽`}
+            </span>
+            <div className="ln-dice-row">
+              <button
+                type="button"
+                className="ln-dice-nav"
+                onClick={() => setDicePage(p => Math.max(0, p - 1))}
+                disabled={dicePage === 0}
+                aria-label="Предыдущие броски"
+              >
+                <img src={`${IMG}/icon-chevron-left.svg`} width={20} height={20} alt="" />
+              </button>
+              <div className="ln-dice-pair">
+                {dicePage < revealedDiceCount ? (
+                  <>
+                    <DiceIcon face={cellDicePairs[dicePage][0]} size={32} />
+                    <DiceIcon face={cellDicePairs[dicePage][1]} size={32} />
+                  </>
+                ) : (
+                  <>
+                    <DiceQuestionIcon size={32} />
+                    <DiceQuestionIcon size={32} />
+                  </>
+                )}
+              </div>
+              <button
+                type="button"
+                className="ln-dice-nav"
+                onClick={() => setDicePage(p => Math.min(DICE_PAGE_COUNT - 1, p + 1))}
+                disabled={dicePage === DICE_PAGE_COUNT - 1}
+                aria-label="Следующие броски"
+              >
+                <img src={`${IMG}/icon-chevron-right.svg`} width={20} height={20} alt="" />
+              </button>
             </div>
-            <button
-              type="button"
-              className="ln-dice-nav"
-              onClick={() => setDicePage(p => Math.min(DICE_PAGE_COUNT - 1, p + 1))}
-              disabled={dicePage === DICE_PAGE_COUNT - 1}
-              aria-label="Следующие броски"
-            >
-              <ChevronIcon />
-            </button>
           </div>
         </div>
         <div className="ln-coef-avatar">
@@ -875,11 +912,21 @@ export default function LuckyNumbersV2Page() {
         )}
 
         {layoutMode === 'desktop' && (
-        <div className="ln-bar">
+        <div className={`ln-bar${isFullscreen ? ' ln-bar-fullscreen' : ''}`}>
           <div className="ln-left-group">
             <button type="button" className="ln-icon-btn" onClick={() => setMenuOpen(v => !v)} aria-label="Меню">
               <img src={`${IMG}/icon-burger.svg`} width={32} height={32} alt="" />
             </button>
+            {isFullscreen && (
+              <div className="ln-fs-balance">
+                <div className="ln-text-block">
+                  <span className="ln-label">БАЛАНС</span>
+                  <span className="ln-balance-value">{balance.toLocaleString('ru-RU')}₽</span>
+                </div>
+                <div className="ln-fs-balance-divider" />
+                <img src={`${IMG}/icon-wallet.svg`} width={28} height={28} alt="" />
+              </div>
+            )}
           </div>
 
           <div className="ln-right-group">
@@ -918,6 +965,10 @@ export default function LuckyNumbersV2Page() {
               </button>
             </div>
           </div>
+
+          <button type="button" className="ln-icon-btn ln-fs-toggle" onClick={toggleFullscreen} aria-label="Полный экран">
+            <img src={`${IMG}/icon-fullscreen.svg`} width={32} height={32} alt="" />
+          </button>
         </div>
         )}
 
@@ -1068,7 +1119,7 @@ export default function LuckyNumbersV2Page() {
                     </div>
                   </div>
                   <h3>Кнопки</h3>
-                  <p><strong>СТАВКА</strong> — запускает спин. Стрелочки рядом меняют размер ставки. Значок ☰ открывает меню с правилами, историей и настройками звука.</p>
+                  <p><strong>СТАВКА</strong> — запускает спин. Стрелочки рядом меняют размер ставки. Значок ☰ открывает меню с правилами, историей и настройками звука, а значок ⛶ разворачивает игру на весь экран.</p>
                 </>
               )}
               {onboardingStep === 2 && (
