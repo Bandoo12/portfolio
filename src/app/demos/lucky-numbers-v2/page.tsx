@@ -305,9 +305,7 @@ export default function LuckyNumbersV2Page() {
   const endSplash = useCallback(() => {
     setSplashEnding(true);
     window.setTimeout(() => setShowSplash(false), 500);
-    if (!window.localStorage.getItem('ln2-onboarding-seen')) {
-      window.setTimeout(() => setOnboardingOpen(true), 500);
-    }
+    window.setTimeout(() => setOnboardingOpen(true), 500);
   }, []);
   const [scale, setScale] = useState(1);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('desktop');
@@ -706,7 +704,7 @@ export default function LuckyNumbersV2Page() {
           border-radius:99px; background:rgba(53,119,137,0.1); border:1px solid rgba(255,255,255,0.02);
           backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px);
           display:flex; align-items:center; justify-content:space-between; padding-left:16px; padding-right:16px; color:#fff; }
-        .ln-bar.ln-bar-fullscreen { width:618px; }
+        .ln-bar.ln-bar-fullscreen { left:415px; width:618px; }
         .ln-fs-balance { display:flex; align-items:center; gap:16px; margin-left:14px; }
         .ln-fs-balance-divider { width:1px; height:56px; background:rgba(255,255,255,0.15); }
         .ln-fs-toggle { flex-shrink:0; }
@@ -743,8 +741,8 @@ export default function LuckyNumbersV2Page() {
         .ln-spin-outer { width:132px; height:132px; border-radius:999px; box-sizing:border-box; padding:4px;
           background:linear-gradient(180deg,#FCF7B3,#BA8551); cursor:pointer; border:none; }
         .ln-spin-outer:disabled { cursor:default; }
-        .ln-spin-inner { width:100%; height:100%; border-radius:999px; background:linear-gradient(180deg,#298385,#164961);
-          display:flex; align-items:center; justify-content:center; }
+        .ln-spin-inner { position:relative; width:100%; height:100%; border-radius:999px; background:linear-gradient(180deg,#298385,#164961);
+          display:flex; align-items:center; justify-content:center; overflow:hidden; }
         .ln-spin-label { color:#fff; font-weight:800; font-size:16px; letter-spacing:0.2px; text-align:center; text-transform:uppercase; position:relative; z-index:1; }
         .ln-spin-label.ln-spinning { opacity:0.75; }
         .ln-spin-loader { position:absolute; top:50%; left:50%; width:32%; height:32%; border-radius:50%; pointer-events:none;
