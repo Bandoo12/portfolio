@@ -1,3 +1,3 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 6L8 10L4 6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M3 6.99954L4.13137 5.86816L8.10122 9.83801L12.0711 5.86816L13.2024 6.99954L8.80833 11.3936C8.4178 11.7842 7.78464 11.7842 7.39411 11.3936L3 6.99954Z" fill="#EEEFF3"/>
 </svg>

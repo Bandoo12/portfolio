@@ -704,7 +704,7 @@ export default function LuckyNumbersV2Page() {
           border-radius:99px; background:rgba(53,119,137,0.1); border:1px solid rgba(255,255,255,0.02);
           backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px);
           display:flex; align-items:center; justify-content:space-between; padding-left:16px; padding-right:16px; color:#fff; }
-        .ln-bar.ln-bar-fullscreen { left:415px; width:618px; }
+        .ln-bar.ln-bar-fullscreen { left:398px; width:651px; }
         .ln-fs-balance { display:flex; align-items:center; gap:16px; margin-left:14px; }
         .ln-fs-balance-divider { width:1px; height:56px; background:rgba(255,255,255,0.15); }
         .ln-fs-toggle { flex-shrink:0; }
@@ -929,38 +929,68 @@ export default function LuckyNumbersV2Page() {
 
           <div className="ln-right-group">
             <div className="ln-bet-reload">
-              <div className="ln-bet-box">
-                <div className="ln-text-block">
-                  <span className="ln-label">СТАВКА</span>
-                  <span className="ln-bet-value">{bet}₽</span>
+              {!isFullscreen && (
+                <div className="ln-bet-box">
+                  <div className="ln-text-block">
+                    <span className="ln-label">СТАВКА</span>
+                    <span className="ln-bet-value">{bet}₽</span>
+                  </div>
+                  <div className="ln-chevrons">
+                    <button
+                      type="button"
+                      className="ln-chevron-btn"
+                      onClick={() => changeBet(BET_STEP)}
+                      disabled={spinning || bet >= BET_MAX}
+                      aria-label="Увеличить ставку"
+                    >
+                      <img src={`${IMG}/icon-chevron-up.svg`} width={16} height={16} alt="" />
+                    </button>
+                    <button
+                      type="button"
+                      className="ln-chevron-btn"
+                      onClick={() => changeBet(-BET_STEP)}
+                      disabled={spinning || bet <= BET_MIN}
+                      aria-label="Уменьшить ставку"
+                    >
+                      <img src={`${IMG}/icon-chevron-down.svg`} width={16} height={16} alt="" />
+                    </button>
+                  </div>
                 </div>
-                <div className="ln-chevrons">
-                  <button
-                    type="button"
-                    className="ln-chevron-btn"
-                    onClick={() => changeBet(BET_STEP)}
-                    disabled={spinning || bet >= BET_MAX}
-                    aria-label="Увеличить ставку"
-                  >
-                    <img src={`${IMG}/icon-chevron-up.svg`} width={16} height={16} alt="" />
-                  </button>
-                  <button
-                    type="button"
-                    className="ln-chevron-btn"
-                    onClick={() => changeBet(-BET_STEP)}
-                    disabled={spinning || bet <= BET_MIN}
-                    aria-label="Уменьшить ставку"
-                  >
-                    <img src={`${IMG}/icon-chevron-down.svg`} width={16} height={16} alt="" />
-                  </button>
-                </div>
-              </div>
+              )}
               <button className="ln-spin-outer" onClick={spin} disabled={spinning} aria-label="Крутить">
                 <div className="ln-spin-inner">
                   {spinning && <div className="ln-spin-loader" />}
                   <span className={`ln-spin-label${spinning ? ' ln-spinning' : ''}`}>СТАВКА</span>
                 </div>
               </button>
+              {isFullscreen && (
+                <div className="ln-bet-box">
+                  <div className="ln-text-block">
+                    <span className="ln-label">СТАВКА</span>
+                    <span className="ln-bet-value">{bet}₽</span>
+                  </div>
+                  <div className="ln-chevrons">
+                    <button
+                      type="button"
+                      className="ln-chevron-btn"
+                      onClick={() => changeBet(BET_STEP)}
+                      disabled={spinning || bet >= BET_MAX}
+                      aria-label="Увеличить ставку"
+                    >
+                      <img src={`${IMG}/icon-chevron-up.svg`} width={16} height={16} alt="" />
+                    </button>
+                    <button
+                      type="button"
+                      className="ln-chevron-btn"
+                      onClick={() => changeBet(-BET_STEP)}
+                      disabled={spinning || bet <= BET_MIN}
+                      aria-label="Уменьшить ставку"
+                    >
+                      <img src={`${IMG}/icon-chevron-down.svg`} width={16} height={16} alt="" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
