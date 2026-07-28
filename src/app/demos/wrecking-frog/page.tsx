@@ -669,16 +669,22 @@ export default function WreckingFrogPage() {
             // ~6.5px toward the tile's mirrored side, flipping with parity.
             const openingOffset = i % 2 === 0 ? 6.5 : -6.5;
             const shieldSrc = state === 'passed' ? 'shields/shield-success.png' : state === 'crushed' ? 'shields/shield-fail.png' : `shields/shield-${k}.png`;
-            const glow = state === 'passed' ? 'rgba(90,220,140,0.28)' : state === 'current' ? 'rgba(255,201,61,0.32)' : null;
+            const glow = state === 'passed' ? 'rgba(90,220,140,0.55)' : state === 'current' ? 'rgba(255,140,20,0.6)' : null;
             return (
               <React.Fragment key={i}>
                 {glow && (
                   <div style={{
                     position: 'absolute', left: ARCH_X[i] - ARCH_PITCH / 2 + openingOffset, top: GLOW_TOP, width: ARCH_PITCH, height: GLOW_H,
-                    background: `radial-gradient(ellipse at 50% 30%, ${glow}, transparent 70%)`, pointerEvents: 'none',
+                    background: `radial-gradient(ellipse at 50% 25%, ${glow} 0%, ${glow} 35%, transparent 85%)`, pointerEvents: 'none',
                   }} />
                 )}
-                <div style={{ position: 'absolute', left: ARCH_X[i] + openingOffset, top: SHIELD_Y, width: 0, display: 'flex', justifyContent: 'center', transform: 'translateY(-50%)' }}>
+                <div
+                  onClick={state === 'current' ? advance : undefined}
+                  style={{
+                    position: 'absolute', left: ARCH_X[i] + openingOffset, top: SHIELD_Y, width: 0, display: 'flex', justifyContent: 'center',
+                    transform: 'translateY(-50%)', cursor: state === 'current' ? 'pointer' : 'default',
+                  }}
+                >
                   <Sprite name={shieldSrc} style={{ width: SHIELD_SIZE, height: SHIELD_SIZE, filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))' }} fallback={<div />} />
                 </div>
                 <div style={{
@@ -689,10 +695,10 @@ export default function WreckingFrogPage() {
                   <div style={{ transform: `translateY(-50%) scale(${state === 'current' ? 1.15 : 1})` }}>
                     <span style={{ position: 'relative', display: 'inline-block' }}>
                       {gold && (
-                        <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 42, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
+                        <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 40, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
                       )}
                       <span className={`${gorditas.className}${gold ? ' wf-multx' : ''}`} style={{
-                        position: 'relative', fontSize: 42, whiteSpace: 'nowrap', fontWeight: 700,
+                        position: 'relative', fontSize: 40, whiteSpace: 'nowrap', fontWeight: 700,
                         ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
                         ...(state === 'passed' ? { color: '#dfe8df' } : {}),
                       }}>{m.toFixed(2)}x</span>
