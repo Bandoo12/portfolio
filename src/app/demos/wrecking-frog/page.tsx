@@ -87,7 +87,7 @@ const GROUND_Y = Math.round(CHAIN_TOP_Y + TILE_H * (FLOOR_TOP_NATIVE_Y / TILE_NA
 // its own native aspect ratio at the same TILE_H scale.
 const ENDCAP_NATIVE_W = 892;
 const ENDCAP_W = Math.round(TILE_H * (ENDCAP_NATIVE_W / TILE_NATIVE_H));
-const ARCH0_CX = ENDCAP_W + ARCH_PITCH * 1.5; // frog starts on the first regular tile after the end-cap; arch 0 is the next tile over
+const ARCH0_CX = ENDCAP_W + ARCH_PITCH * 0.5; // frog rests on the end-cap's own far side (column 2 of 2); arch 0 (column 3) is the first regular tile, one jump away
 const ARCH_X = Array.from({ length: ARCH_COUNT }, (_, i) => ARCH0_CX + i * ARCH_PITCH);
 const START_X = ARCH0_CX - ARCH_PITCH;
 const LAST_CAP_X = ENDCAP_W + ARCH_COUNT * ARCH_PITCH; // left edge of the mirrored end-cap, right after the last regular tile
