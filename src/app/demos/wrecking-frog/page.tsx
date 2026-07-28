@@ -1,9 +1,9 @@
 'use client';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Gorditas } from 'next/font/google';
+import { Fredoka } from 'next/font/google';
 
-const gorditas = Gorditas({ weight: '700', subsets: ['latin'], display: 'swap' });
+const gorditas = Fredoka({ weight: '700', subsets: ['latin'], display: 'swap' });
 
 /* "ЛЯГУШКА-ИСКАТЕЛЬ" — jungle temple crash/tower game.
    Frog jumps arch-to-arch; each arch has a rising cash-out multiplier and a
@@ -602,11 +602,14 @@ export default function WreckingFrogPage() {
         @keyframes wf-breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.97); } }
         .wf-btn { cursor: pointer; border: none; font-family: inherit; }
         .wf-btn:disabled { cursor: default; opacity: 0.4; }
+        .wf-multx-bulk {
+          font-weight: 700; color: #f2b83f; -webkit-text-stroke: 4px #f2b83f; paint-order: stroke fill;
+        }
         .wf-multx {
           font-weight: 700;
           background: linear-gradient(180deg, #ffee94 21%, #df8600);
           -webkit-background-clip: text; background-clip: text; color: transparent;
-          -webkit-text-stroke: 3px #5c2e00;
+          -webkit-text-stroke: 1px #5c2e00;
           paint-order: stroke fill;
           filter: drop-shadow(0 5px 4px rgba(0,0,0,0.25)) drop-shadow(0 2px 0 rgba(179,59,0,0.5));
         }
@@ -666,11 +669,16 @@ export default function WreckingFrogPage() {
                 transform: `translateY(-50%) scale(${state === 'current' ? 1.15 : 1})`, transition: 'transform 0.25s ease, opacity 0.25s ease',
                 opacity: state === 'passed' ? 0.4 : 1,
               }}>
-                <span className={`${gorditas.className}${gold ? ' wf-multx' : ''}`} style={{
-                  fontSize: 26, whiteSpace: 'nowrap', fontWeight: 700,
-                  ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
-                  ...(state === 'passed' ? { color: '#dfe8df' } : {}),
-                }}>{m.toFixed(2)}x</span>
+                <span style={{ position: 'relative', display: 'inline-block' }}>
+                  {gold && (
+                    <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 28, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
+                  )}
+                  <span className={`${gorditas.className}${gold ? ' wf-multx' : ''}`} style={{
+                    position: 'relative', fontSize: 28, whiteSpace: 'nowrap', fontWeight: 700,
+                    ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
+                    ...(state === 'passed' ? { color: '#dfe8df' } : {}),
+                  }}>{m.toFixed(2)}x</span>
+                </span>
               </div>
             );
           })}
