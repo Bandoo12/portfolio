@@ -232,9 +232,9 @@ function FrameSprite({ folder, mode, fps, playKey, loopFrom, style, fallback }: 
   // minimal blend, capped low, only right around the transition instant — takes
   // the hardest edge off the per-frame snap without a visible double-exposure.
   const blendOpacity = nextIdx !== floorIdx && frac > 0.7 ? (frac - 0.7) / 0.3 * 0.2 : 0;
-  if (blendOpacity < 0.01) {
-    return <img src={src(floorIdx)} alt="" draggable={false} style={imgStyle} />;
-  }
+  // Always render the same two-<img> tree (only opacity changes) — switching
+  // between a bare <img> and this wrapper on alternating frames was forcing a
+  // DOM remount every animation tick, which showed up as a visible flicker.
   return (
     <span style={{ position: 'relative', display: 'inline-block' }}>
       <img src={src(floorIdx)} alt="" draggable={false} style={imgStyle} />
