@@ -11,7 +11,7 @@ import { motion } from 'framer-motion';
 
    Art: drop matching PNGs (transparent bg) into public/img/wrecking-frog/ and
    they replace the placeholder SVG art automatically — see file names in the
-   Sprite() calls below (frog-idle.png, arch-intact.png, wrecking-ball.png, ...).
+   Sprite() calls below (frog-idle.png, arch-strip.png, wrecking-ball.png, ...).
    No code changes needed. */
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
@@ -53,24 +53,33 @@ const STAGE_W = 1400; // desktop viewport (camera window), not the world length
 const STAGE_H = 820;
 const VIEW_W_NARROW = 480; // mobile viewport
 
-const ARCH_PITCH = 118;
-const ARCH0_CX = 170;
-const ARCH_X = Array.from({ length: ARCH_COUNT }, (_, i) => ARCH0_CX + i * ARCH_PITCH);
-const START_X = ARCH0_CX - ARCH_PITCH;
-
 const CHAIN_TOP_Y = 70;
 const BALL_REST_Y = 190;
 const BALL_R = 34;
 const GROUND_Y = 480;
+const FLOOR_H = 60;
 const LADDER_Y = 540;
 const BAR_TOP = 634;
 const FOOTER_Y = 766;
 const DROP_DIST = 250;
 const FROG_H = 168; // sprites are ~square canvases; width is left to auto-scale from this
-const ARCH_DISPLAY_H = 260;
-const ARCH_DISPLAY_W = Math.round(ARCH_DISPLAY_H * (3162 / 3841)); // matches the cropped arch-*.png aspect ratio
+
+// arch-strip.png is a single seamless repeat unit (wall coping -> sky gap -> arch
+// -> floor front edge) cropped straight out of the Figma "Game" mural; tiling it
+// edge-to-edge reproduces the mockup's colonnade exactly. Its display height is
+// pinned to the CHAIN_TOP_Y..floor-front-edge span, and the tile width (so also
+// the arch pitch) falls out of that same height via the tile's own native aspect
+// ratio — no hand-picked pixel constants.
+const TILE_NATIVE_W = 373;
+const TILE_NATIVE_H = 2288;
+const TILE_H = GROUND_Y + FLOOR_H - CHAIN_TOP_Y;
+const ARCH_PITCH = TILE_H * (TILE_NATIVE_W / TILE_NATIVE_H);
+const ARCH0_CX = ARCH_PITCH * 1.5; // tile 0 (world x [0,ARCH_PITCH]) is the frog's start tile; arch 0 is the next tile over
+const ARCH_X = Array.from({ length: ARCH_COUNT }, (_, i) => ARCH0_CX + i * ARCH_PITCH);
+const START_X = ARCH0_CX - ARCH_PITCH;
+
 const IDOL_H = 240;
-const IDOL_W = Math.round(IDOL_H * (1664 / 2040)); // matches the cropped gold-idol.png aspect ratio
+const IDOL_W = Math.round(IDOL_H * (1644 / 1211)); // matches the cropped gold-idol.png aspect ratio
 const IDOL_X = ARCH_X[ARCH_COUNT - 1] + 110;
 const WORLD_W = IDOL_X + IDOL_W / 2 + 80; // full scrollable track length the camera pans across
 
@@ -108,6 +117,25 @@ function Sprite({ name, alt = '', style, fallback }: { name: string; alt?: strin
   const ok = useAssetOk(src);
   if (ok) return <img src={src} alt={alt} draggable={false} style={{ maxWidth: 'none', maxHeight: 'none', ...style }} />;
   return <>{fallback}</>;
+}
+
+// arch-strip.png is a seamless repeat unit (wall coping -> arch -> floor), so it's
+// tiled as a CSS background instead of Sprite's <img> — matches the mockup's mural
+// exactly rather than stretching one crop across the whole track.
+function ArchStrip() {
+  const src = `${IMG}/arch-strip.png`;
+  const ok = useAssetOk(src);
+  if (ok) {
+    return (
+      <div style={{
+        position: 'absolute', left: 0, top: CHAIN_TOP_Y, width: WORLD_W, height: TILE_H,
+        backgroundImage: `url(${src})`, backgroundRepeat: 'repeat-x', backgroundSize: `${ARCH_PITCH}px 100%`, backgroundPosition: 'left top',
+      }} />
+    );
+  }
+  return (
+    <div style={{ position: 'absolute', left: 0, top: CHAIN_TOP_Y, width: WORLD_W, height: TILE_H, background: 'linear-gradient(180deg, transparent 0%, transparent 55%, #8a7a63 55%, #5c4a36 92%, #3a2e20 100%)' }} />
+  );
 }
 
 // Frame-sequence sprites (video-generated, sliced into public/img/wrecking-frog/<folder>/frame-N.png).
@@ -552,20 +580,16 @@ export default function WreckingFrogPage() {
 
         {/* panned world */}
         <div style={{ position: 'absolute', left: 0, top: 0, width: WORLD_W, height: STAGE_H, transform: `translateX(${camX}px)`, transition: 'transform 0.5s cubic-bezier(.2,.8,.2,1)' }}>
-          <Sprite name="temple-floor.png" style={{ position: 'absolute', left: 0, top: GROUND_Y, width: WORLD_W, height: 60, objectFit: 'cover' }}
-            fallback={<div style={{ position: 'absolute', left: 0, top: GROUND_Y, width: WORLD_W, height: 60, background: 'linear-gradient(#5c4a36, #3a2e20)', borderTop: '2px solid #26201a' }} />} />
+          <ArchStrip />
+          {destroyedIndex !== null && (
+            <Sprite name="arch-strip-destroyed.png"
+              style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}
+              fallback={<div style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}><ArchArt destroyed /></div>} />
+          )}
 
-          {Array.from({ length: ARCH_COUNT }, (_, i) => {
-            const archState: 'intact' | 'destroyed' = destroyedIndex === i ? 'destroyed' : 'intact';
-            return (
-              <React.Fragment key={i}>
-                <div style={{ position: 'absolute', left: ARCH_X[i], top: GROUND_Y - ARCH_DISPLAY_H, width: 0, height: 0 }}>
-                  <Sprite name={`arch-${archState}.png`} style={{ position: 'absolute', left: -ARCH_DISPLAY_W / 2, top: 0, width: ARCH_DISPLAY_W, height: ARCH_DISPLAY_H }} fallback={<ArchArt destroyed={archState === 'destroyed'} />} />
-                </div>
-                <WreckingBallRig index={i} archState={archState} ballAnim={ballAnim} />
-              </React.Fragment>
-            );
-          })}
+          {Array.from({ length: ARCH_COUNT }, (_, i) => (
+            <WreckingBallRig key={i} index={i} archState={destroyedIndex === i ? 'destroyed' : 'intact'} ballAnim={ballAnim} />
+          ))}
 
           <div style={{ position: 'absolute', left: IDOL_X - IDOL_W / 2, top: GROUND_Y - IDOL_H }}>
             <Sprite name="gold-idol.png" style={{ width: IDOL_W, height: IDOL_H }} fallback={<IdolArt />} />
