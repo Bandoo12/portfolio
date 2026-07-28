@@ -200,23 +200,21 @@ function FrameSprite({ folder, mode, fps, playKey, loopFrom, style, fallback }: 
   folder: string; mode: 'loop' | 'once'; fps: number; playKey: number; loopFrom?: number; style?: React.CSSProperties; fallback: React.ReactNode;
 }) {
   const count = useFrameCount(folder);
-  const [frame, setFrame] = useState(1);
+  const [pos, setPos] = useState(0); // 0-indexed float; fractional part drives a minimal crossfade
   useEffect(() => {
-    if (count < 1) { setFrame(1); return; }
+    if (count < 1) { setPos(0); return; }
     let raf = 0;
     const start = performance.now();
     const tailStart = loopFrom ? loopFrom - 1 : count - 1; // 0-indexed
     const tailLen = count - tailStart;
     const tick = () => {
-      const idx = Math.floor(((performance.now() - start) / 1000) * fps);
+      const t = ((performance.now() - start) / 1000) * fps;
       if (mode === 'loop') {
-        setFrame((idx % count) + 1);
-      } else if (loopFrom && idx >= count - 1) {
-        // played through once — keep cycling just the tail (e.g. the star-orbit
-        // frames) instead of freezing on the last frame.
-        setFrame(tailStart + ((idx - (count - 1)) % tailLen) + 1);
+        setPos(t % count);
+      } else if (loopFrom && t >= count - 1) {
+        setPos(tailStart + ((t - (count - 1)) % tailLen));
       } else {
-        setFrame(Math.min(idx, count - 1) + 1);
+        setPos(Math.min(t, count - 1));
       }
       raf = requestAnimationFrame(tick);
     };
@@ -224,7 +222,25 @@ function FrameSprite({ folder, mode, fps, playKey, loopFrom, style, fallback }: 
     return () => cancelAnimationFrame(raf);
   }, [count, mode, fps, playKey, loopFrom]);
   if (count < 1) return <>{fallback}</>;
-  return <img src={`${IMG}/${folder}/frame-${Math.min(frame, count)}.png`} alt="" draggable={false} style={{ maxWidth: 'none', maxHeight: 'none', ...style }} />;
+  const tailStart = loopFrom ? loopFrom - 1 : count - 1;
+  const floorIdx = Math.min(Math.floor(pos), count - 1);
+  const frac = pos - floorIdx;
+  let nextIdx = floorIdx + 1;
+  if (nextIdx >= count) nextIdx = mode === 'loop' ? 0 : loopFrom ? tailStart : count - 1;
+  const src = (i: number) => `${IMG}/${folder}/frame-${i + 1}.png`;
+  const imgStyle: React.CSSProperties = { maxWidth: 'none', maxHeight: 'none', ...style };
+  // minimal blend, capped low, only right around the transition instant — takes
+  // the hardest edge off the per-frame snap without a visible double-exposure.
+  const blendOpacity = nextIdx !== floorIdx && frac > 0.7 ? (frac - 0.7) / 0.3 * 0.2 : 0;
+  if (blendOpacity < 0.01) {
+    return <img src={src(floorIdx)} alt="" draggable={false} style={imgStyle} />;
+  }
+  return (
+    <span style={{ position: 'relative', display: 'inline-block' }}>
+      <img src={src(floorIdx)} alt="" draggable={false} style={imgStyle} />
+      <img src={src(nextIdx)} alt="" draggable={false} style={{ ...imgStyle, position: 'absolute', left: 0, top: 0, opacity: blendOpacity }} />
+    </span>
+  );
 }
 
 // ---------- placeholder art ----------
@@ -439,7 +455,7 @@ function frogAnim(pose: Pose): { folder: string; mode: 'loop' | 'once'; fps: num
     // (frames 11-16) until the round resets — instead of freezing on frame 16.
     case 'crushed': return { folder: 'frog-crushed', mode: 'once', fps: 12, loopFrom: 11 };
     case 'crouch': case 'air': case 'land': return { folder: 'frog-jump', mode: 'once', fps: 16 };
-    default: return { folder: 'frog-idle', mode: 'loop', fps: 6 };
+    default: return { folder: 'frog-idle', mode: 'loop', fps: 5 };
   }
 }
 
