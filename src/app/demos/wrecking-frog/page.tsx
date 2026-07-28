@@ -77,7 +77,10 @@ const ARCH_PITCH = Math.round(TILE_H * (TILE_NATIVE_W / TILE_NATIVE_H));
 // inside the tile (native y=1518, measured where the arch opening's center
 // column first hits solid ground) — not the deeper foreground floor slabs.
 const FLOOR_TOP_NATIVE_Y = 1518;
-const GROUND_Y = Math.round(CHAIN_TOP_Y + TILE_H * (FLOOR_TOP_NATIVE_Y / TILE_NATIVE_H));
+// +25 nudges the frog forward onto the pillar base's front lip rather than its
+// back edge — the raw alpha measurement lands on the far edge, which reads as
+// floating just above the surface.
+const GROUND_Y = Math.round(CHAIN_TOP_Y + TILE_H * (FLOOR_TOP_NATIVE_Y / TILE_NATIVE_H)) + 25;
 const ARCH0_CX = ARCH_PITCH * 1.5; // tile 0 (world x [0,ARCH_PITCH]) is the frog's start tile; arch 0 is the next tile over
 const ARCH_X = Array.from({ length: ARCH_COUNT }, (_, i) => ARCH0_CX + i * ARCH_PITCH);
 const START_X = ARCH0_CX - ARCH_PITCH;
@@ -633,8 +636,8 @@ export default function WreckingFrogPage() {
           <motion.div animate={{ x: frogX }} transition={{ duration: 0.42, ease: 'easeInOut' }} style={{ position: 'absolute', top: GROUND_Y - FROG_H, width: 0, height: 0 }}>
             <div style={{ position: 'absolute', transform: 'translateX(-50%)' }}>
               <div style={{
-                position: 'absolute', top: FROG_H - 14, left: '50%', transform: 'translateX(-50%)',
-                width: 64, height: 18, borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(0,0,0,0.38), rgba(0,0,0,0) 75%)',
+                position: 'absolute', top: FROG_H - 10, left: '50%', transform: 'translateX(-50%)',
+                width: 78, height: 22, borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(0,0,0,0.55), rgba(0,0,0,0) 75%)',
               }} />
               <motion.div animate={{ y: hopY }} transition={{ duration: 0.21, ease: hopY === 0 ? 'easeIn' : 'easeOut' }}>
                 <motion.div animate={frogFramesReady ? { scaleX: 1, scaleY: 1 } : POSE_SCALE[pose]} transition={{ type: 'spring', stiffness: 320, damping: 15 }} style={{ transformOrigin: '50% 100%' }}>
