@@ -60,6 +60,10 @@ const CHAIN_TOP_Y = 0; // wall coping / chain mount sits flush with the stage's 
 const BALL_REST_Y = 190;
 const BALL_R = 34;
 const LADDER_Y = 400; // centered inside the arch opening, not down by the floor
+const SHIELD_Y = 300; // step-number shield's bottom edge touches the arch curve peak, matching the mockup
+const SHIELD_SIZE = 84; // close to the source art's native ~88-93px — mockup shields are large, nearly touching neighbors
+const GLOW_TOP = 276; // opening glow spans from the arch curve down to the floor line
+const GLOW_H = 262;
 const BAR_TOP = 634;
 const FOOTER_Y = 766;
 const DROP_DIST = 250;
@@ -600,6 +604,7 @@ export default function WreckingFrogPage() {
         @keyframes wf-sway { 0%,100% { rotate: calc(var(--wf-sway) * -1); } 50% { rotate: var(--wf-sway); } }
         @keyframes wf-mist { 0% { transform: translateX(0); } 100% { transform: translateX(-60px); } }
         @keyframes wf-breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.97); } }
+        @keyframes wf-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .wf-btn { cursor: pointer; border: none; font-family: inherit; }
         .wf-btn:disabled { cursor: default; opacity: 0.4; }
         .wf-multx-bulk {
@@ -654,7 +659,8 @@ export default function WreckingFrogPage() {
             <Sprite name="gold-idol.png" style={{ width: IDOL_W, height: IDOL_H }} fallback={<IdolArt />} />
           </div>
 
-          {/* multiplier ladder — plain gold gradient numerals over the arch opening, matching the mockup (no chip/pill) */}
+          {/* multiplier ladder — step shield up top, gold gradient numeral in the opening,
+              a green/amber glow tinting passed/current openings, matching the mockup */}
           {LADDER.map((m, i) => {
             const k = i + 1;
             const state = destroyedIndex === i ? 'crushed' : step >= k ? 'passed' : phase === 'ready' && step + 1 === k ? 'current' : 'locked';
@@ -662,24 +668,38 @@ export default function WreckingFrogPage() {
             // the arch opening isn't perfectly centered inside its tile — it sits
             // ~6.5px toward the tile's mirrored side, flipping with parity.
             const openingOffset = i % 2 === 0 ? 6.5 : -6.5;
+            const shieldSrc = state === 'passed' ? 'shields/shield-success.png' : state === 'crushed' ? 'shields/shield-fail.png' : `shields/shield-${k}.png`;
+            const glow = state === 'passed' ? 'rgba(90,220,140,0.28)' : state === 'current' ? 'rgba(255,201,61,0.32)' : null;
             return (
-              <div key={i} style={{
-                position: 'absolute', left: ARCH_X[i] + openingOffset, top: LADDER_Y, width: 0,
-                display: 'flex', justifyContent: 'center',
-                transform: `translateY(-50%) scale(${state === 'current' ? 1.15 : 1})`, transition: 'transform 0.25s ease, opacity 0.25s ease',
-                opacity: state === 'passed' ? 0.4 : 1,
-              }}>
-                <span style={{ position: 'relative', display: 'inline-block' }}>
-                  {gold && (
-                    <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 28, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
-                  )}
-                  <span className={`${gorditas.className}${gold ? ' wf-multx' : ''}`} style={{
-                    position: 'relative', fontSize: 28, whiteSpace: 'nowrap', fontWeight: 700,
-                    ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
-                    ...(state === 'passed' ? { color: '#dfe8df' } : {}),
-                  }}>{m.toFixed(2)}x</span>
-                </span>
-              </div>
+              <React.Fragment key={i}>
+                {glow && (
+                  <div style={{
+                    position: 'absolute', left: ARCH_X[i] - ARCH_PITCH / 2 + openingOffset, top: GLOW_TOP, width: ARCH_PITCH, height: GLOW_H,
+                    background: `radial-gradient(ellipse at 50% 30%, ${glow}, transparent 70%)`, pointerEvents: 'none',
+                  }} />
+                )}
+                <div style={{ position: 'absolute', left: ARCH_X[i] + openingOffset, top: SHIELD_Y, width: 0, display: 'flex', justifyContent: 'center', transform: 'translateY(-50%)' }}>
+                  <Sprite name={shieldSrc} style={{ width: SHIELD_SIZE, height: SHIELD_SIZE, filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))' }} fallback={<div />} />
+                </div>
+                <div style={{
+                  position: 'absolute', left: ARCH_X[i] + openingOffset, top: state === 'current' ? LADDER_Y - 40 : LADDER_Y, width: 0,
+                  display: 'flex', justifyContent: 'center', transition: 'top 0.25s ease, opacity 0.25s ease', opacity: state === 'passed' ? 0.4 : 1,
+                  animation: state === 'current' ? 'wf-bob 1.6s ease-in-out infinite' : 'none',
+                }}>
+                  <div style={{ transform: `translateY(-50%) scale(${state === 'current' ? 1.15 : 1})` }}>
+                    <span style={{ position: 'relative', display: 'inline-block' }}>
+                      {gold && (
+                        <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 44, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
+                      )}
+                      <span className={`${gorditas.className}${gold ? ' wf-multx' : ''}`} style={{
+                        position: 'relative', fontSize: 44, whiteSpace: 'nowrap', fontWeight: 700,
+                        ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
+                        ...(state === 'passed' ? { color: '#dfe8df' } : {}),
+                      }}>{m.toFixed(2)}x</span>
+                    </span>
+                  </div>
+                </div>
+              </React.Fragment>
             );
           })}
 
