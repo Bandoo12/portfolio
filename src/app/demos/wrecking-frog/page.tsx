@@ -69,25 +69,32 @@ const FROG_H = 168; // sprites are ~square canvases; width is left to auto-scale
 // band. The tile width (so also the arch pitch) falls out of that height via the
 // tile's own native aspect ratio, rounded to a whole pixel so the CSS background
 // tiling doesn't accumulate a subpixel seam across ~30 repeats.
-const TILE_NATIVE_W = 373;
-const TILE_NATIVE_H = 2288;
+const TILE_NATIVE_W = 293;
+const TILE_NATIVE_H = 1739;
 const TILE_H = STAGE_H - CHAIN_TOP_Y;
 const ARCH_PITCH = Math.round(TILE_H * (TILE_NATIVE_W / TILE_NATIVE_H));
 // Where the frog/idol/crash-fx sit: the top surface of the pillar-base ledge
-// inside the tile (native y=1518, measured where the arch opening's center
+// inside the tile (native y=1142, measured where the arch opening's center
 // column first hits solid ground) — not the deeper foreground floor slabs.
-const FLOOR_TOP_NATIVE_Y = 1518;
+const FLOOR_TOP_NATIVE_Y = 1142;
 // +25 nudges the frog forward onto the pillar base's front lip rather than its
 // back edge — the raw alpha measurement lands on the far edge, which reads as
 // floating just above the surface.
 const GROUND_Y = Math.round(CHAIN_TOP_Y + TILE_H * (FLOOR_TOP_NATIVE_Y / TILE_NATIVE_H)) + 25;
-const ARCH0_CX = ARCH_PITCH * 2.5; // frog starts on tile 1 (the second column); arch 0 is the next tile over
+// The first and last columns are a distinct, wider end-cap piece (solid wall, no
+// arch) — not part of the repeating pattern. The mockup mirrors it horizontally
+// for the far/last cap. Its width is derived the same way as the arch pitch, from
+// its own native aspect ratio at the same TILE_H scale.
+const ENDCAP_NATIVE_W = 892;
+const ENDCAP_W = Math.round(TILE_H * (ENDCAP_NATIVE_W / TILE_NATIVE_H));
+const ARCH0_CX = ENDCAP_W + ARCH_PITCH * 1.5; // frog starts on the first regular tile after the end-cap; arch 0 is the next tile over
 const ARCH_X = Array.from({ length: ARCH_COUNT }, (_, i) => ARCH0_CX + i * ARCH_PITCH);
 const START_X = ARCH0_CX - ARCH_PITCH;
+const LAST_CAP_X = ENDCAP_W + ARCH_COUNT * ARCH_PITCH; // left edge of the mirrored end-cap, right after the last regular tile
 
 const IDOL_H = 240;
 const IDOL_W = Math.round(IDOL_H * (1644 / 1211)); // matches the cropped gold-idol.png aspect ratio
-const IDOL_X = ARCH_X[ARCH_COUNT - 1] + 110;
+const IDOL_X = LAST_CAP_X + ENDCAP_W + 110;
 const WORLD_W = IDOL_X + IDOL_W / 2 + 80; // full scrollable track length the camera pans across
 
 const BET_MIN = 50;
@@ -134,17 +141,28 @@ function Sprite({ name, alt = '', style, fallback }: { name: string; alt?: strin
 function ArchStrip() {
   const src = `${IMG}/arch-strip.png`;
   const ok = useAssetOk(src);
+  const stripW = ARCH_COUNT * ARCH_PITCH;
   if (ok) {
     return (
       <div style={{
-        position: 'absolute', left: 0, top: CHAIN_TOP_Y, width: WORLD_W, height: TILE_H,
+        position: 'absolute', left: ENDCAP_W, top: CHAIN_TOP_Y, width: stripW, height: TILE_H,
         backgroundImage: `url(${src})`, backgroundRepeat: 'repeat-x', backgroundSize: `${ARCH_PITCH * 2}px 100%`, backgroundPosition: 'left top',
       }} />
     );
   }
   return (
-    <div style={{ position: 'absolute', left: 0, top: CHAIN_TOP_Y, width: WORLD_W, height: TILE_H, background: 'linear-gradient(180deg, transparent 0%, transparent 55%, #8a7a63 55%, #5c4a36 92%, #3a2e20 100%)' }} />
+    <div style={{ position: 'absolute', left: ENDCAP_W, top: CHAIN_TOP_Y, width: stripW, height: TILE_H, background: 'linear-gradient(180deg, transparent 0%, transparent 55%, #8a7a63 55%, #5c4a36 92%, #3a2e20 100%)' }} />
   );
+}
+
+// The distinctive first/last columns: a wider, solid wall segment (no arch
+// opening) that bookends the repeating colonnade. The far end reuses the same
+// asset mirrored horizontally, matching the mockup exactly.
+function ArchEndcap({ x, mirrored }: { x: number; mirrored: boolean }) {
+  const src = `${IMG}/${mirrored ? 'arch-endcap-mirrored.png' : 'arch-endcap.png'}`;
+  const ok = useAssetOk(src);
+  if (ok) return <img src={src} alt="" draggable={false} style={{ position: 'absolute', left: x, top: CHAIN_TOP_Y, width: ENDCAP_W, height: TILE_H, maxWidth: 'none', maxHeight: 'none' }} />;
+  return <div style={{ position: 'absolute', left: x, top: CHAIN_TOP_Y, width: ENDCAP_W, height: TILE_H, background: 'linear-gradient(180deg, transparent 0%, transparent 55%, #8a7a63 55%, #5c4a36 92%, #3a2e20 100%)' }} />;
 }
 
 // Frame-sequence sprites (video-generated, sliced into public/img/wrecking-frog/<folder>/frame-N.png).
@@ -593,6 +611,8 @@ export default function WreckingFrogPage() {
         {/* panned world */}
         <div style={{ position: 'absolute', left: 0, top: 0, width: WORLD_W, height: STAGE_H, transform: `translateX(${camX}px)`, transition: 'transform 0.5s cubic-bezier(.2,.8,.2,1)' }}>
           <ArchStrip />
+          <ArchEndcap x={0} mirrored={false} />
+          <ArchEndcap x={LAST_CAP_X} mirrored />
           {destroyedIndex !== null && (
             // tile index for arch i is i+1 (arch 0 sits on the second tile, after
             // the frog's start tile) — mirrored tiles land on odd tile indices,
@@ -636,7 +656,7 @@ export default function WreckingFrogPage() {
             <div style={{ position: 'absolute', transform: 'translateX(-50%)' }}>
               <div style={{
                 position: 'absolute', top: FROG_H - 16, left: '50%', transform: 'translateX(-50%)',
-                width: 56, height: 16, borderRadius: '50%', background: 'rgba(5,10,5,0.4)', filter: 'blur(5px)',
+                width: 108, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', filter: 'blur(3px)',
               }} />
               <motion.div animate={{ y: hopY }} transition={{ duration: 0.21, ease: hopY === 0 ? 'easeIn' : 'easeOut' }}>
                 <motion.div animate={frogFramesReady ? { scaleX: 1, scaleY: 1 } : POSE_SCALE[pose]} transition={{ type: 'spring', stiffness: 320, damping: 15 }} style={{ transformOrigin: '50% 100%' }}>
