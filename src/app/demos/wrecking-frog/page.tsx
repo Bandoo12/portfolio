@@ -695,10 +695,10 @@ export default function WreckingFrogPage() {
                   <div style={{ transform: `translateY(-50%) scale(${state === 'current' ? 1.15 : 1})` }}>
                     <span style={{ position: 'relative', display: 'inline-block' }}>
                       {gold && (
-                        <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 40, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
+                        <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 36, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
                       )}
                       <span className={`${gorditas.className}${gold ? ' wf-multx' : ''}`} style={{
-                        position: 'relative', fontSize: 40, whiteSpace: 'nowrap', fontWeight: 700,
+                        position: 'relative', fontSize: 36, whiteSpace: 'nowrap', fontWeight: 700,
                         ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
                         ...(state === 'passed' ? { color: '#dfe8df' } : {}),
                       }}>{m.toFixed(2)}x</span>
@@ -738,12 +738,12 @@ export default function WreckingFrogPage() {
           <div style={{ position: 'absolute', left: 0, right: 0, top: STAGE_H * 0.32, textAlign: 'center', zIndex: 60 }}>
             {result.kind === 'lose' ? (
               <>
-                <div style={{ fontSize: 40, fontWeight: 900, color: '#ff4d5a', textShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>АРКА ОБВАЛИЛАСЬ</div>
+                <div style={{ fontSize: 36, fontWeight: 900, color: '#ff4d5a', textShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>АРКА ОБВАЛИЛАСЬ</div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.75)', marginTop: 6 }}>Ставка {fmt(bet)} ₽ потеряна</div>
               </>
             ) : (
               <>
-                <div style={{ fontSize: 40, fontWeight: 900, color: '#ffc93d', textShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
+                <div style={{ fontSize: 36, fontWeight: 900, color: '#ffc93d', textShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
                   {result.kind === 'jackpot' ? 'ЗОЛОТАЯ ЖАБА!' : `+${fmt(result.payout)} ₽`}
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.75)', marginTop: 6 }}>×{result.mult.toFixed(2)} от ставки {fmt(bet)} ₽{result.kind === 'jackpot' ? ` · +${fmt(result.payout)} ₽` : ''}</div>
