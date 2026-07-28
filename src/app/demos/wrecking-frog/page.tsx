@@ -1,6 +1,9 @@
 'use client';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { Gorditas } from 'next/font/google';
+
+const gorditas = Gorditas({ weight: '700', subsets: ['latin'], display: 'swap' });
 
 /* "ЛЯГУШКА-ИСКАТЕЛЬ" — jungle temple crash/tower game.
    Frog jumps arch-to-arch; each arch has a rising cash-out multiplier and a
@@ -594,14 +597,13 @@ export default function WreckingFrogPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a1710', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", overflow: 'hidden' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Gorditas:wght@400;700&display=swap');
         @keyframes wf-sway { 0%,100% { rotate: calc(var(--wf-sway) * -1); } 50% { rotate: var(--wf-sway); } }
         @keyframes wf-mist { 0% { transform: translateX(0); } 100% { transform: translateX(-60px); } }
         @keyframes wf-breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.97); } }
         .wf-btn { cursor: pointer; border: none; font-family: inherit; }
         .wf-btn:disabled { cursor: default; opacity: 0.4; }
         .wf-multx {
-          font-family: 'Gorditas', cursive; font-weight: 700;
+          font-weight: 700;
           background: linear-gradient(180deg, #ffee94 21%, #df8600);
           -webkit-background-clip: text; background-clip: text; color: transparent;
           -webkit-text-stroke: 1.5px #5c2e00;
@@ -660,12 +662,11 @@ export default function WreckingFrogPage() {
               <div key={i} style={{
                 position: 'absolute', left: ARCH_X[i] + openingOffset, top: LADDER_Y, width: 0,
                 display: 'flex', justifyContent: 'center',
-                transform: state === 'current' ? 'scale(1.15)' : 'scale(1)', transition: 'transform 0.25s ease, opacity 0.25s ease',
+                transform: `translateY(-50%) scale(${state === 'current' ? 1.15 : 1})`, transition: 'transform 0.25s ease, opacity 0.25s ease',
                 opacity: state === 'passed' ? 0.4 : 1,
               }}>
-                <span className={gold ? 'wf-multx' : undefined} style={{
-                  fontSize: 26, whiteSpace: 'nowrap',
-                  ...(gold ? {} : { fontFamily: "'Gorditas', cursive", fontWeight: 700 }),
+                <span className={`${gorditas.className}${gold ? ' wf-multx' : ''}`} style={{
+                  fontSize: 26, whiteSpace: 'nowrap', fontWeight: 700,
                   ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
                   ...(state === 'passed' ? { color: '#dfe8df' } : {}),
                 }}>{m.toFixed(2)}x</span>
