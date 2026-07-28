@@ -81,7 +81,7 @@ const FLOOR_TOP_NATIVE_Y = 1518;
 // back edge — the raw alpha measurement lands on the far edge, which reads as
 // floating just above the surface.
 const GROUND_Y = Math.round(CHAIN_TOP_Y + TILE_H * (FLOOR_TOP_NATIVE_Y / TILE_NATIVE_H)) + 25;
-const ARCH0_CX = ARCH_PITCH * 1.5; // tile 0 (world x [0,ARCH_PITCH]) is the frog's start tile; arch 0 is the next tile over
+const ARCH0_CX = ARCH_PITCH * 2.5; // frog starts on tile 1 (the second column); arch 0 is the next tile over
 const ARCH_X = Array.from({ length: ARCH_COUNT }, (_, i) => ARCH0_CX + i * ARCH_PITCH);
 const START_X = ARCH0_CX - ARCH_PITCH;
 
@@ -377,9 +377,8 @@ function WreckingBallRig({ index, archState, ballAnim }: { index: number; archSt
         style={swaying ? ({ transformOrigin: '50% 0', animation: `wf-sway ${dur}s ease-in-out ${delay}s infinite`, ['--wf-sway' as string]: `${sway}deg` } as React.CSSProperties) : { transformOrigin: '50% 0' }}
       >
         <div style={{
-          width: 10, height: BALL_REST_Y - CHAIN_TOP_Y - BALL_R, marginLeft: -5,
-          backgroundImage: 'repeating-linear-gradient(180deg, transparent 0 2px, #6b6b72 2px 5px, transparent 5px 7px, #3a3a40 7px 10px, transparent 10px 12px, #6b6b72 12px 15px, transparent 15px 17px)',
-          backgroundSize: '10px 17px', boxShadow: 'inset -2px 0 0 rgba(0,0,0,0.35), inset 2px 0 0 rgba(255,255,255,0.12)',
+          width: 18, height: BALL_REST_Y - CHAIN_TOP_Y - BALL_R, marginLeft: -9,
+          backgroundImage: `url(${IMG}/chain-tile.png)`, backgroundRepeat: 'repeat-y', backgroundSize: '18px 53px', backgroundPosition: 'top',
         }} />
         <motion.div animate={{ y }} transition={ballTransition(stage)} style={{ marginLeft: -(BALL_R + 4), width: BALL_R * 2 + 8 }}>
           <Sprite name="wrecking-ball.png" alt="" style={{ width: '100%', display: 'block' }} fallback={<BallArt />} />
@@ -636,8 +635,8 @@ export default function WreckingFrogPage() {
           <motion.div animate={{ x: frogX }} transition={{ duration: 0.42, ease: 'easeInOut' }} style={{ position: 'absolute', top: GROUND_Y - FROG_H, width: 0, height: 0 }}>
             <div style={{ position: 'absolute', transform: 'translateX(-50%)' }}>
               <div style={{
-                position: 'absolute', top: FROG_H - 10, left: '50%', transform: 'translateX(-50%)',
-                width: 78, height: 22, borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(0,0,0,0.55), rgba(0,0,0,0) 75%)',
+                position: 'absolute', top: FROG_H - 16, left: '50%', transform: 'translateX(-50%)',
+                width: 56, height: 16, borderRadius: '50%', background: 'rgba(5,10,5,0.4)', filter: 'blur(5px)',
               }} />
               <motion.div animate={{ y: hopY }} transition={{ duration: 0.21, ease: hopY === 0 ? 'easeIn' : 'easeOut' }}>
                 <motion.div animate={frogFramesReady ? { scaleX: 1, scaleY: 1 } : POSE_SCALE[pose]} transition={{ type: 'spring', stiffness: 320, damping: 15 }} style={{ transformOrigin: '50% 100%' }}>
