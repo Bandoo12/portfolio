@@ -113,7 +113,7 @@ function Sprite({ name, alt = '', style, fallback }: { name: string; alt?: strin
 // Frame-sequence sprites (video-generated, sliced into public/img/wrecking-frog/<folder>/frame-N.png).
 // Probes frame-1, frame-2, ... in order and stops at the first missing file, so a
 // folder can be dropped in mid-count-N without any code change.
-const FRAME_COUNTS: Record<string, number> = { 'frog-jump': 16, 'frog-cheer': 8, 'frog-crushed': 8, 'frog-idle': 16 };
+const FRAME_COUNTS: Record<string, number> = { 'frog-jump': 16, 'frog-cheer': 8, 'frog-crushed': 16, 'frog-idle': 16 };
 
 function useFrameCount(folder: string): number {
   const max = FRAME_COUNTS[folder] ?? 0;
