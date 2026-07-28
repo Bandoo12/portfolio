@@ -189,8 +189,8 @@ function useFrameCount(folder: string): number {
   return loaded;
 }
 
-function FrameSprite({ folder, mode, fps, playKey, style, fallback }: {
-  folder: string; mode: 'loop' | 'once'; fps: number; playKey: number; style?: React.CSSProperties; fallback: React.ReactNode;
+function FrameSprite({ folder, mode, fps, playKey, loopFrom, style, fallback }: {
+  folder: string; mode: 'loop' | 'once'; fps: number; playKey: number; loopFrom?: number; style?: React.CSSProperties; fallback: React.ReactNode;
 }) {
   const count = useFrameCount(folder);
   const [frame, setFrame] = useState(1);
@@ -198,19 +198,24 @@ function FrameSprite({ folder, mode, fps, playKey, style, fallback }: {
     if (count < 1) { setFrame(1); return; }
     let raf = 0;
     const start = performance.now();
+    const tailStart = loopFrom ? loopFrom - 1 : count - 1; // 0-indexed
+    const tailLen = count - tailStart;
     const tick = () => {
       const idx = Math.floor(((performance.now() - start) / 1000) * fps);
       if (mode === 'loop') {
         setFrame((idx % count) + 1);
-        raf = requestAnimationFrame(tick);
+      } else if (loopFrom && idx >= count - 1) {
+        // played through once — keep cycling just the tail (e.g. the star-orbit
+        // frames) instead of freezing on the last frame.
+        setFrame(tailStart + ((idx - (count - 1)) % tailLen) + 1);
       } else {
         setFrame(Math.min(idx, count - 1) + 1);
-        if (idx < count - 1) raf = requestAnimationFrame(tick);
       }
+      raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [count, mode, fps, playKey]);
+  }, [count, mode, fps, playKey, loopFrom]);
   if (count < 1) return <>{fallback}</>;
   return <img src={`${IMG}/${folder}/frame-${Math.min(frame, count)}.png`} alt="" draggable={false} style={{ maxWidth: 'none', maxHeight: 'none', ...style }} />;
 }
@@ -394,13 +399,13 @@ function WreckingBallRig({ index, archState, ballAnim }: { index: number; archSt
       <div
         style={swaying ? ({ transformOrigin: '50% 0', animation: `wf-sway ${dur}s ease-in-out ${delay}s infinite`, ['--wf-sway' as string]: `${sway}deg` } as React.CSSProperties) : { transformOrigin: '50% 0' }}
       >
-        <div style={{
-          width: 18, height: BALL_REST_Y - CHAIN_TOP_Y - BALL_R, marginLeft: -9,
+        <motion.div animate={{ height: BALL_REST_Y - CHAIN_TOP_Y - BALL_R + y }} transition={ballTransition(stage)} style={{
+          width: 18, marginLeft: -9,
           backgroundImage: `url(${IMG}/chain-tile.png)`, backgroundRepeat: 'repeat-y', backgroundSize: '18px 53px', backgroundPosition: 'top',
         }} />
-        <motion.div animate={{ y }} transition={ballTransition(stage)} style={{ marginLeft: -(BALL_R + 4), width: BALL_R * 2 + 8 }}>
+        <div style={{ marginLeft: -(BALL_R + 4), width: BALL_R * 2 + 8 }}>
           <Sprite name="wrecking-ball.png" alt="" style={{ width: '100%', display: 'block' }} fallback={<BallArt />} />
-        </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -420,10 +425,12 @@ const POSE_SCALE: Record<Pose, { scaleX: number; scaleY: number }> = {
 // Which frame folder plays for a given pose, looping vs. one-shot, and at what fps.
 // crouch/air/land share the "frog-jump" clip (it's one continuous leap animation);
 // only cheer/crushed have their own clips.
-function frogAnim(pose: Pose): { folder: string; mode: 'loop' | 'once'; fps: number } {
+function frogAnim(pose: Pose): { folder: string; mode: 'loop' | 'once'; fps: number; loopFrom?: number } {
   switch (pose) {
     case 'cheer': return { folder: 'frog-cheer', mode: 'loop', fps: 10 };
-    case 'crushed': return { folder: 'frog-crushed', mode: 'once', fps: 12 };
+    // plays the impact/settle once, then keeps looping just the star-orbit tail
+    // (frames 11-16) until the round resets — instead of freezing on frame 16.
+    case 'crushed': return { folder: 'frog-crushed', mode: 'once', fps: 12, loopFrom: 11 };
     case 'crouch': case 'air': case 'land': return { folder: 'frog-jump', mode: 'once', fps: 16 };
     default: return { folder: 'frog-idle', mode: 'loop', fps: 6 };
   }
@@ -661,7 +668,7 @@ export default function WreckingFrogPage() {
               <motion.div animate={{ y: hopY }} transition={{ duration: 0.21, ease: hopY === 0 ? 'easeIn' : 'easeOut' }}>
                 <motion.div animate={frogFramesReady ? { scaleX: 1, scaleY: 1 } : POSE_SCALE[pose]} transition={{ type: 'spring', stiffness: 320, damping: 15 }} style={{ transformOrigin: '50% 100%' }}>
                   <div style={{ transformOrigin: '50% 100%', animation: pose === 'idle' ? 'wf-breathe 2.4s ease-in-out infinite' : 'none' }}>
-                    <FrameSprite folder={frogAnimCfg.folder} mode={frogAnimCfg.mode} fps={frogAnimCfg.fps} playKey={animKey}
+                    <FrameSprite folder={frogAnimCfg.folder} mode={frogAnimCfg.mode} fps={frogAnimCfg.fps} playKey={animKey} loopFrom={frogAnimCfg.loopFrom}
                       style={{ height: FROG_H, width: 'auto', display: 'block' }} fallback={<FrogArt crushed={pose === 'crushed'} cheer={pose === 'cheer'} />} />
                   </div>
                 </motion.div>
