@@ -731,7 +731,7 @@ export default function WreckingFrogPage() {
             <div style={{ position: 'absolute', transform: 'translateX(-50%)' }}>
               <div style={{
                 position: 'absolute', top: FROG_H - 16, left: '50%', transform: 'translate(-64%, 0)',
-                width: 128, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', filter: 'blur(6px)',
+                width: 128, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.68)', filter: 'blur(5px)',
               }} />
               <motion.div animate={{ y: hopY }} transition={{ duration: 0.21, ease: hopY === 0 ? 'easeIn' : 'easeOut' }}>
                 <motion.div animate={frogFramesReady ? { scaleX: 1, scaleY: 1 } : POSE_SCALE[pose]} transition={{ type: 'spring', stiffness: 320, damping: 15 }} style={{ transformOrigin: '50% 100%' }}>
