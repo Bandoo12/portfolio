@@ -56,7 +56,7 @@ const VIEW_W_NARROW = 480; // mobile viewport
 const CHAIN_TOP_Y = 0; // wall coping / chain mount sits flush with the stage's top edge, matching the mockup
 const BALL_REST_Y = 190;
 const BALL_R = 34;
-const LADDER_Y = 540;
+const LADDER_Y = 400; // centered inside the arch opening, not down by the floor
 const BAR_TOP = 634;
 const FOOTER_Y = 766;
 const DROP_DIST = 250;
@@ -594,11 +594,18 @@ export default function WreckingFrogPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#0a1710', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", overflow: 'hidden' }}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Gorditas:wght@400;700&display=swap');
         @keyframes wf-sway { 0%,100% { rotate: calc(var(--wf-sway) * -1); } 50% { rotate: var(--wf-sway); } }
         @keyframes wf-mist { 0% { transform: translateX(0); } 100% { transform: translateX(-60px); } }
         @keyframes wf-breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.97); } }
         .wf-btn { cursor: pointer; border: none; font-family: inherit; }
         .wf-btn:disabled { cursor: default; opacity: 0.4; }
+        .wf-multx {
+          font-family: 'Gorditas', cursive; font-weight: 700;
+          background: linear-gradient(180deg, #ffee94, #f2cb54);
+          -webkit-background-clip: text; background-clip: text; color: transparent;
+          filter: drop-shadow(0 0 4px rgba(0,0,0,0.35));
+        }
       `}</style>
 
       <motion.div
@@ -640,22 +647,24 @@ export default function WreckingFrogPage() {
             <Sprite name="gold-idol.png" style={{ width: IDOL_W, height: IDOL_H }} fallback={<IdolArt />} />
           </div>
 
-          {/* multiplier ladder */}
+          {/* multiplier ladder — plain gold gradient numerals over the arch opening, matching the mockup (no chip/pill) */}
           {LADDER.map((m, i) => {
             const k = i + 1;
             const state = destroyedIndex === i ? 'crushed' : step >= k ? 'passed' : phase === 'ready' && step + 1 === k ? 'current' : 'locked';
-            const bg = state === 'crushed' ? 'rgba(255,77,90,0.22)' : state === 'passed' ? 'rgba(90,220,140,0.2)' : state === 'current' ? 'rgba(255,201,61,0.28)' : 'rgba(255,255,255,0.06)';
-            const border = state === 'crushed' ? '#ff4d5a' : state === 'passed' ? '#5adc8c' : state === 'current' ? '#ffc93d' : 'rgba(255,255,255,0.12)';
-            const color = state === 'locked' ? 'rgba(255,255,255,0.45)' : '#fff';
+            const gold = state === 'locked' || state === 'current';
             return (
               <div key={i} style={{
-                position: 'absolute', left: ARCH_X[i] - 44, top: LADDER_Y, width: 88, height: 56, borderRadius: 12,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
-                background: bg, border: `1.5px solid ${border}`, color, fontWeight: 800,
-                transform: state === 'current' ? 'scale(1.08)' : 'scale(1)', transition: 'all 0.25s ease',
-                textDecoration: state === 'crushed' ? 'line-through' : 'none',
+                position: 'absolute', left: ARCH_X[i], top: LADDER_Y, width: 0,
+                display: 'flex', justifyContent: 'center',
+                transform: state === 'current' ? 'scale(1.15)' : 'scale(1)', transition: 'transform 0.25s ease, opacity 0.25s ease',
+                opacity: state === 'passed' ? 0.4 : 1,
               }}>
-                <span style={{ fontSize: 17 }}>{m.toFixed(2)}x</span>
+                <span className={gold ? 'wf-multx' : undefined} style={{
+                  fontSize: 26, whiteSpace: 'nowrap',
+                  ...(gold ? {} : { fontFamily: "'Gorditas', cursive", fontWeight: 700 }),
+                  ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
+                  ...(state === 'passed' ? { color: '#dfe8df' } : {}),
+                }}>{m.toFixed(2)}x</span>
               </div>
             );
           })}
