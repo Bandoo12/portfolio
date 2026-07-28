@@ -606,7 +606,8 @@ export default function WreckingFrogPage() {
           font-weight: 700;
           background: linear-gradient(180deg, #ffee94 21%, #df8600);
           -webkit-background-clip: text; background-clip: text; color: transparent;
-          -webkit-text-stroke: 1.5px #5c2e00;
+          -webkit-text-stroke: 3px #5c2e00;
+          paint-order: stroke fill;
           filter: drop-shadow(0 5px 4px rgba(0,0,0,0.25)) drop-shadow(0 2px 0 rgba(179,59,0,0.5));
         }
       `}</style>
