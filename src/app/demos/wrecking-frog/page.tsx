@@ -602,9 +602,10 @@ export default function WreckingFrogPage() {
         .wf-btn:disabled { cursor: default; opacity: 0.4; }
         .wf-multx {
           font-family: 'Gorditas', cursive; font-weight: 700;
-          background: linear-gradient(180deg, #ffee94, #f2cb54);
+          background: linear-gradient(180deg, #ffee94 21%, #df8600);
           -webkit-background-clip: text; background-clip: text; color: transparent;
-          filter: drop-shadow(0 0 4px rgba(0,0,0,0.35));
+          -webkit-text-stroke: 1.5px #5c2e00;
+          filter: drop-shadow(0 5px 4px rgba(0,0,0,0.25)) drop-shadow(0 2px 0 rgba(179,59,0,0.5));
         }
       `}</style>
 
@@ -628,10 +629,10 @@ export default function WreckingFrogPage() {
           <ArchEndcap x={0} mirrored={false} />
           <ArchEndcap x={LAST_CAP_X} mirrored />
           {destroyedIndex !== null && (
-            // tile index for arch i is i+1 (arch 0 sits on the second tile, after
-            // the frog's start tile) — mirrored tiles land on odd tile indices,
-            // i.e. even arch indices, matching ArchStrip's alternating pattern.
-            <Sprite name={destroyedIndex % 2 === 0 ? 'arch-strip-destroyed-mirrored.png' : 'arch-strip-destroyed.png'}
+            // arch i sits on tile index i of the repeating strip (tile 0 = arch
+            // 0, right where the strip itself starts) — even arch indices land
+            // on the strip's normal-orientation copy, odd on the mirrored one.
+            <Sprite name={destroyedIndex % 2 === 0 ? 'arch-strip-destroyed.png' : 'arch-strip-destroyed-mirrored.png'}
               style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}
               fallback={<div style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}><ArchArt destroyed /></div>} />
           )}
@@ -652,9 +653,12 @@ export default function WreckingFrogPage() {
             const k = i + 1;
             const state = destroyedIndex === i ? 'crushed' : step >= k ? 'passed' : phase === 'ready' && step + 1 === k ? 'current' : 'locked';
             const gold = state === 'locked' || state === 'current';
+            // the arch opening isn't perfectly centered inside its tile — it sits
+            // ~6.5px toward the tile's mirrored side, flipping with parity.
+            const openingOffset = i % 2 === 0 ? 6.5 : -6.5;
             return (
               <div key={i} style={{
-                position: 'absolute', left: ARCH_X[i], top: LADDER_Y, width: 0,
+                position: 'absolute', left: ARCH_X[i] + openingOffset, top: LADDER_Y, width: 0,
                 display: 'flex', justifyContent: 'center',
                 transform: state === 'current' ? 'scale(1.15)' : 'scale(1)', transition: 'transform 0.25s ease, opacity 0.25s ease',
                 opacity: state === 'passed' ? 0.4 : 1,
