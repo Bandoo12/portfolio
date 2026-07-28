@@ -386,16 +386,16 @@ function ballTransition(stage: BallStage) {
     default: return { type: 'spring' as const, stiffness: 260, damping: 14 };
   }
 }
-function WreckingBallRig({ index, archState, ballAnim }: { index: number; archState: 'intact' | 'destroyed'; ballAnim: { index: number; stage: BallStage } | null }) {
-  const active = ballAnim?.index === index;
+function WreckingBallRig({ x, seed, archState, ballAnim }: { x: number; seed: number; archState: 'intact' | 'destroyed'; ballAnim: { index: number; stage: BallStage } | null }) {
+  const active = ballAnim?.index === seed;
   const stage: BallStage = active ? ballAnim!.stage : archState === 'destroyed' ? 'settle' : 'hang';
   const y = stage === 'hang' ? 0 : stage === 'anticipate' ? -14 : stage === 'drop' ? DROP_DIST : DROP_DIST - 16;
   const swaying = archState === 'intact' && !active;
-  const dur = (2.6 + seededRand(index * 3 + 1) * 1.6).toFixed(2);
-  const delay = (-seededRand(index * 3 + 2) * 4).toFixed(2);
-  const sway = (2 + seededRand(index * 3 + 3) * 2).toFixed(1);
+  const dur = (2.6 + seededRand(seed * 3 + 1) * 1.6).toFixed(2);
+  const delay = (-seededRand(seed * 3 + 2) * 4).toFixed(2);
+  const sway = (2 + seededRand(seed * 3 + 3) * 2).toFixed(1);
   return (
-    <div style={{ position: 'absolute', left: ARCH_X[index], top: CHAIN_TOP_Y, width: 0, height: 0 }}>
+    <div style={{ position: 'absolute', left: x, top: CHAIN_TOP_Y, width: 0, height: 0 }}>
       <div
         style={swaying ? ({ transformOrigin: '50% 0', animation: `wf-sway ${dur}s ease-in-out ${delay}s infinite`, ['--wf-sway' as string]: `${sway}deg` } as React.CSSProperties) : { transformOrigin: '50% 0' }}
       >
@@ -629,8 +629,11 @@ export default function WreckingFrogPage() {
               fallback={<div style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}><ArchArt destroyed /></div>} />
           )}
 
+          {/* two purely decorative balls over the end-cap's own two column-widths — never crash, never targeted */}
+          <WreckingBallRig x={ENDCAP_W - ARCH_PITCH * 1.5} seed={-2} archState="intact" ballAnim={null} />
+          <WreckingBallRig x={ENDCAP_W - ARCH_PITCH * 0.5} seed={-1} archState="intact" ballAnim={null} />
           {Array.from({ length: ARCH_COUNT }, (_, i) => (
-            <WreckingBallRig key={i} index={i} archState={destroyedIndex === i ? 'destroyed' : 'intact'} ballAnim={ballAnim} />
+            <WreckingBallRig key={i} x={ARCH_X[i]} seed={i} archState={destroyedIndex === i ? 'destroyed' : 'intact'} ballAnim={ballAnim} />
           ))}
 
           <div style={{ position: 'absolute', left: IDOL_X - IDOL_W / 2, top: GROUND_Y - IDOL_H }}>
