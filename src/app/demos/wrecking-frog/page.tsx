@@ -60,7 +60,7 @@ const LADDER_Y = 540;
 const BAR_TOP = 634;
 const FOOTER_Y = 766;
 const DROP_DIST = 250;
-const FROG_H = 168; // sprites are ~square canvases; width is left to auto-scale from this
+const FROG_H = 185; // sprites are ~square canvases; width is left to auto-scale from this (168 * 1.1, feet stay pinned to GROUND_Y since the container is top-anchored at GROUND_Y-FROG_H)
 
 // arch-strip.png is a single seamless repeat unit (wall coping -> sky gap -> arch
 // -> floor front edge) cropped straight out of the Figma "Game" mural; tiling it
@@ -80,7 +80,7 @@ const FLOOR_TOP_NATIVE_Y = 1142;
 // +25 nudges the frog forward onto the pillar base's front lip rather than its
 // back edge — the raw alpha measurement lands on the far edge, which reads as
 // floating just above the surface.
-const GROUND_Y = Math.round(CHAIN_TOP_Y + TILE_H * (FLOOR_TOP_NATIVE_Y / TILE_NATIVE_H)) + 25;
+const GROUND_Y = Math.round(CHAIN_TOP_Y + TILE_H * (FLOOR_TOP_NATIVE_Y / TILE_NATIVE_H)) + 40;
 // The first and last columns are a distinct, wider end-cap piece (solid wall, no
 // arch) — not part of the repeating pattern. The mockup mirrors it horizontally
 // for the far/last cap. Its width is derived the same way as the arch pitch, from
@@ -662,8 +662,8 @@ export default function WreckingFrogPage() {
           <motion.div animate={{ x: frogX }} transition={{ duration: 0.42, ease: 'easeInOut' }} style={{ position: 'absolute', top: GROUND_Y - FROG_H, width: 0, height: 0 }}>
             <div style={{ position: 'absolute', transform: 'translateX(-50%)' }}>
               <div style={{
-                position: 'absolute', top: FROG_H - 16, left: '50%', transform: 'translateX(-50%)',
-                width: 108, height: 22, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', filter: 'blur(3px)',
+                position: 'absolute', top: FROG_H - 16, left: '50%', transform: 'translate(-64%, 0)',
+                width: 128, height: 24, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', filter: 'blur(6px)',
               }} />
               <motion.div animate={{ y: hopY }} transition={{ duration: 0.21, ease: hopY === 0 ? 'easeIn' : 'easeOut' }}>
                 <motion.div animate={frogFramesReady ? { scaleX: 1, scaleY: 1 } : POSE_SCALE[pose]} transition={{ type: 'spring', stiffness: 320, damping: 15 }} style={{ transformOrigin: '50% 100%' }}>
