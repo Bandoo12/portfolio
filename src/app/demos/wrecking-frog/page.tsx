@@ -689,10 +689,10 @@ export default function WreckingFrogPage() {
                   <div style={{ transform: `translateY(-50%) scale(${state === 'current' ? 1.15 : 1})` }}>
                     <span style={{ position: 'relative', display: 'inline-block' }}>
                       {gold && (
-                        <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 44, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
+                        <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 42, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
                       )}
                       <span className={`${gorditas.className}${gold ? ' wf-multx' : ''}`} style={{
-                        position: 'relative', fontSize: 44, whiteSpace: 'nowrap', fontWeight: 700,
+                        position: 'relative', fontSize: 42, whiteSpace: 'nowrap', fontWeight: 700,
                         ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
                         ...(state === 'passed' ? { color: '#dfe8df' } : {}),
                       }}>{m.toFixed(2)}x</span>
