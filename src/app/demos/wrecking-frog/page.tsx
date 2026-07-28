@@ -5,7 +5,9 @@ import { motion } from 'framer-motion';
 /* "ЛЯГУШКА-ИСКАТЕЛЬ" — jungle temple crash/tower game.
    Frog jumps arch-to-arch; each arch has a rising cash-out multiplier and a
    wrecking ball that may drop and crush it. Cash out any time after arch 1,
-   or ride to arch 10 for the golden idol jackpot.
+   or ride to arch 30 for the golden idol jackpot. The temple is a single wide
+   strip (per the Figma "Game" frame) — the camera pans to follow the frog as
+   it advances instead of showing the whole track at once.
 
    Art: drop matching PNGs (transparent bg) into public/img/wrecking-frog/ and
    they replace the placeholder SVG art automatically — see file names in the
@@ -17,7 +19,21 @@ const IMG = `${BASE}/img/wrecking-frog`;
 
 // ---------- odds ----------
 const RTP = 0.97;
-const LADDER = [1.26, 1.45, 1.70, 2.00, 2.60, 3.40, 4.50, 6.00, 8.10, 11.25];
+// The first 10 multipliers are the original hand-tuned curve; beyond arch 10
+// the per-step ratio keeps compounding gently (+1.2% per arch) so the climb
+// to arch 30 stays smooth instead of kinking, ending on a real jackpot-scale
+// multiplier (~98,000x, matching how far a 30-arch ladder should stretch).
+function buildLadder(count: number): number[] {
+  const anchors = [1.26, 1.45, 1.70, 2.00, 2.60, 3.40, 4.50, 6.00, 8.10, 11.25];
+  const ladder = anchors.slice(0, Math.min(count, anchors.length));
+  let ratio = ladder[ladder.length - 1] / ladder[ladder.length - 2];
+  for (let i = ladder.length; i < count; i++) {
+    ratio *= 1.012;
+    ladder.push(ladder[i - 1] * ratio);
+  }
+  return ladder.map((m) => Math.round(m * 100) / 100);
+}
+const LADDER = buildLadder(30);
 const ARCH_COUNT = LADDER.length;
 
 const SURV: number[] = [1];
@@ -33,15 +49,14 @@ function rollCrashStep(): number | null {
 }
 
 // ---------- layout ----------
-const STAGE_W = 1400;
+const STAGE_W = 1400; // desktop viewport (camera window), not the world length
 const STAGE_H = 820;
-const VIEW_W_NARROW = 480;
+const VIEW_W_NARROW = 480; // mobile viewport
 
 const ARCH_PITCH = 118;
 const ARCH0_CX = 170;
 const ARCH_X = Array.from({ length: ARCH_COUNT }, (_, i) => ARCH0_CX + i * ARCH_PITCH);
 const START_X = ARCH0_CX - ARCH_PITCH;
-const IDOL_X = ARCH_X[ARCH_COUNT - 1] + 110;
 
 const CHAIN_TOP_Y = 70;
 const BALL_REST_Y = 190;
@@ -56,6 +71,8 @@ const ARCH_DISPLAY_H = 260;
 const ARCH_DISPLAY_W = Math.round(ARCH_DISPLAY_H * (3162 / 3841)); // matches the cropped arch-*.png aspect ratio
 const IDOL_H = 240;
 const IDOL_W = Math.round(IDOL_H * (1664 / 2040)); // matches the cropped gold-idol.png aspect ratio
+const IDOL_X = ARCH_X[ARCH_COUNT - 1] + 110;
+const WORLD_W = IDOL_X + IDOL_W / 2 + 80; // full scrollable track length the camera pans across
 
 const BET_MIN = 50;
 const BET_STEP = 50;
@@ -96,7 +113,7 @@ function Sprite({ name, alt = '', style, fallback }: { name: string; alt?: strin
 // Frame-sequence sprites (video-generated, sliced into public/img/wrecking-frog/<folder>/frame-N.png).
 // Probes frame-1, frame-2, ... in order and stops at the first missing file, so a
 // folder can be dropped in mid-count-N without any code change.
-const FRAME_COUNTS: Record<string, number> = { 'frog-jump': 8, 'frog-cheer': 8, 'frog-crushed': 8, 'frog-idle': 4 };
+const FRAME_COUNTS: Record<string, number> = { 'frog-jump': 16, 'frog-cheer': 8, 'frog-crushed': 8, 'frog-idle': 16 };
 
 function useFrameCount(folder: string): number {
   const max = FRAME_COUNTS[folder] ?? 0;
@@ -322,7 +339,11 @@ function WreckingBallRig({ index, archState, ballAnim }: { index: number; archSt
       <div
         style={swaying ? ({ transformOrigin: '50% 0', animation: `wf-sway ${dur}s ease-in-out ${delay}s infinite`, ['--wf-sway' as string]: `${sway}deg` } as React.CSSProperties) : { transformOrigin: '50% 0' }}
       >
-        <div style={{ width: 3, height: BALL_REST_Y - CHAIN_TOP_Y - BALL_R, marginLeft: -1.5, background: 'linear-gradient(#3a3a3f, #1c1c20)' }} />
+        <div style={{
+          width: 10, height: BALL_REST_Y - CHAIN_TOP_Y - BALL_R, marginLeft: -5,
+          backgroundImage: 'repeating-linear-gradient(180deg, transparent 0 2px, #6b6b72 2px 5px, transparent 5px 7px, #3a3a40 7px 10px, transparent 10px 12px, #6b6b72 12px 15px, transparent 15px 17px)',
+          backgroundSize: '10px 17px', boxShadow: 'inset -2px 0 0 rgba(0,0,0,0.35), inset 2px 0 0 rgba(255,255,255,0.12)',
+        }} />
         <motion.div animate={{ y }} transition={ballTransition(stage)} style={{ marginLeft: -(BALL_R + 4), width: BALL_R * 2 + 8 }}>
           <Sprite name="wrecking-ball.png" alt="" style={{ width: '100%', display: 'block' }} fallback={<BallArt />} />
         </motion.div>
@@ -499,8 +520,11 @@ export default function WreckingFrogPage() {
   const currentMult = step > 0 ? LADDER[step - 1] : 1;
   const possibleWin = Math.round(bet * currentMult);
   const canCashOut = phase === 'ready' && step >= 1;
-  const camX = isNarrow ? clamp(viewW / 2 - frogX, viewW - STAGE_W, 0) : 0;
-  const crashX = destroyedIndex !== null ? ARCH_X[destroyedIndex] + camX : 0;
+  // Margin so the camera can pan a bit past the world edges — otherwise, at
+  // rest, the frog sprite (wider than its FROG_H anchor point) or the idol
+  // gets clipped by the stage's overflow:hidden right at x=0/WORLD_W.
+  const CAM_MARGIN = 100;
+  const camX = clamp(viewW / 2 - frogX, viewW - WORLD_W - CAM_MARGIN, CAM_MARGIN);
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a1710', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", overflow: 'hidden' }}>
@@ -527,9 +551,9 @@ export default function WreckingFrogPage() {
         <div style={{ position: 'absolute', inset: 0, opacity: 0.25, background: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 2px, transparent 2px 140px)', animation: 'wf-mist 14s linear infinite' }} />
 
         {/* panned world */}
-        <div style={{ position: 'absolute', left: camX, top: 0, width: STAGE_W, height: STAGE_H, transition: 'left 0.5s cubic-bezier(.2,.8,.2,1)' }}>
-          <Sprite name="temple-floor.png" style={{ position: 'absolute', left: 0, top: GROUND_Y, width: STAGE_W, height: 60, objectFit: 'cover' }}
-            fallback={<div style={{ position: 'absolute', left: 0, top: GROUND_Y, width: STAGE_W, height: 60, background: 'linear-gradient(#5c4a36, #3a2e20)', borderTop: '2px solid #26201a' }} />} />
+        <div style={{ position: 'absolute', left: 0, top: 0, width: WORLD_W, height: STAGE_H, transform: `translateX(${camX}px)`, transition: 'transform 0.5s cubic-bezier(.2,.8,.2,1)' }}>
+          <Sprite name="temple-floor.png" style={{ position: 'absolute', left: 0, top: GROUND_Y, width: WORLD_W, height: 60, objectFit: 'cover' }}
+            fallback={<div style={{ position: 'absolute', left: 0, top: GROUND_Y, width: WORLD_W, height: 60, background: 'linear-gradient(#5c4a36, #3a2e20)', borderTop: '2px solid #26201a' }} />} />
 
           {Array.from({ length: ARCH_COUNT }, (_, i) => {
             const archState: 'intact' | 'destroyed' = destroyedIndex === i ? 'destroyed' : 'intact';
