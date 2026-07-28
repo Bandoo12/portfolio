@@ -53,11 +53,9 @@ const STAGE_W = 1400; // desktop viewport (camera window), not the world length
 const STAGE_H = 820;
 const VIEW_W_NARROW = 480; // mobile viewport
 
-const CHAIN_TOP_Y = 70;
+const CHAIN_TOP_Y = 0; // wall coping / chain mount sits flush with the stage's top edge, matching the mockup
 const BALL_REST_Y = 190;
 const BALL_R = 34;
-const GROUND_Y = 480;
-const FLOOR_H = 60;
 const LADDER_Y = 540;
 const BAR_TOP = 634;
 const FOOTER_Y = 766;
@@ -66,14 +64,20 @@ const FROG_H = 168; // sprites are ~square canvases; width is left to auto-scale
 
 // arch-strip.png is a single seamless repeat unit (wall coping -> sky gap -> arch
 // -> floor front edge) cropped straight out of the Figma "Game" mural; tiling it
-// edge-to-edge reproduces the mockup's colonnade exactly. Its display height is
-// pinned to the CHAIN_TOP_Y..floor-front-edge span, and the tile width (so also
-// the arch pitch) falls out of that same height via the tile's own native aspect
-// ratio — no hand-picked pixel constants.
+// edge-to-edge reproduces the mockup's colonnade exactly — full-bleed from the
+// chain mount down to the very bottom of the stage, not squeezed into a smaller
+// band. The tile width (so also the arch pitch) falls out of that height via the
+// tile's own native aspect ratio, rounded to a whole pixel so the CSS background
+// tiling doesn't accumulate a subpixel seam across ~30 repeats.
 const TILE_NATIVE_W = 373;
 const TILE_NATIVE_H = 2288;
-const TILE_H = GROUND_Y + FLOOR_H - CHAIN_TOP_Y;
-const ARCH_PITCH = TILE_H * (TILE_NATIVE_W / TILE_NATIVE_H);
+const TILE_H = STAGE_H - CHAIN_TOP_Y;
+const ARCH_PITCH = Math.round(TILE_H * (TILE_NATIVE_W / TILE_NATIVE_H));
+// Where the frog/idol/crash-fx sit: the top surface of the pillar-base ledge
+// inside the tile (native y=1518, measured where the arch opening's center
+// column first hits solid ground) — not the deeper foreground floor slabs.
+const FLOOR_TOP_NATIVE_Y = 1518;
+const GROUND_Y = Math.round(CHAIN_TOP_Y + TILE_H * (FLOOR_TOP_NATIVE_Y / TILE_NATIVE_H));
 const ARCH0_CX = ARCH_PITCH * 1.5; // tile 0 (world x [0,ARCH_PITCH]) is the frog's start tile; arch 0 is the next tile over
 const ARCH_X = Array.from({ length: ARCH_COUNT }, (_, i) => ARCH0_CX + i * ARCH_PITCH);
 const START_X = ARCH0_CX - ARCH_PITCH;
@@ -119,9 +123,11 @@ function Sprite({ name, alt = '', style, fallback }: { name: string; alt?: strin
   return <>{fallback}</>;
 }
 
-// arch-strip.png is a seamless repeat unit (wall coping -> arch -> floor), so it's
-// tiled as a CSS background instead of Sprite's <img> — matches the mockup's mural
-// exactly rather than stretching one crop across the whole track.
+// arch-strip.png is TWO tile-widths wide: one column plus that same column
+// mirrored horizontally. Every joint in the mural is therefore a column meeting
+// its own mirror image, which hides the seam completely — a plain single-column
+// repeat left a visible seam every tile. Tiling this double unit reproduces the
+// mockup's alternating columns exactly.
 function ArchStrip() {
   const src = `${IMG}/arch-strip.png`;
   const ok = useAssetOk(src);
@@ -129,7 +135,7 @@ function ArchStrip() {
     return (
       <div style={{
         position: 'absolute', left: 0, top: CHAIN_TOP_Y, width: WORLD_W, height: TILE_H,
-        backgroundImage: `url(${src})`, backgroundRepeat: 'repeat-x', backgroundSize: `${ARCH_PITCH}px 100%`, backgroundPosition: 'left top',
+        backgroundImage: `url(${src})`, backgroundRepeat: 'repeat-x', backgroundSize: `${ARCH_PITCH * 2}px 100%`, backgroundPosition: 'left top',
       }} />
     );
   }
@@ -551,8 +557,12 @@ export default function WreckingFrogPage() {
   // Margin so the camera can pan a bit past the world edges — otherwise, at
   // rest, the frog sprite (wider than its FROG_H anchor point) or the idol
   // gets clipped by the stage's overflow:hidden right at x=0/WORLD_W.
+  // Margin lets the camera pan a bit past the world's right edge so the idol
+  // never clips the stage's overflow:hidden boundary. No positive margin on the
+  // left: the arch-strip tile must stay flush against the screen's left edge at
+  // rest, matching the mockup, so the world's left edge is never pushed inward.
   const CAM_MARGIN = 100;
-  const camX = clamp(viewW / 2 - frogX, viewW - WORLD_W - CAM_MARGIN, CAM_MARGIN);
+  const camX = clamp(viewW / 2 - frogX, viewW - WORLD_W - CAM_MARGIN, 0);
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a1710', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", overflow: 'hidden' }}>
@@ -582,7 +592,10 @@ export default function WreckingFrogPage() {
         <div style={{ position: 'absolute', left: 0, top: 0, width: WORLD_W, height: STAGE_H, transform: `translateX(${camX}px)`, transition: 'transform 0.5s cubic-bezier(.2,.8,.2,1)' }}>
           <ArchStrip />
           {destroyedIndex !== null && (
-            <Sprite name="arch-strip-destroyed.png"
+            // tile index for arch i is i+1 (arch 0 sits on the second tile, after
+            // the frog's start tile) — mirrored tiles land on odd tile indices,
+            // i.e. even arch indices, matching ArchStrip's alternating pattern.
+            <Sprite name={destroyedIndex % 2 === 0 ? 'arch-strip-destroyed-mirrored.png' : 'arch-strip-destroyed.png'}
               style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}
               fallback={<div style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}><ArchArt destroyed /></div>} />
           )}
@@ -619,6 +632,10 @@ export default function WreckingFrogPage() {
               transform-deformed placeholder SVG until a folder's frames land */}
           <motion.div animate={{ x: frogX }} transition={{ duration: 0.42, ease: 'easeInOut' }} style={{ position: 'absolute', top: GROUND_Y - FROG_H, width: 0, height: 0 }}>
             <div style={{ position: 'absolute', transform: 'translateX(-50%)' }}>
+              <div style={{
+                position: 'absolute', top: FROG_H - 14, left: '50%', transform: 'translateX(-50%)',
+                width: 64, height: 18, borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(0,0,0,0.38), rgba(0,0,0,0) 75%)',
+              }} />
               <motion.div animate={{ y: hopY }} transition={{ duration: 0.21, ease: hopY === 0 ? 'easeIn' : 'easeOut' }}>
                 <motion.div animate={frogFramesReady ? { scaleX: 1, scaleY: 1 } : POSE_SCALE[pose]} transition={{ type: 'spring', stiffness: 320, damping: 15 }} style={{ transformOrigin: '50% 100%' }}>
                   <div style={{ transformOrigin: '50% 100%', animation: pose === 'idle' ? 'wf-breathe 2.4s ease-in-out infinite' : 'none' }}>
