@@ -581,10 +581,14 @@ export default function WreckingFrogPage() {
     }
   };
 
-  // Auto-jump onto the first arch the instant a round starts — no separate
-  // "arm it" click before the frog actually leaps.
+  // Auto-jump onto the first arch as soon as a round starts — no separate
+  // "arm it" click before the frog actually leaps. Arch 1 already renders as
+  // "current" (glow + floating coefficient) the instant phase flips to
+  // 'ready', so no artificial pause is needed before triggering the jump.
   useEffect(() => {
-    if (phase === 'ready' && step === 0) advance();
+    if (phase === 'ready' && step === 0) {
+      if (aliveRef.current) advance();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, step]);
 
