@@ -200,7 +200,7 @@ function StepperButton({ variant, onClick, disabled, children }: { variant: 'min
 
 function GameButton({ variant, onClick, disabled, children }: { variant: 'orange' | 'green'; onClick?: () => void; disabled?: boolean; children: React.ReactNode }) {
   const border = variant === 'orange' ? '#552f14' : '#2d3d1a';
-  const grad = variant === 'orange' ? 'linear-gradient(180deg,#ea8d40,#9b3f2a)' : 'linear-gradient(180deg,#91b956,#416947)';
+  const grad = variant === 'orange' ? 'linear-gradient(180deg,#ea8d40,#9b3f2a)' : 'linear-gradient(180deg,#b4ff46,#338740)';
   return (
     <button className="wf-btn" onClick={onClick} disabled={disabled} style={{
       position: 'relative', height: '100%', minWidth: 130, padding: '6px 18px', borderRadius: 18, border: `3px solid ${border}`,
@@ -711,6 +711,19 @@ export default function WreckingFrogPage() {
   const CAM_MARGIN = 100;
   const camX = clamp(viewW / 2 - frogX, viewW - WORLD_W - CAM_MARGIN, 0);
 
+  // Shared per-arch state, computed once so the glow prepass (rendered behind
+  // ArchStrip) and the shield/text pass (rendered after it, on top) agree.
+  const archStates = LADDER.map((_, i) => {
+    const k = i + 1;
+    const state = destroyedIndex === i ? 'crushed' : step >= k ? 'passed' : phase === 'ready' && step + 1 === k ? 'current' : 'locked';
+    // the arch opening isn't perfectly centered inside its tile — it sits
+    // ~6.5px toward the tile's mirrored side, flipping with parity.
+    const openingOffset = i % 2 === 0 ? 6.5 : -6.5;
+    const glow = state === 'passed' ? 'rgba(90,220,140,0.55)' : state === 'current' ? 'rgba(255,170,40,0.95)' : null;
+    const glowCore = state === 'current' ? 'rgba(255,230,150,0.95)' : glow;
+    return { state, openingOffset, glow, glowCore };
+  });
+
   return (
     <div style={{ minHeight: '100vh', background: '#0a1710', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif", overflow: 'hidden' }}>
       <style>{`
@@ -750,6 +763,15 @@ export default function WreckingFrogPage() {
 
         {/* panned world */}
         <div style={{ position: 'absolute', left: 0, top: 0, width: WORLD_W, height: STAGE_H, transform: `translateX(${camX}px)`, transition: 'transform 0.5s cubic-bezier(.2,.8,.2,1)' }}>
+          {/* glow behind the arch strip, so it only shows through the opening
+              instead of washing out over the stone pillars */}
+          {archStates.map((a, i) => a.glow && (
+            <div key={i} style={{
+              position: 'absolute', left: ARCH_X[i] - ARCH_PITCH / 2 + a.openingOffset, top: GLOW_TOP, width: ARCH_PITCH, height: GLOW_H,
+              background: `radial-gradient(ellipse at 50% 25%, ${a.glowCore} 0%, ${a.glow} 45%, transparent 88%)`, pointerEvents: 'none',
+              animation: a.state === 'current' ? 'wf-glow-pulse 0.7s ease-in-out infinite' : 'none',
+            }} />
+          ))}
           <ArchStrip />
           <ArchEndcap x={0} mirrored={false} />
           <ArchEndcap x={LAST_CAP_X} mirrored />
@@ -774,26 +796,19 @@ export default function WreckingFrogPage() {
           </div>
 
           {/* multiplier ladder — step shield up top, gold gradient numeral in the opening,
-              a green/amber glow tinting passed/current openings, matching the mockup */}
+              a green/amber glow tinting passed/current openings, matching the mockup.
+              Shields/text render further down in DOM order (after ArchStrip) so they sit
+              on top of the pillars; the glow itself is rendered further up (see archStates
+              below, before <ArchStrip/>) so it sits behind the arch and only shows through
+              the opening, instead of washing out over the stone. */}
           {LADDER.map((m, i) => {
             const k = i + 1;
-            const state = destroyedIndex === i ? 'crushed' : step >= k ? 'passed' : phase === 'ready' && step + 1 === k ? 'current' : 'locked';
+            const state = archStates[i].state;
             const gold = state === 'locked' || state === 'current';
-            // the arch opening isn't perfectly centered inside its tile — it sits
-            // ~6.5px toward the tile's mirrored side, flipping with parity.
-            const openingOffset = i % 2 === 0 ? 6.5 : -6.5;
+            const openingOffset = archStates[i].openingOffset;
             const shieldSrc = state === 'passed' ? 'shields/shield-success.png' : state === 'crushed' ? 'shields/shield-fail.png' : `shields/shield-${k}.png`;
-            const glow = state === 'passed' ? 'rgba(90,220,140,0.55)' : state === 'current' ? 'rgba(255,170,40,0.95)' : null;
-            const glowCore = state === 'current' ? 'rgba(255,230,150,0.95)' : glow;
             return (
               <React.Fragment key={i}>
-                {glow && (
-                  <div style={{
-                    position: 'absolute', left: ARCH_X[i] - ARCH_PITCH / 2 + openingOffset, top: GLOW_TOP, width: ARCH_PITCH, height: GLOW_H,
-                    background: `radial-gradient(ellipse at 50% 25%, ${glowCore} 0%, ${glow} 45%, transparent 88%)`, pointerEvents: 'none',
-                    animation: state === 'current' ? 'wf-glow-pulse 0.7s ease-in-out infinite' : 'none',
-                  }} />
-                )}
                 <div
                   onClick={state === 'current' ? advance : undefined}
                   style={{
