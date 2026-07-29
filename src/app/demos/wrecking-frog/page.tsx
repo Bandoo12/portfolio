@@ -869,27 +869,25 @@ export default function WreckingFrogPage() {
             <WreckingBallRig key={i} x={ARCH_X[i]} seed={i} archState={destroyedIndex === i ? 'destroyed' : 'intact'} ballAnim={ballAnim} />
           ))}
 
-          <div style={{ position: 'absolute', left: IDOL_X - IDOL_W / 2, top: GROUND_Y - IDOL_H + 2 }}>
+          {/* ground shadow stays put on the floor while the idol hovers above it —
+              the gap between them is what sells the levitation */}
+          <div style={{
+            position: 'absolute', left: IDOL_X - IDOL_W * 0.32, top: GROUND_Y - 12,
+            width: IDOL_W * 0.64, height: 18, borderRadius: '50%', background: 'rgba(0,0,0,0.45)', filter: 'blur(5px)',
+          }} />
+          <motion.div
+            animate={{ y: [0, -14, 0] }}
+            transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ position: 'absolute', left: IDOL_X - IDOL_W / 2, top: GROUND_Y - IDOL_H - 34 }}
+          >
             <div style={{
               position: 'absolute', left: '50%', top: '55%', width: IDOL_W * 1.7, height: IDOL_W * 1.7,
               transform: 'translate(-50%, -50%)', borderRadius: '50%',
               background: 'radial-gradient(circle, rgba(255,221,120,0.55) 0%, rgba(255,200,60,0.22) 45%, transparent 75%)',
               filter: 'blur(4px)', pointerEvents: 'none',
             }} />
-            {/* contact shadow: a thin, squashed slice of the idol's own base
-                silhouette (the coin pile) sitting flush under it — no flip,
-                just the bottom slice of the mask compressed flat */}
-            <div style={{
-              position: 'absolute', left: 0, bottom: 0, width: IDOL_W, height: IDOL_H * 0.22,
-              backgroundColor: 'rgba(0,0,0,0.6)',
-              WebkitMaskImage: `url(${IMG}/gold-idol.png)`, maskImage: `url(${IMG}/gold-idol.png)`,
-              WebkitMaskSize: `${IDOL_W}px ${IDOL_H}px`, maskSize: `${IDOL_W}px ${IDOL_H}px`,
-              WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
-              WebkitMaskPosition: 'left bottom', maskPosition: 'left bottom',
-              transform: 'scaleY(0.35)', transformOrigin: 'bottom', filter: 'blur(2.5px)',
-            }} />
             <Sprite name="gold-idol.png" style={{ width: IDOL_W, height: IDOL_H, position: 'relative' }} fallback={<IdolArt />} />
-          </div>
+          </motion.div>
 
           {/* multiplier ladder — step shield up top, gold gradient numeral in the opening,
               a green/amber glow tinting passed/current openings, matching the mockup.
