@@ -582,15 +582,13 @@ export default function WreckingFrogPage() {
   };
 
   // Auto-jump onto the first arch as soon as a round starts — no separate
-  // "arm it" click before the frog actually leaps. A single rAF only buys
-  // ~1 painted frame (~16ms) before advance() flips phase to 'jumping' —
-  // that's below the flicker-fusion threshold, so the arch-1 glow + bobbing
-  // coefficient never actually registers as visible even though it did
-  // technically render for a frame. 160ms is short enough to read as an
-  // instant reaction (not a deliberate wait) but long enough to actually see.
+  // "arm it" click before the frog actually leaps. 280ms is short enough to
+  // read as an instant reaction (not a deliberate wait) but long enough to
+  // actually register the (now brighter, pulsing) arch-1 glow + bobbing
+  // coefficient before the frog takes off.
   useEffect(() => {
     if (phase === 'ready' && step === 0) {
-      const id = window.setTimeout(() => { if (aliveRef.current) advance(); }, 160);
+      const id = window.setTimeout(() => { if (aliveRef.current) advance(); }, 280);
       timers.current.push(id);
       return () => window.clearTimeout(id);
     }
@@ -637,6 +635,7 @@ export default function WreckingFrogPage() {
         @keyframes wf-mist { 0% { transform: translateX(0); } 100% { transform: translateX(-60px); } }
         @keyframes wf-breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.97); } }
         @keyframes wf-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes wf-glow-pulse { 0%,100% { opacity: 0.75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
         .wf-btn { cursor: pointer; border: none; font-family: inherit; }
         .wf-btn:disabled { cursor: default; opacity: 0.4; }
         .wf-multx-bulk {
@@ -701,13 +700,15 @@ export default function WreckingFrogPage() {
             // ~6.5px toward the tile's mirrored side, flipping with parity.
             const openingOffset = i % 2 === 0 ? 6.5 : -6.5;
             const shieldSrc = state === 'passed' ? 'shields/shield-success.png' : state === 'crushed' ? 'shields/shield-fail.png' : `shields/shield-${k}.png`;
-            const glow = state === 'passed' ? 'rgba(90,220,140,0.55)' : state === 'current' ? 'rgba(255,140,20,0.6)' : null;
+            const glow = state === 'passed' ? 'rgba(90,220,140,0.55)' : state === 'current' ? 'rgba(255,170,40,0.95)' : null;
+            const glowCore = state === 'current' ? 'rgba(255,230,150,0.95)' : glow;
             return (
               <React.Fragment key={i}>
                 {glow && (
                   <div style={{
                     position: 'absolute', left: ARCH_X[i] - ARCH_PITCH / 2 + openingOffset, top: GLOW_TOP, width: ARCH_PITCH, height: GLOW_H,
-                    background: `radial-gradient(ellipse at 50% 25%, ${glow} 0%, ${glow} 35%, transparent 85%)`, pointerEvents: 'none',
+                    background: `radial-gradient(ellipse at 50% 25%, ${glowCore} 0%, ${glow} 45%, transparent 88%)`, pointerEvents: 'none',
+                    animation: state === 'current' ? 'wf-glow-pulse 0.7s ease-in-out infinite' : 'none',
                   }} />
                 )}
                 <div
