@@ -9,7 +9,7 @@ import { Fredoka, Nunito } from 'next/font/google';
 // Latin/digit coefficient text ("1.26x") where it already worked; all the
 // Cyrillic bet-bar labels use Nunito (bold, rounded-ish, real Cyrillic support).
 const gorditas = Fredoka({ weight: ['600', '700'], subsets: ['latin'], display: 'swap' });
-const nunito = Nunito({ weight: ['700', '800'], subsets: ['latin', 'cyrillic'], display: 'swap' });
+const nunito = Nunito({ weight: ['500', '600', '700', '800'], subsets: ['latin', 'cyrillic'], display: 'swap' });
 
 /* "ЛЯГУШКА-ИСКАТЕЛЬ" — jungle temple crash/tower game.
    Frog jumps arch-to-arch; each arch has a rising cash-out multiplier and a
@@ -27,34 +27,30 @@ const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 const IMG = `${BASE}/img/wrecking-frog`;
 
 // ---------- odds ----------
-const RTP = 0.97;
-// The first 10 multipliers are the original hand-tuned curve; beyond arch 10
-// the per-step ratio keeps compounding gently (+1.2% per arch) so the climb
-// to arch 30 stays smooth instead of kinking, ending on a real jackpot-scale
-// multiplier (~98,000x, matching how far a 30-arch ladder should stretch).
+// Smooth geometric climb from 1.04x (arch 1) to 999x (arch 30) — a constant
+// per-step ratio, so it reads as one continuous curve rather than a
+// hand-tuned early section stitched to a compounding tail.
 function buildLadder(count: number): number[] {
-  const anchors = [1.26, 1.45, 1.70, 2.00, 2.60, 3.40, 4.50, 6.00, 8.10, 11.25];
-  const ladder = anchors.slice(0, Math.min(count, anchors.length));
-  let ratio = ladder[ladder.length - 1] / ladder[ladder.length - 2];
-  for (let i = ladder.length; i < count; i++) {
-    ratio *= 1.012;
-    ladder.push(ladder[i - 1] * ratio);
-  }
+  const start = 1.04;
+  const end = 999;
+  const ratio = Math.pow(end / start, 1 / (count - 1));
+  const ladder: number[] = [];
+  for (let i = 0; i < count; i++) ladder.push(start * Math.pow(ratio, i));
   return ladder.map((m) => Math.round(m * 100) / 100);
 }
 const LADDER = buildLadder(30);
 const ARCH_COUNT = LADDER.length;
 
-const SURV: number[] = [1];
-for (let i = 0; i < ARCH_COUNT; i++) SURV.push(RTP / LADDER[i]);
-const STEP_P: number[] = [];
-for (let i = 1; i <= ARCH_COUNT; i++) STEP_P.push(Math.min(0.97, SURV[i] / SURV[i - 1]));
-
+// Scripted demo flow (portfolio showcase, not a real-money game): every
+// session cycles through a small loss, a bigger loss, then a full win to the
+// golden idol, repeating in that order — reliably demonstrates every outcome
+// instead of leaving it to chance.
+const DEMO_CRASH_SEQUENCE: (number | null)[] = [4, 10, null];
+let demoRoundIndex = 0;
 function rollCrashStep(): number | null {
-  for (let i = 1; i <= ARCH_COUNT; i++) {
-    if (Math.random() >= STEP_P[i - 1]) return i;
-  }
-  return null; // survived every arch -> jackpot
+  const step = DEMO_CRASH_SEQUENCE[demoRoundIndex % DEMO_CRASH_SEQUENCE.length];
+  demoRoundIndex++;
+  return step;
 }
 
 // ---------- layout ----------
@@ -104,10 +100,14 @@ const ARCH_X = Array.from({ length: ARCH_COUNT }, (_, i) => ARCH0_CX + i * ARCH_
 const START_X = ARCH0_CX - ARCH_PITCH;
 const LAST_CAP_X = ENDCAP_W + ARCH_COUNT * ARCH_PITCH; // left edge of the mirrored end-cap, right after the last regular tile
 
-const IDOL_H = 240;
+const IDOL_H = 158; // 240 * 0.7 * 0.94
 const IDOL_W = Math.round(IDOL_H * (1644 / 1211)); // matches the cropped gold-idol.png aspect ratio
-const IDOL_X = LAST_CAP_X + ENDCAP_W + 110;
-const WORLD_W = IDOL_X + IDOL_W / 2 + 80; // full scrollable track length the camera pans across
+// The idol stands on the mirrored end-cap's own floor art (not past it, in
+// empty background) so it reads as grounded, and the world ends exactly at
+// the end-cap's own right edge so the camera can't overscroll into bare
+// background past the wall — the wall/idol sit flush with the screen edge.
+const IDOL_X = LAST_CAP_X + ENDCAP_W - IDOL_W / 2 - 20;
+const WORLD_W = LAST_CAP_X + ENDCAP_W;
 
 const BET_MIN = 50;
 const BET_STEP = 50;
@@ -156,7 +156,7 @@ function StonePanel({ children, style }: { children: React.ReactNode; style?: Re
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, padding: '10px 18px', ...style,
     }}>
       <div style={{
-        position: 'absolute', inset: 10, borderRadius: 24, background: 'linear-gradient(180deg,#aeb5a2,#64706e)',
+        position: 'absolute', inset: 10, borderRadius: 20, background: 'linear-gradient(180deg,#aeb5a2,#64706e)',
         boxShadow: '0 0 4px rgba(255,254,254,0.5), inset 0 12px 30px rgba(0,0,0,0.2)',
       }} />
       <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>{children}</div>
@@ -177,7 +177,7 @@ function StatPill({ children, gold, fill }: { children: React.ReactNode; gold?: 
     <div style={{
       position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
       height: 46, minWidth: fill ? 0 : 92, padding: '6px 18px', flex: fill ? 1 : '0 0 auto',
-      borderRadius: 20, border: '2px solid rgba(255,255,255,0.8)', background: '#445253', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.6)',
+      borderRadius: 16, border: '2px solid rgba(255,255,255,0.8)', background: '#445253', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.6)',
     }}>
       <div className={nunito.className} style={{
         fontWeight: 700, fontSize: 28, lineHeight: 1, color: gold ? '#f8da59' : '#f5ecd6', textShadow: '0 4px 4px #653022', letterSpacing: -0.5,
@@ -215,12 +215,14 @@ function GameButton({ variant, onClick, disabled, children }: { variant: 'orange
   );
 }
 
-function InfoIcon() {
+// Top-left glass toolbar (Правила / balance / menu / fullscreen), per Figma node 60:207.
+function GlassButton({ children, onClick, style }: { children: React.ReactNode; onClick?: () => void; style?: React.CSSProperties }) {
   return (
-    <div className={gorditas.className} style={{
-      width: 26, height: 26, borderRadius: 13, border: '2px solid #e5ebe0', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontWeight: 700, fontSize: 16, color: '#e5ebe0', flex: '0 0 auto',
-    }}>i</div>
+    <button className="wf-btn" onClick={onClick} style={{
+      height: 53, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '12px 16px',
+      borderRadius: 12, background: 'rgba(78,64,64,0.35)', border: '1px solid rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)',
+      ...style,
+    }}>{children}</button>
   );
 }
 
@@ -458,25 +460,25 @@ function CrashFX({ burstKey, x, y }: { burstKey: number; x: number; y: number })
 
 function Confetti({ burstKey, colors }: { burstKey: number; colors: string[] }) {
   const particles = useRef(
-    Array.from({ length: 26 }, (_, i) => ({
+    Array.from({ length: 70 }, (_, i) => ({
       angle: seededRand(burstKey * 3 + i) * Math.PI * 2,
-      dist: 90 + seededRand(burstKey * 5 + i) * 140,
-      size: 5 + seededRand(burstKey * 9 + i) * 6,
+      dist: 160 + seededRand(burstKey * 5 + i) * 340,
+      size: 8 + seededRand(burstKey * 9 + i) * 12,
       color: colors[i % colors.length],
-      rot: seededRand(burstKey * 19 + i) * 360 - 180,
-      delay: seededRand(burstKey * 23 + i) * 0.15,
+      rot: seededRand(burstKey * 19 + i) * 720 - 360,
+      delay: seededRand(burstKey * 23 + i) * 0.2,
     }))
   ).current;
   if (burstKey === 0) return null;
   return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 55, overflow: 'visible' }}>
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 65, overflow: 'visible' }}>
       <div style={{ position: 'absolute', top: '38%', left: '50%' }}>
         {particles.map((p, i) => (
           <motion.div key={`${burstKey}-${i}`}
             initial={{ x: 0, y: 0, opacity: 1, rotate: 0, scale: 0.6 }}
-            animate={{ x: Math.cos(p.angle) * p.dist, y: Math.sin(p.angle) * p.dist - 20, opacity: 0, rotate: p.rot, scale: 1 }}
-            transition={{ duration: 0.95 + p.delay, ease: 'easeOut', delay: p.delay }}
-            style={{ position: 'absolute', width: p.size, height: p.size * 0.5, borderRadius: 2, background: p.color }}
+            animate={{ x: Math.cos(p.angle) * p.dist, y: Math.sin(p.angle) * p.dist - 40, opacity: 0, rotate: p.rot, scale: 1.3 }}
+            transition={{ duration: 1.3 + p.delay, ease: 'easeOut', delay: p.delay }}
+            style={{ position: 'absolute', width: p.size, height: p.size * 0.5, borderRadius: 2, background: p.color, boxShadow: `0 0 6px ${p.color}` }}
           />
         ))}
       </div>
@@ -550,6 +552,75 @@ export default function WreckingFrogPage() {
   const [scale, setScale] = useState(1);
   const [isNarrow, setIsNarrow] = useState(false);
   const viewW = isNarrow ? VIEW_W_NARROW : STAGE_W;
+  // Rules panel doubles as onboarding — open by default on every fresh visit
+  // (per-tab state, not persisted) so new/returning players see it first.
+  const [rulesOpen, setRulesOpen] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen().catch(() => {});
+  };
+
+  // Looping background music. Browsers block audio autoplay before any user
+  // gesture, so if the initial play() rejects we retry on the first click
+  // anywhere on the page (the very next thing a player does, either way).
+  const audioRef = useRef<HTMLAudioElement>(null);
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    el.volume = 0.35;
+    el.play().catch(() => {
+      const retry = () => { el.play().catch(() => {}); window.removeEventListener('pointerdown', retry); };
+      window.addEventListener('pointerdown', retry);
+      return () => window.removeEventListener('pointerdown', retry);
+    });
+  }, []);
+  const jumpAudioRef = useRef<HTMLAudioElement>(null);
+  const crushAudioRef = useRef<HTMLAudioElement>(null);
+  const winAudioRef = useRef<HTMLAudioElement>(null);
+  const playSfx = (ref: React.RefObject<HTMLAudioElement | null>) => {
+    const el = ref.current;
+    if (!el) return;
+    el.currentTime = 0;
+    el.play().catch(() => {});
+  };
+  // win.mp3 has a bit of silence baked into the front of the file, which
+  // reads as audio lag every time it fires — decode it once and skip
+  // straight to the first non-silent sample instead of trimming the asset.
+  const winOffsetRef = useRef(0);
+  useEffect(() => {
+    let ctx: AudioContext | undefined;
+    fetch(`${BASE}/audio/wrecking-frog/win.mp3`)
+      .then((r) => r.arrayBuffer())
+      .then((buf) => {
+        ctx = new AudioContext();
+        return ctx.decodeAudioData(buf);
+      })
+      .then((audioBuf) => {
+        const data = audioBuf.getChannelData(0);
+        const threshold = 0.02;
+        let i = 0;
+        while (i < data.length && Math.abs(data[i]) < threshold) i++;
+        winOffsetRef.current = i / audioBuf.sampleRate;
+      })
+      .catch(() => {})
+      .finally(() => ctx?.close());
+  }, []);
+  const playWin = () => {
+    const el = winAudioRef.current;
+    if (!el) return;
+    el.currentTime = winOffsetRef.current;
+    el.play().catch(() => {});
+  };
+  useEffect(() => {
+    if (crushAudioRef.current) crushAudioRef.current.volume = 0.8; // 20% quieter than the other sfx
+  }, []);
 
   const [balance, setBalance] = useState(5000);
   const [bet, setBet] = useState(100);
@@ -617,6 +688,7 @@ export default function WreckingFrogPage() {
     setPhase('jumping');
     setPose('crouch');
     setAnimKey((k) => k + 1);
+    playSfx(jumpAudioRef);
     await sleep(110);
     if (!aliveRef.current) return;
     setPose('air');
@@ -634,6 +706,7 @@ export default function WreckingFrogPage() {
     if (willCrash) {
       setDestroyedIndex(nextStep - 1);
       setShake(true);
+      playSfx(crushAudioRef);
       setBallAnim({ index: nextStep - 1, stage: 'settle' });
       setBurstKey((k) => k + 1);
       timers.current.push(window.setTimeout(() => { if (aliveRef.current) setShake(false); }, 460));
@@ -655,6 +728,7 @@ export default function WreckingFrogPage() {
         setPose('cheer');
         setAnimKey((k) => k + 1);
         setBurstKey((k) => k + 1);
+        playWin();
         await sleep(1700);
         if (!aliveRef.current) return;
         const mult = LADDER[ARCH_COUNT - 1];
@@ -685,6 +759,7 @@ export default function WreckingFrogPage() {
     setPose('cheer');
     setAnimKey((k) => k + 1);
     setBurstKey((k) => k + 1);
+    playWin();
     const mult = LADDER[stepRef.current - 1];
     await sleep(1300);
     if (!aliveRef.current) return;
@@ -701,15 +776,13 @@ export default function WreckingFrogPage() {
   const currentMult = step > 0 ? LADDER[step - 1] : 1;
   const possibleWin = Math.round(bet * currentMult);
   const canCashOut = phase === 'ready' && step >= 1;
-  // Margin so the camera can pan a bit past the world edges — otherwise, at
-  // rest, the frog sprite (wider than its FROG_H anchor point) or the idol
-  // gets clipped by the stage's overflow:hidden right at x=0/WORLD_W.
-  // Margin lets the camera pan a bit past the world's right edge so the idol
-  // never clips the stage's overflow:hidden boundary. No positive margin on the
-  // left: the arch-strip tile must stay flush against the screen's left edge at
-  // rest, matching the mockup, so the world's left edge is never pushed inward.
-  const CAM_MARGIN = 100;
-  const camX = clamp(viewW / 2 - frogX, viewW - WORLD_W - CAM_MARGIN, 0);
+  // No margin on the right: WORLD_W already has its own padding past the idol
+  // (see IDOL_X/WORLD_W above), so adding a second margin here just let the
+  // camera scroll past the drawn wall/idol, opening a gap of bare background
+  // between the wall and the screen's right edge at rest. No margin on the
+  // left either: the arch-strip tile must stay flush against the screen's
+  // left edge at rest, matching the mockup.
+  const camX = clamp(viewW / 2 - frogX, viewW - WORLD_W, 0);
 
   // Shared per-arch state, computed once so the glow prepass (rendered behind
   // ArchStrip) and the shield/text pass (rendered after it, on top) agree.
@@ -796,8 +869,26 @@ export default function WreckingFrogPage() {
             <WreckingBallRig key={i} x={ARCH_X[i]} seed={i} archState={destroyedIndex === i ? 'destroyed' : 'intact'} ballAnim={ballAnim} />
           ))}
 
-          <div style={{ position: 'absolute', left: IDOL_X - IDOL_W / 2, top: GROUND_Y - IDOL_H }}>
-            <Sprite name="gold-idol.png" style={{ width: IDOL_W, height: IDOL_H }} fallback={<IdolArt />} />
+          <div style={{ position: 'absolute', left: IDOL_X - IDOL_W / 2, top: GROUND_Y - IDOL_H + 2 }}>
+            <div style={{
+              position: 'absolute', left: '50%', top: '55%', width: IDOL_W * 1.7, height: IDOL_W * 1.7,
+              transform: 'translate(-50%, -50%)', borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,221,120,0.55) 0%, rgba(255,200,60,0.22) 45%, transparent 75%)',
+              filter: 'blur(4px)', pointerEvents: 'none',
+            }} />
+            {/* contact shadow: a thin, squashed slice of the idol's own base
+                silhouette (the coin pile) sitting flush under it — no flip,
+                just the bottom slice of the mask compressed flat */}
+            <div style={{
+              position: 'absolute', left: 0, bottom: 0, width: IDOL_W, height: IDOL_H * 0.22,
+              backgroundColor: 'rgba(0,0,0,0.6)',
+              WebkitMaskImage: `url(${IMG}/gold-idol.png)`, maskImage: `url(${IMG}/gold-idol.png)`,
+              WebkitMaskSize: `${IDOL_W}px ${IDOL_H}px`, maskSize: `${IDOL_W}px ${IDOL_H}px`,
+              WebkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'left bottom', maskPosition: 'left bottom',
+              transform: 'scaleY(0.35)', transformOrigin: 'bottom', filter: 'blur(2.5px)',
+            }} />
+            <Sprite name="gold-idol.png" style={{ width: IDOL_W, height: IDOL_H, position: 'relative' }} fallback={<IdolArt />} />
           </div>
 
           {/* multiplier ladder — step shield up top, gold gradient numeral in the opening,
@@ -811,6 +902,11 @@ export default function WreckingFrogPage() {
             const state = archStates[i].state;
             const gold = state === 'locked' || state === 'current';
             const openingOffset = archStates[i].openingOffset;
+            // Multipliers past arch 10 climb into the thousands/tens-of-thousands —
+            // a fixed 36px would collide with the neighboring arch's number, so
+            // shrink it once the digit count grows past the "1.26x"-style baseline.
+            const multText = `${m.toFixed(2)}x`;
+            const multFontSize = Math.max(16, 36 - Math.max(0, multText.length - 5) * 3);
             const shieldSrc = state === 'passed' ? 'shields/shield-success.png' : state === 'crushed' ? 'shields/shield-fail.png' : `shields/shield-${k}.png`;
             return (
               <React.Fragment key={i}>
@@ -821,23 +917,33 @@ export default function WreckingFrogPage() {
                     transform: 'translateY(-50%)', cursor: state === 'current' && phase === 'ready' ? 'pointer' : 'default',
                   }}
                 >
-                  <Sprite name={shieldSrc} style={{ width: SHIELD_SIZE, height: SHIELD_SIZE, filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))' }} fallback={<div />} />
+                  {state === 'crushed' ? (
+                    <motion.div
+                      initial={{ y: 0, opacity: 1, rotate: 0 }}
+                      animate={{ y: 700, opacity: 0, rotate: i % 2 === 0 ? 50 : -50 }}
+                      transition={{ duration: 0.9, ease: 'easeIn' }}
+                    >
+                      <Sprite name={shieldSrc} style={{ width: SHIELD_SIZE, height: SHIELD_SIZE, filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))' }} fallback={<div />} />
+                    </motion.div>
+                  ) : (
+                    <Sprite name={shieldSrc} style={{ width: SHIELD_SIZE, height: SHIELD_SIZE, filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))' }} fallback={<div />} />
+                  )}
                 </div>
                 <div style={{
                   position: 'absolute', left: ARCH_X[i] + openingOffset, top: state === 'current' ? LADDER_Y - 40 : LADDER_Y, width: 0,
-                  display: 'flex', justifyContent: 'center', transition: 'top 0.25s ease, opacity 0.25s ease', opacity: state === 'passed' ? 0.4 : 1,
+                  display: 'flex', justifyContent: 'center', transition: 'top 0.25s ease, opacity 0.25s ease',
+                  opacity: state === 'crushed' ? 0 : state === 'passed' ? 0.4 : 1,
                   animation: state === 'current' ? 'wf-bob 1.6s ease-in-out infinite' : 'none',
                 }}>
                   <div style={{ transform: `translateY(-50%) scale(${state === 'current' ? 1.15 : 1})` }}>
                     <span style={{ position: 'relative', display: 'inline-block' }}>
                       {gold && (
-                        <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: 36, whiteSpace: 'nowrap' }}>{m.toFixed(2)}x</span>
+                        <span aria-hidden className={`${gorditas.className} wf-multx-bulk`} style={{ position: 'absolute', inset: 0, fontSize: multFontSize, whiteSpace: 'nowrap' }}>{multText}</span>
                       )}
                       <span className={`${gorditas.className}${gold ? ' wf-multx' : ''}`} style={{
-                        position: 'relative', fontSize: 36, whiteSpace: 'nowrap', fontWeight: 700,
-                        ...(state === 'crushed' ? { color: '#ff4d5a', textDecoration: 'line-through' } : {}),
+                        position: 'relative', fontSize: multFontSize, whiteSpace: 'nowrap', fontWeight: 700,
                         ...(state === 'passed' ? { color: '#dfe8df' } : {}),
-                      }}>{m.toFixed(2)}x</span>
+                      }}>{multText}</span>
                     </span>
                   </div>
                 </div>
@@ -869,22 +975,36 @@ export default function WreckingFrogPage() {
 
         <Confetti burstKey={phase === 'won' || phase === 'cashing' ? burstKey : 0} colors={['#ffc93d', '#5adc8c', '#fff3c0', '#e8b23d']} />
 
-        {/* result overlay */}
-        {phase === 'result' && result && (
-          <div style={{ position: 'absolute', left: 0, right: 0, top: STAGE_H * 0.32, textAlign: 'center', zIndex: 60 }}>
-            {result.kind === 'lose' ? (
-              <>
-                <div style={{ fontSize: 36, fontWeight: 900, color: '#ff4d5a', textShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>АРКА ОБВАЛИЛАСЬ</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.75)', marginTop: 6 }}>Ставка {fmt(bet)} ₽ потеряна</div>
-              </>
-            ) : (
-              <>
-                <div style={{ fontSize: 36, fontWeight: 900, color: '#ffc93d', textShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
-                  {result.kind === 'jackpot' ? 'ЗОЛОТАЯ ЖАБА!' : `+${fmt(result.payout)} ₽`}
-                </div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'rgba(255,255,255,0.75)', marginTop: 6 }}>×{result.mult.toFixed(2)} от ставки {fmt(bet)} ₽{result.kind === 'jackpot' ? ` · +${fmt(result.payout)} ₽` : ''}</div>
-              </>
-            )}
+        {/* result overlay — loss shows no text at all now (the falling shield +
+            shake + crushed pose already read as failure on their own). Win uses
+            the frosted-glass banner from Figma node 62:350, with a springy
+            bounce-in for some emotional punch. */}
+        {phase === 'result' && result && result.kind !== 'lose' && (
+          <div style={{ position: 'absolute', left: 0, right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 60 }}>
+            <motion.div
+              key={`${burstKey}-bg`}
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ type: 'spring', stiffness: 120, damping: 18 }}
+              style={{
+                position: 'absolute', inset: 0,
+                background: 'rgba(154,231,69,0.1)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)',
+              }}
+            />
+            <motion.div
+              key={`${burstKey}-text`}
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, type: 'spring', stiffness: 260, damping: 14 }}
+              style={{ position: 'relative', padding: '28px 40px', textAlign: 'center' }}
+            >
+              <div className={nunito.className} style={{ fontSize: 48, fontWeight: 600, color: '#9fec46', textShadow: '0 4px 4px #653022' }}>
+                {result.kind === 'jackpot' ? 'ЗОЛОТАЯ ЖАБА!' : `+${fmt(result.payout)} ₽`}
+              </div>
+              <div className={nunito.className} style={{ fontSize: 18, fontWeight: 500, color: '#fff', marginTop: 8 }}>
+                ×{result.mult.toFixed(2)} от ставки {fmt(bet)} ₽{result.kind === 'jackpot' ? ` · +${fmt(result.payout)} ₽` : ''}
+              </div>
+            </motion.div>
           </div>
         )}
 
@@ -924,7 +1044,7 @@ export default function WreckingFrogPage() {
               display: 'flex', alignItems: 'center', gap: 10, padding: 16, flex: '0 0 auto',
             }}>
               <div style={{
-                position: 'absolute', inset: 8, borderRadius: 20, background: 'linear-gradient(180deg,#aeb5a2,#64706e)',
+                position: 'absolute', inset: 8, borderRadius: 16, background: 'linear-gradient(180deg,#aeb5a2,#64706e)',
                 boxShadow: '0 0 4px rgba(255,254,254,0.5), inset 0 12px 30px rgba(0,0,0,0.2)',
               }} />
               <GameButton variant="orange" disabled={!canCashOut} onClick={cashOut}>ЗАБРАТЬ</GameButton>
@@ -932,33 +1052,67 @@ export default function WreckingFrogPage() {
                 variant="green"
                 disabled={phase !== 'idle' && phase !== 'ready'}
                 onClick={phase === 'idle' ? startRound : advance}
-              >{phase === 'idle' ? 'СТАВКА' : 'ДАЛЬШЕ'}</GameButton>
-            </div>
-          </div>
-
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28, padding: '14px 24px', borderRadius: 14,
-            background: 'rgba(41,51,51,0.85)', border: '2px solid rgba(20,26,26,0.24)',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <InfoIcon />
-              <div className={nunito.className} style={{ fontWeight: 700, fontSize: 18, color: '#edf2e5', textShadow: '0 2px 2px rgba(0,0,0,0.6)', letterSpacing: 1, whiteSpace: 'nowrap', width: 'max-content', flexShrink: 0 }}>
-                Прыгайте по секциям и избегайте падающих шаров!
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Sprite name="ui/icon-trophy.svg" alt="" style={{ width: 26, height: 28 }} fallback={<span />} />
-              <div className={nunito.className} style={{ fontWeight: 700, fontSize: 18, color: '#edf2e5', textShadow: '0 2px 2px rgba(0,0,0,0.6)', letterSpacing: 1, whiteSpace: 'nowrap', width: 'max-content', flexShrink: 0 }}>
-                Доберётесь до золотой жабы и заберите приз!
-              </div>
+              >{phase === 'idle' ? 'СТАРТ' : 'ДАЛЬШЕ'}</GameButton>
             </div>
           </div>
         </div>
 
-        {/* balance */}
-        <div style={{ position: 'absolute', left: 20, top: 18, color: '#fff', fontWeight: 800, fontSize: 14, background: 'rgba(10,20,14,0.55)', padding: '6px 14px', borderRadius: 10 }}>
-          {fmt(balance)} ₽
+        <audio ref={audioRef} src={`${BASE}/audio/wrecking-frog/bg-music.mp3`} loop />
+        <audio ref={jumpAudioRef} src={`${BASE}/audio/wrecking-frog/jump.mp3`} />
+        <audio ref={crushAudioRef} src={`${BASE}/audio/wrecking-frog/crush.mp3`} />
+        <audio ref={winAudioRef} src={`${BASE}/audio/wrecking-frog/win.mp3`} />
+
+        {/* top toolbar — balance + Правила on the left, menu + fullscreen on the right */}
+        <div style={{ position: 'absolute', left: 20, top: 18, display: 'flex', alignItems: 'center', gap: 12, zIndex: 70 }}>
+          <GlassButton>
+            <span className={nunito.className} style={{ fontWeight: 700, fontSize: 18, color: '#fff', whiteSpace: 'nowrap' }}>{fmt(balance)} ₽</span>
+            <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.2)' }} />
+            <Sprite name="ui/icon-wallet.svg" alt="" style={{ width: 22, height: 22 }} fallback={<span />} />
+          </GlassButton>
+          <GlassButton onClick={() => setRulesOpen(true)}>
+            <span className={nunito.className} style={{ fontWeight: 700, fontSize: 18, color: '#fff', whiteSpace: 'nowrap' }}>Правила игры</span>
+            <Sprite name="ui/icon-info.svg" alt="" style={{ width: 20, height: 20 }} fallback={<span />} />
+          </GlassButton>
         </div>
+        <div style={{ position: 'absolute', right: 20, top: 18, display: 'flex', alignItems: 'center', gap: 12, zIndex: 70 }}>
+          <GlassButton style={{ width: 53, padding: 12 }}>
+            <Sprite name="ui/icon-menu.svg" alt="" style={{ width: 18, height: 16 }} fallback={<span />} />
+          </GlassButton>
+          <GlassButton style={{ width: 53, padding: 12 }} onClick={toggleFullscreen}>
+            <Sprite name="ui/icon-resize-vector.svg" alt="" style={{ width: 20, height: 20, transform: isFullscreen ? 'rotate(180deg)' : 'none' }} fallback={<span />} />
+          </GlassButton>
+        </div>
+
+        {/* rules / onboarding — shown on every fresh visit, reopenable via "Правила" */}
+        {rulesOpen && (
+          <div
+            onClick={() => setRulesOpen(false)}
+            style={{
+              position: 'absolute', inset: 0, background: 'rgba(6,12,8,0.65)', zIndex: 90,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                background: 'linear-gradient(180deg,#3f4f4f,#20302e)', border: '2px solid rgba(255,255,255,0.15)', borderRadius: 24,
+                padding: '32px 36px', maxWidth: 420, textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+              }}
+            >
+              <div className={nunito.className} style={{ fontWeight: 800, fontSize: 26, color: '#fff', marginBottom: 16 }}>Как играть</div>
+              <div className={nunito.className} style={{ fontWeight: 600, fontSize: 16, color: '#dfe8df', lineHeight: 1.5, marginBottom: 28 }}>
+                Прыгайте по секциям моста и избегайте падающих шаров.<br />
+                Заберите выигрыш в любой момент после первого прыжка — или рискните дойти до золотой жабы за максимальный приз!
+              </div>
+              <button className="wf-btn" onClick={() => setRulesOpen(false)} style={{
+                background: 'linear-gradient(180deg,#91b956,#416947)', border: '3px solid #2d3d1a', borderRadius: 18, padding: '10px 32px',
+                boxShadow: 'inset 0 0 6px rgba(255,255,255,0.6)',
+              }}>
+                <span className={nunito.className} style={{ fontWeight: 800, fontSize: 20, color: '#f5ecd6', textShadow: '0 4px 4px #653022' }}>Понятно</span>
+              </button>
+            </div>
+          </div>
+        )}
       </motion.div>
     </div>
   );
