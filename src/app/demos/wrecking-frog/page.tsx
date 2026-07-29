@@ -172,11 +172,11 @@ function PanelLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function StatPill({ children, gold, wide }: { children: React.ReactNode; gold?: boolean; wide?: boolean }) {
+function StatPill({ children, gold, fill }: { children: React.ReactNode; gold?: boolean; fill?: boolean }) {
   return (
     <div style={{
       position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-      height: 46, minWidth: wide ? undefined : 92, flex: wide ? 1 : undefined, padding: '6px 18px',
+      height: 46, minWidth: fill ? 0 : 92, padding: '6px 18px', flex: fill ? 1 : '0 0 auto',
       borderRadius: 20, border: '2px solid rgba(255,255,255,0.8)', background: '#445253', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.6)',
     }}>
       <div className={nunito.className} style={{
@@ -715,7 +715,7 @@ export default function WreckingFrogPage() {
   // ArchStrip) and the shield/text pass (rendered after it, on top) agree.
   const archStates = LADDER.map((_, i) => {
     const k = i + 1;
-    const state = destroyedIndex === i ? 'crushed' : step >= k ? 'passed' : phase === 'ready' && step + 1 === k ? 'current' : 'locked';
+    const state = destroyedIndex === i ? 'crushed' : step >= k ? 'passed' : (phase === 'ready' || phase === 'idle') && step + 1 === k ? 'current' : 'locked';
     // the arch opening isn't perfectly centered inside its tile — it sits
     // ~6.5px toward the tile's mirrored side, flipping with parity.
     const openingOffset = i % 2 === 0 ? 6.5 : -6.5;
@@ -731,7 +731,7 @@ export default function WreckingFrogPage() {
         @keyframes wf-mist { 0% { transform: translateX(0); } 100% { transform: translateX(-60px); } }
         @keyframes wf-breathe { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.97); } }
         @keyframes wf-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        @keyframes wf-glow-pulse { 0%,100% { opacity: 0.75; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+        @keyframes wf-glow-pulse { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
         .wf-btn { cursor: pointer; border: none; font-family: inherit; }
         .wf-btn:disabled { cursor: default; opacity: 0.4; }
         .wf-multx-bulk {
@@ -776,10 +776,7 @@ export default function WreckingFrogPage() {
           <ArchEndcap x={0} mirrored={false} />
           <ArchEndcap x={LAST_CAP_X} mirrored />
           {destroyedIndex !== null && (
-            // arch i sits on tile index i of the repeating strip (tile 0 = arch
-            // 0, right where the strip itself starts) — even arch indices land
-            // on the strip's normal-orientation copy, odd on the mirrored one.
-            <Sprite name={destroyedIndex % 2 === 0 ? 'arch-strip-destroyed.png' : 'arch-strip-destroyed-mirrored.png'}
+            <Sprite name="arch-strip-destroyed.png"
               style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}
               fallback={<div style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}><ArchArt destroyed /></div>} />
           )}
@@ -810,10 +807,10 @@ export default function WreckingFrogPage() {
             return (
               <React.Fragment key={i}>
                 <div
-                  onClick={state === 'current' ? advance : undefined}
+                  onClick={state === 'current' && phase === 'ready' ? advance : undefined}
                   style={{
                     position: 'absolute', left: ARCH_X[i] + openingOffset, top: SHIELD_Y, width: 0, display: 'flex', justifyContent: 'center',
-                    transform: 'translateY(-50%)', cursor: state === 'current' ? 'pointer' : 'default',
+                    transform: 'translateY(-50%)', cursor: state === 'current' && phase === 'ready' ? 'pointer' : 'default',
                   }}
                 >
                   <Sprite name={shieldSrc} style={{ width: SHIELD_SIZE, height: SHIELD_SIZE, filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.5))' }} fallback={<div />} />
@@ -892,7 +889,7 @@ export default function WreckingFrogPage() {
                 <StepperButton variant="minus" disabled={phase !== 'idle'} onClick={() => changeBet(-BET_STEP)}>
                   <Sprite name="ui/icon-minus.svg" style={{ width: 20, height: 20 }} fallback={<span style={{ color: '#fff', fontSize: 18, fontWeight: 800 }}>−</span>} />
                 </StepperButton>
-                <StatPill>{fmt(bet)} ₽</StatPill>
+                <StatPill fill>{fmt(bet)} ₽</StatPill>
                 <StepperButton variant="plus" disabled={phase !== 'idle'} onClick={() => changeBet(BET_STEP)}>
                   <Sprite name="ui/icon-plus.svg" style={{ width: 20, height: 20 }} fallback={<span style={{ color: '#fff', fontSize: 18, fontWeight: 800 }}>+</span>} />
                 </StepperButton>
@@ -911,7 +908,7 @@ export default function WreckingFrogPage() {
 
             <StonePanel style={{ flex: 1 }}>
               <PanelLabel>ВОЗМОЖНЫЙ ВЫИГРЫШ</PanelLabel>
-              <StatPill gold wide>{fmt(step > 0 ? possibleWin : bet)} ₽</StatPill>
+              <StatPill gold>{fmt(step > 0 ? possibleWin : bet)} ₽</StatPill>
             </StonePanel>
 
             <div style={{
