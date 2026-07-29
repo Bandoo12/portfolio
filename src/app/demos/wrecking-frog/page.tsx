@@ -776,8 +776,16 @@ export default function WreckingFrogPage() {
           <ArchEndcap x={0} mirrored={false} />
           <ArchEndcap x={LAST_CAP_X} mirrored />
           {destroyedIndex !== null && (
+            // arch i sits on tile index i of the repeating strip (tile 0 = arch
+            // 0, right where the strip itself starts) — even arch indices land
+            // on the strip's normal-orientation copy, odd on the mirrored one.
+            // Single source image now, flipped in CSS to match instead of a
+            // second pre-mirrored PNG.
             <Sprite name="arch-strip-destroyed.png"
-              style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}
+              style={{
+                position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H,
+                transform: destroyedIndex % 2 === 0 ? 'none' : 'scaleX(-1)',
+              }}
               fallback={<div style={{ position: 'absolute', left: ARCH_X[destroyedIndex] - ARCH_PITCH / 2, top: CHAIN_TOP_Y, width: ARCH_PITCH, height: TILE_H }}><ArchArt destroyed /></div>} />
           )}
 
