@@ -582,20 +582,17 @@ export default function WreckingFrogPage() {
   };
 
   // Auto-jump onto the first arch as soon as a round starts — no separate
-  // "arm it" click before the frog actually leaps. Arch 1 renders as
-  // "current" (glow + floating coefficient) the instant phase flips to
-  // 'ready', but calling advance() in the same tick can fire before the
-  // browser ever paints that frame, so the glow never actually shows. Two
-  // rAFs guarantee one real paint happens first — imperceptible as a delay,
-  // but enough for the glow to be visible before the jump starts.
+  // "arm it" click before the frog actually leaps. A single rAF only buys
+  // ~1 painted frame (~16ms) before advance() flips phase to 'jumping' —
+  // that's below the flicker-fusion threshold, so the arch-1 glow + bobbing
+  // coefficient never actually registers as visible even though it did
+  // technically render for a frame. 160ms is short enough to read as an
+  // instant reaction (not a deliberate wait) but long enough to actually see.
   useEffect(() => {
     if (phase === 'ready' && step === 0) {
-      let raf1 = 0;
-      let raf2 = 0;
-      raf1 = requestAnimationFrame(() => {
-        raf2 = requestAnimationFrame(() => { if (aliveRef.current) advance(); });
-      });
-      return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
+      const id = window.setTimeout(() => { if (aliveRef.current) advance(); }, 160);
+      timers.current.push(id);
+      return () => window.clearTimeout(id);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, step]);
