@@ -581,6 +581,13 @@ export default function WreckingFrogPage() {
     }
   };
 
+  // Auto-jump onto the first arch the instant a round starts — no separate
+  // "arm it" click before the frog actually leaps.
+  useEffect(() => {
+    if (phase === 'ready' && step === 0) advance();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, step]);
+
   const cashOut = async () => {
     if (phase !== 'ready' || stepRef.current < 1 || !aliveRef.current) return;
     setPhase('cashing');
