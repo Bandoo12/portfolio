@@ -1,9 +1,15 @@
 'use client';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Fredoka } from 'next/font/google';
+import { Fredoka, Nunito } from 'next/font/google';
 
-const gorditas = Fredoka({ weight: '700', subsets: ['latin'], display: 'swap' });
+// Fredoka's Google Fonts release only ships latin/latin-ext/hebrew — no
+// Cyrillic — so it silently fails to render Cyrillic glyphs at all (measures
+// as zero-width, doesn't just fall back visually). It's kept for the
+// Latin/digit coefficient text ("1.26x") where it already worked; all the
+// Cyrillic bet-bar labels use Nunito (bold, rounded-ish, real Cyrillic support).
+const gorditas = Fredoka({ weight: ['600', '700'], subsets: ['latin'], display: 'swap' });
+const nunito = Nunito({ weight: ['700', '800'], subsets: ['latin', 'cyrillic'], display: 'swap' });
 
 /* "ЛЯГУШКА-ИСКАТЕЛЬ" — jungle temple crash/tower game.
    Frog jumps arch-to-arch; each arch has a rising cash-out multiplier and a
@@ -64,8 +70,7 @@ const SHIELD_Y = 300; // step-number shield's bottom edge touches the arch curve
 const SHIELD_SIZE = 84; // close to the source art's native ~88-93px — mockup shields are large, nearly touching neighbors
 const GLOW_TOP = 276; // opening glow spans from the arch curve down to the floor line
 const GLOW_H = 262;
-const BAR_TOP = 634;
-const FOOTER_Y = 766;
+const CONTROLS_BOTTOM = 14; // stone control panel + info strip cluster, anchored to the stage bottom
 const DROP_DIST = 250;
 const FROG_H = 185; // sprites are ~square canvases; width is left to auto-scale from this (168 * 1.1, feet stay pinned to GROUND_Y since the container is top-anchored at GROUND_Y-FROG_H)
 
@@ -138,6 +143,85 @@ function Sprite({ name, alt = '', style, fallback }: { name: string; alt?: strin
   const ok = useAssetOk(src);
   if (ok) return <img src={src} alt={alt} draggable={false} style={{ maxWidth: 'none', maxHeight: 'none', ...style }} />;
   return <>{fallback}</>;
+}
+
+// ---------- bet-control bar (matches the Figma "Ставка" panel 1:1) ----------
+// Every stone panel is a two-layer bevel: an outer olive-gray rim (the frame)
+// around an inset, darker recessed card — reproduced here as an absolutely
+// positioned inner card sitting 10px inset inside the outer padded frame.
+function StonePanel({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div style={{
+      position: 'relative', height: 120, borderRadius: 24, background: 'linear-gradient(180deg,#c6cab6,#4a5c60)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, padding: '10px 18px', ...style,
+    }}>
+      <div style={{
+        position: 'absolute', inset: 10, borderRadius: 24, background: 'linear-gradient(180deg,#aeb5a2,#64706e)',
+        boxShadow: '0 0 4px rgba(255,254,254,0.5), inset 0 12px 30px rgba(0,0,0,0.2)',
+      }} />
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>{children}</div>
+    </div>
+  );
+}
+
+function PanelLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className={nunito.className} style={{
+      fontWeight: 700, fontSize: 24, color: '#313534', textShadow: '0 0 4px rgba(255,255,255,0.5)', letterSpacing: -1, whiteSpace: 'nowrap',
+    }}>{children}</div>
+  );
+}
+
+function StatPill({ children, gold, wide }: { children: React.ReactNode; gold?: boolean; wide?: boolean }) {
+  return (
+    <div style={{
+      position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+      height: 46, minWidth: wide ? undefined : 92, flex: wide ? 1 : undefined, padding: '6px 18px',
+      borderRadius: 20, border: '2px solid rgba(255,255,255,0.8)', background: '#445253', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.6)',
+    }}>
+      <div className={nunito.className} style={{
+        fontWeight: 700, fontSize: 28, lineHeight: 1, color: gold ? '#f8da59' : '#f5ecd6', textShadow: '0 4px 4px #653022', letterSpacing: -0.5,
+        whiteSpace: 'nowrap', width: 'max-content', flexShrink: 0, display: 'flex', alignItems: 'center',
+      }}>{children}</div>
+    </div>
+  );
+}
+
+function StepperButton({ variant, onClick, disabled, children }: { variant: 'minus' | 'plus'; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+  const border = variant === 'minus' ? '#3a3f3a' : '#354750';
+  const grad = variant === 'minus' ? 'linear-gradient(180deg,#aeb7a7,#788581)' : 'linear-gradient(180deg,#89a8b1,#527689)';
+  return (
+    <button className="wf-btn" onClick={onClick} disabled={disabled} style={{
+      position: 'relative', width: 52, height: 53, borderRadius: 18, border: `3px solid ${border}`, background: grad,
+      boxShadow: 'inset 0 0 6px rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>{children}</button>
+  );
+}
+
+function GameButton({ variant, onClick, disabled, children }: { variant: 'orange' | 'green'; onClick?: () => void; disabled?: boolean; children: React.ReactNode }) {
+  const border = variant === 'orange' ? '#552f14' : '#2d3d1a';
+  const grad = variant === 'orange' ? 'linear-gradient(180deg,#ea8d40,#9b3f2a)' : 'linear-gradient(180deg,#91b956,#416947)';
+  return (
+    <button className="wf-btn" onClick={onClick} disabled={disabled} style={{
+      position: 'relative', height: '100%', minWidth: 130, padding: '6px 18px', borderRadius: 18, border: `3px solid ${border}`,
+      background: grad, boxShadow: 'inset 0 0 6px rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      opacity: disabled ? 0.5 : 1,
+    }}>
+      <div className={nunito.className} style={{
+        fontWeight: 800, fontSize: 26, color: '#f5ecd6', textShadow: '0 4px 4px #653022', letterSpacing: -0.5,
+        whiteSpace: 'nowrap', width: 'max-content', flexShrink: 0,
+      }}>{children}</div>
+    </button>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <div className={gorditas.className} style={{
+      width: 26, height: 26, borderRadius: 13, border: '2px solid #e5ebe0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontWeight: 700, fontSize: 16, color: '#e5ebe0', flex: '0 0 auto',
+    }}>i</div>
+  );
 }
 
 // arch-strip.png is TWO tile-widths wide: one column plus that same column
@@ -614,7 +698,6 @@ export default function WreckingFrogPage() {
 
   const frogAnimCfg = frogAnim(pose);
   const frogFramesReady = useFrameCount(frogAnimCfg.folder) > 0;
-  const running = phase !== 'idle' && phase !== 'result';
   const currentMult = step > 0 ? LADDER[step - 1] : 1;
   const possibleWin = Math.round(bet * currentMult);
   const canCashOut = phase === 'ready' && step >= 1;
@@ -785,48 +868,76 @@ export default function WreckingFrogPage() {
           </div>
         )}
 
-        {/* control bar */}
-        <div style={{
-          position: 'absolute', left: 20, right: 20, top: BAR_TOP, height: 100, borderRadius: 22,
-          background: 'rgba(10,20,14,0.72)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)',
-          display: 'flex', alignItems: 'center', padding: '0 18px', gap: 14, flexWrap: isNarrow ? 'wrap' : 'nowrap', justifyContent: isNarrow ? 'center' : 'flex-start',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <button className="wf-btn" disabled={phase !== 'idle'} onClick={() => changeBet(-BET_STEP)} style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 18, fontWeight: 800 }}>−</button>
-            <div style={{ minWidth: 74, textAlign: 'center', color: '#fff', fontWeight: 800, fontSize: 15 }}>{fmt(bet)} ₽</div>
-            <button className="wf-btn" disabled={phase !== 'idle'} onClick={() => changeBet(BET_STEP)} style={{ width: 30, height: 30, borderRadius: 9, background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 18, fontWeight: 800 }}>+</button>
+        {/* control bar — stone bet-selection panel, per Figma node 35:290 */}
+        <div style={{ position: 'absolute', left: 20, right: 20, bottom: CONTROLS_BOTTOM, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <StonePanel style={{ width: 300, flex: '0 0 auto' }}>
+              <PanelLabel>СТАВКА</PanelLabel>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <StepperButton variant="minus" disabled={phase !== 'idle'} onClick={() => changeBet(-BET_STEP)}>
+                  <Sprite name="ui/icon-minus.svg" style={{ width: 20, height: 20 }} fallback={<span style={{ color: '#fff', fontSize: 18, fontWeight: 800 }}>−</span>} />
+                </StepperButton>
+                <StatPill>{fmt(bet)} ₽</StatPill>
+                <StepperButton variant="plus" disabled={phase !== 'idle'} onClick={() => changeBet(BET_STEP)}>
+                  <Sprite name="ui/icon-plus.svg" style={{ width: 20, height: 20 }} fallback={<span style={{ color: '#fff', fontSize: 18, fontWeight: 800 }}>+</span>} />
+                </StepperButton>
+              </div>
+            </StonePanel>
+
+            <StonePanel style={{ flex: '0 0 auto' }}>
+              <PanelLabel>ШАГОВ</PanelLabel>
+              <StatPill>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 12 }}>
+                  <Sprite name="ui/icon-footprint.svg" alt="" style={{ width: 22, height: 27 }} fallback={<span />} />
+                  {step}
+                </span>
+              </StatPill>
+            </StonePanel>
+
+            <StonePanel style={{ flex: 1 }}>
+              <PanelLabel>ВОЗМОЖНЫЙ ВЫИГРЫШ</PanelLabel>
+              <StatPill gold wide>{fmt(step > 0 ? possibleWin : bet)} ₽</StatPill>
+            </StonePanel>
+
+            <div style={{
+              position: 'relative', height: 120, borderRadius: 24, background: 'linear-gradient(180deg,#c6cab6,#4a5c60)',
+              display: 'flex', alignItems: 'center', gap: 10, padding: 16, flex: '0 0 auto',
+            }}>
+              <div style={{
+                position: 'absolute', inset: 8, borderRadius: 20, background: 'linear-gradient(180deg,#aeb5a2,#64706e)',
+                boxShadow: '0 0 4px rgba(255,254,254,0.5), inset 0 12px 30px rgba(0,0,0,0.2)',
+              }} />
+              <GameButton variant="orange" disabled={!canCashOut} onClick={cashOut}>ЗАБРАТЬ</GameButton>
+              <GameButton
+                variant="green"
+                disabled={phase !== 'idle' && phase !== 'ready'}
+                onClick={phase === 'idle' ? startRound : advance}
+              >{phase === 'idle' ? 'СТАВКА' : 'ДАЛЬШЕ'}</GameButton>
+            </div>
           </div>
 
-          <div style={{ textAlign: 'center', minWidth: 64 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: 0.5 }}>ШАГОВ</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#fff' }}>{step}</div>
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 28, padding: '14px 24px', borderRadius: 14,
+            background: 'rgba(41,51,51,0.85)', border: '2px solid rgba(20,26,26,0.24)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <InfoIcon />
+              <div className={nunito.className} style={{ fontWeight: 700, fontSize: 18, color: '#edf2e5', textShadow: '0 2px 2px rgba(0,0,0,0.6)', letterSpacing: 1, whiteSpace: 'nowrap', width: 'max-content', flexShrink: 0 }}>
+                Прыгайте по секциям и избегайте падающих шаров!
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Sprite name="ui/icon-trophy.svg" alt="" style={{ width: 26, height: 28 }} fallback={<span />} />
+              <div className={nunito.className} style={{ fontWeight: 700, fontSize: 18, color: '#edf2e5', textShadow: '0 2px 2px rgba(0,0,0,0.6)', letterSpacing: 1, whiteSpace: 'nowrap', width: 'max-content', flexShrink: 0 }}>
+                Доберётесь до золотой жабы и заберите приз!
+              </div>
+            </div>
           </div>
-
-          <div style={{ textAlign: 'center', minWidth: 120 }}>
-            <div style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: 0.5 }}>ВОЗМОЖНЫЙ ВЫИГРЫШ</div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#ffc93d' }}>{fmt(step > 0 ? possibleWin : bet)} ₽</div>
-          </div>
-
-          <div style={{ flex: isNarrow ? '1 1 100%' : 1 }} />
-
-          <button className="wf-btn" disabled={!canCashOut} onClick={cashOut} style={{
-            height: 46, minWidth: 110, borderRadius: 14, background: canCashOut ? 'linear-gradient(90deg,#eb5015,#f5772f)' : 'rgba(255,255,255,0.08)',
-            color: canCashOut ? '#fff' : 'rgba(255,255,255,0.4)', fontSize: 14, fontWeight: 800, padding: '0 16px',
-          }}>ЗАБРАТЬ</button>
-
-          <button className="wf-btn" disabled={phase !== 'idle' && phase !== 'ready'} onClick={phase === 'idle' ? startRound : advance} style={{
-            height: 46, minWidth: 110, borderRadius: 14,
-            background: (phase === 'idle' && balance < bet) ? 'rgba(255,255,255,0.08)' : 'linear-gradient(90deg,#3dd66b,#2fb85a)',
-            color: (phase === 'idle' && balance < bet) ? 'rgba(255,255,255,0.4)' : '#04160c', fontSize: 14, fontWeight: 800, padding: '0 16px',
-          }}>{phase === 'idle' ? 'СТАВКА' : 'ДАЛЬШЕ'}</button>
         </div>
 
-        {/* balance + footer hint */}
+        {/* balance */}
         <div style={{ position: 'absolute', left: 20, top: 18, color: '#fff', fontWeight: 800, fontSize: 14, background: 'rgba(10,20,14,0.55)', padding: '6px 14px', borderRadius: 10 }}>
           {fmt(balance)} ₽
-        </div>
-        <div style={{ position: 'absolute', left: 20, right: 20, top: FOOTER_Y, textAlign: 'center', fontSize: isNarrow ? 11 : 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)' }}>
-          {running ? 'Прыгайте по секциям и избегайте падающих шаров!' : 'Доберётесь до золотой жабы — заберите весь приз!'}
         </div>
       </motion.div>
     </div>
