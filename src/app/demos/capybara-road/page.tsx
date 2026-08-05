@@ -218,8 +218,8 @@ const AVG_VEHICLE_H = Math.round(190 * (Object.values(VEHICLE_NATIVE).reduce((s,
 // lane currently being hit.
 type CarAnim = { lane: number; stage: 'charge' | 'exit' } | null;
 function laneDriveTiming(i: number) {
-  // Sped up ~50%, then another 2x on top of that from the original 2.1-3.7s range.
-  const duration = 0.7 + seededRand(i * 5 + 1) * 0.55;
+  // Sped up ~50%, then another 2x, then another 40% on top of that from the original 2.1-3.7s range.
+  const duration = 0.42 + seededRand(i * 5 + 1) * 0.33;
   const repeatDelay = 1.2 + seededRand(i * 5 + 2) * 3.4;
   // Positive stagger only — Framer Motion doesn't support a CSS-style
   // negative animation-delay ("start already partway through"), so a
@@ -350,6 +350,17 @@ function GlassButton({ children, onClick, style }: { children: React.ReactNode; 
   );
 }
 
+function ToggleSwitch({ on, onClick }: { on: boolean; onClick: () => void }) {
+  return (
+    <button className="cr-btn" onClick={onClick} style={{
+      width: 36, height: 20, borderRadius: 999, background: on ? '#00c94c' : 'rgba(0,0,0,0.4)', flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: on ? 'flex-end' : 'flex-start', padding: 2, transition: 'background 0.2s ease',
+    }}>
+      <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#fff' }} />
+    </button>
+  );
+}
+
 function PlayersWidget() {
   // A static number inside a "live" widget reads as broken — drift it gently.
   const [n, setN] = useState(240);
@@ -454,6 +465,9 @@ export default function CapybaraRoadPage() {
   const [viewW, setViewW] = useState(STAGE_W);
   const [rulesOpen, setRulesOpen] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [musicOn, setMusicOn] = useState(true);
+  const [soundOn, setSoundOn] = useState(true);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -476,12 +490,19 @@ export default function CapybaraRoadPage() {
       return () => window.removeEventListener('pointerdown', retry);
     });
   }, []);
+  useEffect(() => {
+    const el = audioRef.current;
+    if (!el) return;
+    el.muted = !musicOn;
+  }, [musicOn]);
   const stepAudioRef = useRef<HTMLAudioElement>(null);
   const crashAudioRef = useRef<HTMLAudioElement>(null);
   const winAudioRef = useRef<HTMLAudioElement>(null);
+  const soundOnRef = useRef(soundOn);
+  useEffect(() => { soundOnRef.current = soundOn; }, [soundOn]);
   const playSfx = (ref: React.RefObject<HTMLAudioElement | null>) => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !soundOnRef.current) return;
     el.currentTime = 0;
     el.play().catch(() => {});
   };
@@ -505,7 +526,7 @@ export default function CapybaraRoadPage() {
   }, []);
   const playWin = () => {
     const el = winAudioRef.current;
-    if (!el) return;
+    if (!el || !soundOnRef.current) return;
     el.currentTime = winOffsetRef.current;
     el.play().catch(() => {});
   };
@@ -1021,9 +1042,51 @@ export default function CapybaraRoadPage() {
             <div style={{ width: 1, height: 28, background: 'rgba(255,255,255,0.2)' }} />
             <Sprite name="ui/icon-wallet.svg" alt="" style={{ width: 22, height: 22 }} fallback={<span />} />
           </GlassButton>
-          <GlassButton style={{ width: 53, padding: 12 }}>
-            <Sprite name="ui/icon-menu.svg" alt="" style={{ width: 18, height: 16 }} fallback={<span />} />
-          </GlassButton>
+          <div style={{ position: 'relative' }}>
+            <GlassButton style={{ width: 53, padding: 12 }} onClick={() => setMenuOpen((v) => !v)}>
+              <Sprite name="ui/icon-menu.svg" alt="" style={{ width: 18, height: 16 }} fallback={<span />} />
+            </GlassButton>
+            <AnimatePresence>
+              {menuOpen && (
+                <React.Fragment key="menu">
+                  <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 79 }} />
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    style={{
+                      position: 'absolute', top: 'calc(100% + 10px)', right: 0, width: 255, borderRadius: 12, overflow: 'hidden',
+                      background: 'rgba(78,64,64,0.2)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(20px)', zIndex: 80,
+                    }}>
+                    <button className="cr-btn" onClick={() => { setRulesOpen(true); setMenuOpen(false); }} style={{
+                      width: '100%', textAlign: 'left', padding: '16px 20px', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)',
+                    }}>
+                      <span className={nunito.className} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>Обучение</span>
+                    </button>
+                    <button className="cr-btn" onClick={() => setMenuOpen(false)} style={{
+                      width: '100%', textAlign: 'left', padding: '16px 20px', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)',
+                    }}>
+                      <span className={nunito.className} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>История</span>
+                    </button>
+                    <button className="cr-btn" onClick={() => setMenuOpen(false)} style={{
+                      width: '100%', textAlign: 'left', padding: '16px 20px', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)',
+                    }}>
+                      <span className={nunito.className} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>Прогноз на исход</span>
+                    </button>
+                    <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <ToggleSwitch on={musicOn} onClick={() => setMusicOn((v) => !v)} />
+                        <span className={nunito.className} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>Музыка</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <ToggleSwitch on={soundOn} onClick={() => setSoundOn((v) => !v)} />
+                        <span className={nunito.className} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>Звук</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </React.Fragment>
+              )}
+            </AnimatePresence>
+          </div>
           <GlassButton style={{ width: 53, padding: 12 }} onClick={toggleFullscreen}>
             <Sprite name="ui/icon-resize-vector.svg" alt="" style={{ width: 20, height: 20, transform: isFullscreen ? 'rotate(180deg)' : 'none' }} fallback={<span />} />
           </GlassButton>
