@@ -329,7 +329,7 @@ function QuickBetChip({ value, active, disabled, onClick }: { value: number; act
 
 function ActionButton({ variant, onClick, disabled, children }: { variant: 'cash' | 'start'; onClick?: () => void; disabled?: boolean; children: React.ReactNode }) {
   const bg = variant === 'cash' ? '#FFCD1B' : '#00c94c';
-  const color = variant === 'cash' ? 'rgba(0,0,0,0.5)' : '#f5ecd6';
+  const color = variant === 'cash' ? 'rgba(0,0,0,0.5)' : '#fff';
   return (
     <button className="cr-btn" onClick={onClick} disabled={disabled} style={{
       width: 240, height: '100%', borderRadius: 16, border: '2px solid rgba(0,0,0,0.1)', background: bg,
@@ -985,7 +985,6 @@ export default function CapybaraRoadPage() {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center' }}>
               <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                 <span className={nunito.className} style={{ fontWeight: 700, fontSize: 14, color: '#fff', whiteSpace: 'nowrap' }}>Коэф.</span>
-                <Sprite name="ui/icon-info.svg" alt="" style={{ width: 17, height: 17 }} fallback={<span />} />
               </div>
               <span className={nunito.className} style={{ fontWeight: 700, fontSize: 24, color: '#fff', whiteSpace: 'nowrap' }}>
                 {(step > 0 ? LADDER[step - 1] : 0).toFixed(2)}
