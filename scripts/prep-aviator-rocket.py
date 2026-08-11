@@ -1,9 +1,13 @@
-"""Assembles the 14 individually-exported rocket animation frames (Figma
-file 4anwFeSG9mfV4vSrreKvVC, node 965:10939, frames named frame_01..frame_16
-skipping 08/09) into one 4x4 sprite sheet and alpha-keys the flat #1e1e1e
-background, reusing the exact same border-connected flood-fill technique as
-prep-capybara-assets.py. Frame 1 is repeated into the two trailing empty
-grid slots so the sheet is a full 16-cell loop with no dead cells.
+"""Assembles the 16 individually-exported rocket animation frames (Figma
+file 4anwFeSG9mfV4vSrreKvVC, node 965:10939, frames named "1".."16") into
+one 4x4 sprite sheet and alpha-keys the flat #1e1e1e background, reusing the
+exact same border-connected flood-fill technique as prep-capybara-assets.py.
+
+The source frames are all top-left anchored (rocket body starts at the same
+(36, 402) pixel in every frame — verified before writing this) with only
+the flame's right/bottom extent varying, so each frame is padded up to a
+common canvas at (0, 0) rather than centered, keeping the rocket rock-steady
+across frames.
 
 Run once from the frame PNGs in the scratchpad; not part of the normal
 asset pipeline since the source frames aren't checked into the repo.
@@ -12,14 +16,15 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage
 
-FRAMES_DIR = "/private/tmp/claude-501/-Users-antonkovalcuk-VS-CODE-portfolio/84c853f2-7072-45f7-9138-4c4e2ea9de6c/scratchpad/rocket_frames"
+FRAMES_DIR = "/private/tmp/claude-501/-Users-antonkovalcuk-VS-CODE-portfolio/84c853f2-7072-45f7-9138-4c4e2ea9de6c/scratchpad/rocket_frames_v2"
 OUT = "/Users/antonkovalcuk/VS CODE/portfolio/public/img/aviator/arena/rocket-sheet-rgba.png"
 
-FRAME_ORDER = ["01", "02", "03", "04", "05", "06", "07", "10", "11", "12", "13", "14", "15", "16"]
-CELL = 725
+FRAME_ORDER = [f"{i:02d}" for i in range(1, 17)]
+CANVAS_W, CANVAS_H = 1447, 1382  # max native size across all 16 frames
+CELL_W, CELL_H = 700, 668  # downscaled, same aspect ratio
 COLS, ROWS = 4, 4
-GAP = 5
-PITCH = CELL + GAP
+GAP = 6
+PITCH_W, PITCH_H = CELL_W + GAP, CELL_H + GAP
 
 BG = np.array([30.0, 30.0, 30.0])
 KEY_HARD = 14.0
@@ -61,18 +66,16 @@ def key_alpha(img: Image.Image) -> Image.Image:
 
 
 def main():
-    sheet_w, sheet_h = COLS * PITCH, ROWS * PITCH
+    sheet_w, sheet_h = COLS * PITCH_W, ROWS * PITCH_H
     sheet = Image.new("RGB", (sheet_w, sheet_h), (30, 30, 30))
 
-    cells = FRAME_ORDER + [FRAME_ORDER[0], FRAME_ORDER[0]]  # pad to 16, loop back to frame 1
-    assert len(cells) == COLS * ROWS
-
-    for i, num in enumerate(cells):
+    for i, num in enumerate(FRAME_ORDER):
         frame = Image.open(f"{FRAMES_DIR}/frame_{num}.png").convert("RGB")
-        if frame.size != (CELL, CELL):
-            frame = frame.resize((CELL, CELL), Image.LANCZOS)
+        canvas = Image.new("RGB", (CANVAS_W, CANVAS_H), (30, 30, 30))
+        canvas.paste(frame, (0, 0))  # top-left anchored — see module docstring
+        canvas = canvas.resize((CELL_W, CELL_H), Image.LANCZOS)
         col, row = i % COLS, i // COLS
-        sheet.paste(frame, (col * PITCH, row * PITCH))
+        sheet.paste(canvas, (col * PITCH_W, row * PITCH_H))
 
     keyed = key_alpha(sheet)
     keyed.save(OUT, optimize=True)

@@ -152,10 +152,12 @@ function rollAmbientCrash(u: number) {
 // needed the way the earlier vector biplane required. The rocket's own body
 // never moves within its cell — only the exhaust flame animates — so the
 // sprite can just be centered on the flight path with no anchor-offset math.
-const ROCKET_SHEET_CELL = 725;
-const ROCKET_SHEET_PITCH = 730;
-const ROCKET_SHEET_PX = 2920;
-const ROCKET_W = 204, ROCKET_H = 204;
+// v2 art (replaced per feedback) — not square: each cell is 700x668, laid
+// out on a 706x674 pitch (4x4 grid, sheet 2824x2696).
+const ROCKET_SHEET_CELL_W = 700, ROCKET_SHEET_CELL_H = 668;
+const ROCKET_SHEET_PITCH_W = 706, ROCKET_SHEET_PITCH_H = 674;
+const ROCKET_SHEET_PX_W = 2824, ROCKET_SHEET_PX_H = 2696;
+const ROCKET_W = 204, ROCKET_H = Math.round(ROCKET_W * (ROCKET_SHEET_CELL_H / ROCKET_SHEET_CELL_W));
 const ROCKET_ART_OFFSET_DEG = 0;
 
 // ---------- palette / fake data ----------
@@ -317,15 +319,15 @@ function RocketSheetSprite() {
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, []);
-  const k = ROCKET_W / ROCKET_SHEET_CELL;
+  const k = ROCKET_W / ROCKET_SHEET_CELL_W;
   const col = idx % 4;
   const row = Math.floor(idx / 4);
   return (
     <div style={{
       width: ROCKET_W, height: ROCKET_H,
       backgroundImage: `url(${IMG}/arena/rocket-sheet-rgba.png)`,
-      backgroundSize: `${ROCKET_SHEET_PX * k}px ${ROCKET_SHEET_PX * k}px`,
-      backgroundPosition: `-${col * ROCKET_SHEET_PITCH * k}px -${row * ROCKET_SHEET_PITCH * k}px`,
+      backgroundSize: `${ROCKET_SHEET_PX_W * k}px ${ROCKET_SHEET_PX_H * k}px`,
+      backgroundPosition: `-${col * ROCKET_SHEET_PITCH_W * k}px -${row * ROCKET_SHEET_PITCH_H * k}px`,
     }} />
   );
 }
