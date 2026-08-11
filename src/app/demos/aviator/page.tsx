@@ -79,11 +79,11 @@ type Pt = { x: number; y: number };
 // originally measured against) so the flight path spans the full width now
 // that the arena isn't sharing the row with a leaderboard panel.
 const CURVE_X_SCALE = ARENA_W / 1108;
-const CURVE_P0: Pt = { x: 95 * CURVE_X_SCALE, y: 345 };
-const CURVE_P1: Pt = { x: 242 * CURVE_X_SCALE, y: 345 };
+const CURVE_P0: Pt = { x: 95 * CURVE_X_SCALE, y: 330 };
+const CURVE_P1: Pt = { x: 242 * CURVE_X_SCALE, y: 330 };
 const CURVE_P2: Pt = { x: 553 * CURVE_X_SCALE, y: 340.5 };
 const CURVE_P3: Pt = { x: 835 * CURVE_X_SCALE, y: 159.5 };
-const CURVE_BASELINE_Y = 345;
+const CURVE_BASELINE_Y = 330;
 const GRID_Y = [1, 2, 3, 4, 5].map((i) => i * (ARENA_H / 6));
 
 function lerpPt(a: Pt, b: Pt, t: number): Pt { return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }; }
@@ -155,7 +155,7 @@ function rollAmbientCrash(u: number) {
 const ROCKET_SHEET_CELL = 725;
 const ROCKET_SHEET_PITCH = 730;
 const ROCKET_SHEET_PX = 2920;
-const ROCKET_W = 170, ROCKET_H = 170;
+const ROCKET_W = 204, ROCKET_H = 204;
 const ROCKET_ART_OFFSET_DEG = 0;
 
 // ---------- palette / fake data ----------
