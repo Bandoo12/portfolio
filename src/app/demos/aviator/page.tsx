@@ -149,9 +149,11 @@ const ROCKET_NATIVE_W = 167, ROCKET_NATIVE_H = 80;
 const ROCKET_SCALE = ROCKET_W / ROCKET_NATIVE_W;
 // Nose-tip sits ~1deg above the sprite's horizontal centerline.
 const ROCKET_ART_OFFSET_DEG = 1.03;
-// Tail anchor (rear fin tip), relative to the sprite's own center — the
-// curve line's endpoint is pinned here so the tail never drifts off the line.
-const ROCKET_TAIL_LOCAL: Pt = { x: -83.3 * ROCKET_SCALE, y: -2.9 * ROCKET_SCALE };
+// Belly anchor (bottom edge of the fuselage, excluding the propeller blades),
+// relative to the sprite's own center — the curve line's endpoint is pinned
+// here so the line always reads as attached under the plane, not off its
+// tail.
+const ROCKET_TAIL_LOCAL: Pt = { x: -46.6 * ROCKET_SCALE, y: 23.6 * ROCKET_SCALE };
 
 // ---------- palette / fake data ----------
 const AVATAR_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#1abc9c'];
@@ -292,29 +294,35 @@ const LightRays = React.memo(function LightRays({ intensity, multRef }: { intens
   );
 });
 
-function CrashCurve({ t, dead }: { t: number; dead: boolean }) {
+function CrashCurve({ t, outcome }: { t: number; outcome: RocketOutcome }) {
   if (t <= 0.001) return null;
   const { strokeD, areaD } = splitBezier(t);
+  const dead = outcome !== 'normal';
+  // The line is the plane's own color — the tip end (offset 0%, see the
+  // objectBoundingBox note below) matches ROCKET_COLORS exactly so the trail
+  // reads as one continuous object with the sprite it's attached to.
+  const tipColor = ROCKET_COLORS[outcome];
+  const baseColor = outcome === 'won' ? '#1a7a3d' : outcome === 'lost' ? '#7a1530' : '#B23A63';
   return (
     <svg viewBox={`0 0 ${ARENA_W} ${ARENA_H}`} width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
       <defs>
         {/* objectBoundingBox (the default), NOT userSpaceOnUse with fixed P0/P3
-            coords — with fixed coords the white end only reaches the visible
-            tip once the curve is nearly fully grown, so for most of an early/
-            mid-flight round the line arrives at the plane already pink/red,
-            visibly mismatched against the plane's white body. Relative to the
-            CURRENT partial path's own bounding box, the tip is always ~100%
-            (white) regardless of how much of the curve is revealed. */}
+            coords — with fixed coords the tip-color end only reaches the
+            visible tip once the curve is nearly fully grown, so for most of
+            an early/mid-flight round the line arrives at the plane in the
+            wrong color, visibly mismatched against the sprite. Relative to
+            the CURRENT partial path's own bounding box, the tip is always
+            ~0% (the plane's color) regardless of how much is revealed. */}
         <linearGradient id="av-curve-stroke" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor={dead ? '#5a4a63' : '#FFFEF8'} />
-          <stop offset="50%" stopColor={dead ? '#6b4550' : '#F76C61'} />
-          <stop offset="100%" stopColor={dead ? '#5a2338' : '#FB2873'} />
+          <stop offset="0%" stopColor={tipColor} />
+          <stop offset="60%" stopColor={tipColor} />
+          <stop offset="100%" stopColor={baseColor} />
         </linearGradient>
         <filter id="av-curve-glow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="4" stdDeviation="22" floodColor="#FC4A87" floodOpacity={dead ? 0.25 : 0.7} />
+          <feDropShadow dx="0" dy="4" stdDeviation="22" floodColor={tipColor} floodOpacity={dead ? 0.25 : 0.7} />
         </filter>
       </defs>
-      <path d={areaD} fill="#DA5FA0" fillOpacity={dead ? 0.12 : 0.28} />
+      <path d={areaD} fill={baseColor} fillOpacity={dead ? 0.12 : 0.28} />
       <path d={strokeD} fill="none" stroke="url(#av-curve-stroke)" strokeWidth={10} strokeLinecap="round" filter="url(#av-curve-glow)" />
     </svg>
   );
@@ -868,7 +876,7 @@ export default function AviatorPage() {
                   <GridLines />
                   <FocalGlow intensity={glowIntensity} />
                   <LightRays intensity={glowIntensity} multRef={multRef} />
-                  <CrashCurve t={curveT} dead={phase === 'crashed'} />
+                  <CrashCurve t={curveT} outcome={rocketOutcome} />
                   <Rocket x={rocketDisplayX} y={rocketDisplayY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} outcome={rocketOutcome} />
                   <MultiplierReadout
                     mult={phase === 'crashed' && rocketOutcome === 'won' ? myCashedAt! : mult}
