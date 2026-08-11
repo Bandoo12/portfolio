@@ -68,15 +68,16 @@ const BET_PANEL_H = 221;
 
 // ---------- crash curve geometry (canvas-viewport coords, 1108x439) ----------
 type Pt = { x: number; y: number };
-// P0/P1's y is nudged up from the Figma-exact 436.5 to 392 — at the exact
-// baseline the tail-anchored plane's sprite (see ROCKET_TAIL_LOCAL below)
-// sits partly below the panel's bottom edge and gets clipped by its
-// overflow:hidden at round-start. P2/P3 stay Figma-exact.
-const CURVE_P0: Pt = { x: 8.5, y: 392 };
-const CURVE_P1: Pt = { x: 242, y: 392 };
+// P0's x/y is nudged in from the Figma-exact (8.5, 436.5) — the rocket
+// sprite is centered directly on this flight path (170px square), and at
+// the exact corner half the sprite sits past the panel's left/bottom edges
+// and gets clipped by its overflow:hidden at round-start. P2/P3 stay
+// Figma-exact.
+const CURVE_P0: Pt = { x: 95, y: 345 };
+const CURVE_P1: Pt = { x: 242, y: 345 };
 const CURVE_P2: Pt = { x: 553, y: 340.5 };
 const CURVE_P3: Pt = { x: 835, y: 159.5 };
-const CURVE_BASELINE_Y = 392;
+const CURVE_BASELINE_Y = 345;
 const GRID_Y = [1, 2, 3, 4, 5].map((i) => i * (ARENA_H / 6));
 
 function lerpPt(a: Pt, b: Pt, t: number): Pt { return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }; }
@@ -138,21 +139,18 @@ function rollAmbientCrash(u: number) {
 }
 
 // ---------- rocket art ----------
-// Vectorized biplane (Figma node 992:11362, "gripht-starting-point" frame) —
-// a flat single-color silhouette (rocket.svg, fill="currentColor" so it can
-// be recolored per outcome), native 167x80, nose already on the RIGHT (no
-// mirror needed, unlike the earlier raster jet). Anchors below were measured
-// from the rendered silhouette (nose/tail extremes), not eyeballed.
-const ROCKET_W = 150, ROCKET_H = 72;
-const ROCKET_NATIVE_W = 167, ROCKET_NATIVE_H = 80;
-const ROCKET_SCALE = ROCKET_W / ROCKET_NATIVE_W;
-// Nose-tip sits ~1deg above the sprite's horizontal centerline.
-const ROCKET_ART_OFFSET_DEG = 1.03;
-// Belly anchor (bottom edge of the fuselage, excluding the propeller blades),
-// relative to the sprite's own center — the curve line's endpoint is pinned
-// here so the line always reads as attached under the plane, not off its
-// tail.
-const ROCKET_TAIL_LOCAL: Pt = { x: -46.6 * ROCKET_SCALE, y: 23.6 * ROCKET_SCALE };
+// Animated glossy 3D rocket (user-supplied Nana Banana frames, assembled by
+// scripts/prep-aviator-rocket.py into a 4x4 sprite sheet, same alpha-keying
+// convention as capybara-road's sprite sheets). Nose points right in every
+// frame, dead level (no inherent tilt), so no rotation calibration offset is
+// needed the way the earlier vector biplane required. The rocket's own body
+// never moves within its cell — only the exhaust flame animates — so the
+// sprite can just be centered on the flight path with no anchor-offset math.
+const ROCKET_SHEET_CELL = 725;
+const ROCKET_SHEET_PITCH = 730;
+const ROCKET_SHEET_PX = 2920;
+const ROCKET_W = 170, ROCKET_H = 170;
+const ROCKET_ART_OFFSET_DEG = 0;
 
 // ---------- palette / fake data ----------
 const AVATAR_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#1abc9c'];
@@ -296,42 +294,53 @@ const LightRays = React.memo(function LightRays({ intensity, multRef }: { intens
 type RocketOutcome = 'normal' | 'won' | 'lost';
 const ROCKET_COLORS: Record<RocketOutcome, string> = { normal: '#FFEFE6', won: '#2ecc71', lost: '#FF4D6A' };
 
-// Inlined (not loaded via <img>) because it's recolored per outcome via
-// fill="currentColor" — an <img>-loaded SVG is a separate document and
-// never inherits the embedding page's `color`, so it has to be real DOM.
-function RocketIcon() {
+// Self-contained looping frame animation, same technique as capybara-road's
+// SheetSprite — owns its own rAF loop so the flame keeps flickering in every
+// game phase (idle/betting/flying/crashed) without the parent re-rendering.
+function RocketSheetSprite() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    let raf = 0;
+    const start = performance.now();
+    const fps = 12;
+    const tick = () => {
+      const t = ((performance.now() - start) / 1000) * fps;
+      setIdx(Math.floor(t) % 16);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+  const k = ROCKET_W / ROCKET_SHEET_CELL;
+  const col = idx % 4;
+  const row = Math.floor(idx / 4);
   return (
-    <svg viewBox={`0 0 ${ROCKET_NATIVE_W} ${ROCKET_NATIVE_H}`} width="100%" height="100%" style={{ display: 'block', overflow: 'visible' }}>
-      <path d="M48.5481 17.7038C51.6573 17.4615 55.354 18.9007 58.2066 20.0916C62.3719 21.8583 66.4979 23.7161 70.5823 25.6637C77.4338 28.899 84.2679 32.1711 91.0839 35.4798L103.949 41.701C105.486 42.4437 107.018 43.1951 108.546 43.9549C109.532 44.4466 110.526 44.9324 111.474 45.4959C111.909 45.7543 112.028 45.9113 112.315 46.3252C112.337 47.1821 112.312 47.973 111.687 48.6598C111.43 48.9449 111.097 49.1497 110.727 49.25C110.175 49.4052 109.303 49.5223 108.711 49.6177L105.277 50.1552C100.125 50.9185 94.9577 51.5818 89.7798 52.145C83.778 52.8388 77.7684 53.462 71.7528 54.0147L67.1755 54.4261C66.0345 54.5334 64.8447 54.6419 63.7116 54.717C60.8747 54.9053 59.9854 53.6827 58.6161 51.4055C58.4389 51.1107 58.0763 50.3493 57.8404 50.1287C57.3084 50.1289 56.7287 50.3935 56.2077 50.4542C54.9473 50.601 53.6727 50.7177 52.4097 50.8407L38.0812 52.3384C35.2453 52.6494 31.6843 53.1197 28.8808 53.2346C28.8719 52.9747 28.8531 52.702 28.8786 52.4433C29.1422 49.7745 32.3477 50.8725 32.9054 50.323C32.9719 50.2575 32.9529 50.1986 32.9562 50.1108C32.7696 49.8665 31.6699 49.4856 31.3274 49.358C28.3355 48.2442 25.8742 47.1338 23.3319 45.1591C21.9993 44.1062 20.6933 43.0199 19.4152 41.9011C18.3825 40.9845 17.9149 40.1989 16.548 39.7796C15.3351 39.4075 11.4747 39.1123 10.4744 39.6595C10.6992 40.0059 10.9622 40.683 11.1625 41.0876C11.5047 41.7791 11.8556 42.4565 12.2098 43.1415C13.6593 45.9011 15.0844 48.6735 16.4848 51.4584C16.7521 51.9977 17.6163 53.1235 17.3528 53.6408C17.0059 53.909 15.9303 53.8281 15.4898 53.8205C14.9781 53.8115 14.2169 53.8216 13.7812 53.526C13.1529 53.0995 6.6203 42.6926 5.6552 41.1887C5.33355 40.6874 4.27708 38.8785 3.98677 38.6128C3.41742 38.0917 1.03248 38.4314 0.212141 38.4503C0.19259 35.0206 1.25904 35.429 4.17255 34.6143C4.96267 34.3934 5.78649 34.2348 6.57757 34.0241C8.13961 33.6084 8.2841 33.896 8.90895 32.356C8.75784 32.0785 8.63038 31.7963 8.32846 31.656C7.07448 31.0736 2.20977 32.7221 1.68196 32.4258C1.64397 32.3186 1.61936 32.2165 1.63195 32.1018C1.7264 31.2419 2.4884 30.047 3.1392 29.5161C4.6293 28.3006 10.1268 27.015 12.1967 26.7799C13.1505 26.6716 14.0738 26.6611 15.0294 26.7557C16.7649 26.9275 18.6241 27.3741 20.0926 28.3558C21.3771 29.2145 22.2677 30.5968 23.2426 31.7751C25.1501 34.0807 26.9761 36.452 28.8714 38.7677C30.4899 40.7452 32.197 42.9719 34.1202 44.6556C34.5881 45.0652 35.108 45.4259 35.6116 45.7899C36.3504 46.3236 37.0958 46.8626 38.0342 46.9452C39.7266 47.0942 52.2723 44.8822 53.1286 44.1663C53.1483 44.0871 53.1787 43.9617 53.1418 43.8888C52.9486 43.5068 52.6401 43.0001 52.4344 42.6428C51.9628 41.8239 50.0285 38.422 49.8716 37.7056C49.9445 37.6024 50.0786 37.5472 50.2001 37.5228C51.7652 37.2089 53.6888 36.8108 54.856 35.6098C54.8623 35.4798 54.8856 34.9742 54.8619 34.8848C54.2556 32.6451 50.6718 34.5881 49.2809 34.8118C48.2014 34.9853 48.0772 33.6621 47.7322 32.9379C47.5077 32.4665 46.9145 31.8239 47.7153 31.547C48.1228 31.3909 48.6142 31.4454 49.0232 31.3245C50.6348 30.8478 52.5942 30.483 53.8299 29.2671C53.9997 29.1001 54.396 28.1421 54.3638 27.924C54.1991 26.8081 52.6692 26.8726 51.863 27.1107C50.7678 27.4331 49.6403 27.6638 48.5295 27.925C46.9421 28.3338 45.7529 28.9461 44.7615 27.1724C43.9926 25.8246 43.3205 24.4057 42.5984 23.0319C42.2801 22.4263 41.1965 20.8154 41.1613 20.2047C41.1955 20.0767 41.2588 19.9642 41.3559 19.8766C42.9392 18.45 46.5948 17.7827 48.5481 17.7038Z" fill="currentColor" />
-      <path d="M103.26 18.1783C104.319 18.0361 105.838 18.1725 106.852 18.5608C107.838 18.9382 108.698 19.6505 109.569 20.2036C111.792 21.6153 115.474 24.5335 117.873 25.3154C120.52 26.0089 123.411 26.1249 126.115 26.2343C129.844 26.3849 133.441 26.5294 137.163 26.4757C138.549 26.5152 139.821 26.6245 141.219 26.6978C143.767 26.8314 146.512 26.9199 148.86 28.0297C149.436 28.3207 149.754 28.9463 150.128 29.4384C150.747 30.2443 151.52 31.1741 151.747 32.1903C151.867 32.7257 151.844 33.3029 151.963 33.8632C152.273 35.3146 152.368 36.806 152.553 38.2728L153.299 44.5663C153.476 46.0845 153.731 47.6592 153.706 49.1879C153.691 50.1206 153.318 51.466 153.077 52.3889C152.973 52.7902 152.826 53.2242 152.579 53.5616C152.051 54.2804 150.6 55.2075 149.814 55.6713C146.869 57.4101 135.637 59.1516 131.81 59.6456C119.422 61.2446 106.924 62.114 94.466 62.9629C78.756 64.0259 63.0339 64.9068 47.3034 65.6054C41.4948 65.8528 35.6775 66.219 29.8477 66.3053C24.9159 66.362 19.7744 66.7596 14.9334 65.667C11.0262 64.7855 8.4295 61.3882 6.4997 58.0925L6.56048 58.0049C6.8065 57.863 9.10929 57.2603 9.57166 57.1137C10.237 56.9058 10.8981 56.6846 11.5547 56.4504C13.9061 55.6037 13.4216 55.7598 15.7594 56.4236C16.8958 56.7537 18.0477 57.028 19.2108 57.2456C20.0505 57.4557 21.5018 57.658 22.3616 57.7923C25.4275 58.2733 28.5136 58.6146 31.6104 58.8151C45.0045 59.7971 59.6315 59.1102 73.0293 58.1552C88.5594 57.0572 104.044 55.387 119.452 53.1479C124.297 52.4154 129.125 51.5781 133.933 50.6365C135.951 50.2274 137.965 49.8039 139.977 49.3662C141.539 49.0339 143.129 48.6647 144.72 48.5852C146.503 48.496 146.56 50.4856 148.012 50.79C148.209 50.8314 148.487 50.7181 148.495 50.4743C148.524 49.6051 148.167 48.7889 148.05 47.9359C147.215 43.0378 146.782 38.0948 146.022 33.1885C145.969 32.8476 145.753 32.1085 145.509 31.8659C144.592 30.9554 143.116 30.7781 141.909 30.5065C137.1 29.424 132.232 29.8055 127.368 30.2302C120.876 30.7897 114.416 31.681 108.014 32.9008C105.892 33.3025 103.773 33.7181 101.657 34.1475C101.15 34.2524 99.1065 34.8096 98.7948 34.6896C97.4275 34.1623 95.9025 33.4253 94.5605 32.8186L87.6368 29.6642C87.0512 29.392 84.0783 28.0731 83.8129 27.7197C83.6601 26.7541 85.6039 24.901 86.4536 24.4521C88.4161 23.4159 90.4893 22.646 92.5517 21.8348C94.466 21.0784 96.3912 20.349 98.326 19.647C100.203 18.9697 101.253 18.5059 103.26 18.1783ZM103.431 21.5721C104.256 22.8988 107.701 24.4297 107.516 25.8921C107.265 26.3165 106.3 26.5 105.815 26.6251C105.209 26.785 104.598 26.9281 103.984 27.0541C103.307 27.1857 102.735 27.2276 102.099 27.5115C101.374 27.835 100.823 29.3402 101.732 29.5963C103.187 30.0059 105.304 29.1952 106.804 29.0379C107.79 28.8279 114.18 27.7943 114.514 27.1847C114.564 27.0927 114.545 26.969 114.508 26.8742C114.069 25.7337 109.276 22.3 108.058 21.5792C107.603 21.3099 107.08 21.087 106.587 20.8954C105.884 20.6221 105.063 20.3938 104.306 20.4613C103.55 20.6144 103.387 20.7908 103.431 21.5721Z" fill="currentColor" />
-      {/* Propeller blades (the two paths below) — scale-pulse in place around
-          the hub instead of a synthetic overlay, so it's the actual art
-          "spinning" rather than a shape drawn on top of it. */}
-      <g className="av-propeller" style={{ transformOrigin: '155.5px 39px' }}>
-        <path d="M162.018 46.4435L162.108 46.5141C162.452 48.3056 162.839 50.0883 163.271 51.8604C163.783 53.9958 164.353 56.1812 164.746 58.3456C165.526 62.8869 165.714 67.5107 165.305 72.1007C165.19 73.4968 165.146 75.5264 164.592 76.835C164.097 77.7774 163.485 79.2591 162.521 79.7774C162.04 80.0362 161.328 79.2072 161.215 78.7638C160.869 78.3276 159.524 74.2449 159.31 73.5167C158.587 71.0564 157.671 68.5931 156.966 66.1243C156.911 65.933 156.817 65.571 156.787 65.3719C156.343 62.4694 156.438 59.5663 156.488 56.6408C156.506 55.6895 156.706 54.7201 156.686 53.7422C156.654 52.207 156.914 50.7275 156.946 49.1891C157.442 48.8819 158.282 48.5697 158.835 48.2621C159.904 47.6671 160.958 47.0521 162.018 46.4435ZM162.884 76.0658C164.16 74.0742 162.967 72.1762 162.199 70.1587C161.559 68.4615 160.894 66.7741 160.206 65.0956C159.895 64.3354 159.581 63.5741 159.254 62.8211C159.112 62.4947 158.912 62.4947 158.622 62.4917C158.347 62.7976 158.291 63.048 158.309 63.4546C158.38 64.9394 161.207 75.3888 162.033 76.1327C162.147 76.2359 162.322 76.3415 162.482 76.3276C162.65 76.3137 162.774 76.2154 162.874 76.0851C162.878 76.079 162.881 76.0724 162.884 76.0658Z" fill="currentColor" />
-        <path d="M154.505 0.115201C154.579 0.113617 154.653 0.120251 154.725 0.134978C155.828 0.355056 157.313 5.10673 157.7 6.1898C158.544 8.83421 159.947 11.7155 160.365 14.4625C160.989 18.5667 160.634 23.1884 160.497 27.3167C160.473 28.2335 160.47 29.1506 160.486 30.0675C160.493 30.5575 160.542 31.6481 160.457 32.0691C160.157 32.2064 158.965 31.7956 158.563 31.6852C157.532 31.344 156.523 31.172 155.462 30.9993C155.25 30.9648 154.87 30.8544 154.782 30.6573C154.323 29.6263 154.088 27.9698 153.806 26.8729C153.018 23.8156 152.298 20.7509 151.915 17.6176C151.859 17.1155 151.893 16.5751 151.844 16.0769C151.618 13.8054 151.687 11.5623 151.85 9.29098C151.904 8.54232 151.813 7.62039 151.898 6.88658C152.025 5.78286 152.072 4.64934 152.287 3.56542C152.599 2.17778 153.267 0.875421 154.505 0.115201ZM154.023 3.45447C153.545 4.24291 153.6 5.1582 153.81 5.97661C154.223 7.58552 157.298 15.8622 158.116 16.7651C158.274 16.8798 158.188 16.8452 158.389 16.8644C158.644 16.7004 158.681 16.4523 158.742 16.1702C158.824 15.792 158.859 15.4378 158.808 15.0521C158.595 13.4359 156.091 4.85875 155.358 3.71576C155.167 3.41848 154.913 3.23394 154.576 3.13348C154.389 3.23377 154.194 3.32933 154.023 3.45447Z" fill="currentColor" />
-      </g>
-      <path d="M134.958 32.1745C135.209 32.164 135.178 32.1251 135.351 32.2357C135.418 32.6313 134.859 33.2859 134.778 33.5576C134.543 34.3445 131.698 39.9977 131.832 40.3538C132.151 41.2033 135.453 45.0194 136.231 46.0044C136.437 46.2656 136.861 46.7653 137.087 47.0513C137.09 47.0965 137.093 47.1417 137.095 47.1869C136.914 47.3447 133.068 48.2103 132.912 48.1038C132.312 47.6937 130.424 43.2922 129.797 43.1636L129.698 43.2551C129.609 43.7325 129.538 43.6556 129.322 44.0954C129.017 44.8164 129.039 45.0515 128.796 45.835C128.585 46.2599 128.768 48.7365 128.403 48.863C127.658 49.1221 119.241 50.5938 118.8 50.2713C118.764 49.8963 119.521 49.0856 119.793 48.6443L119.824 48.595C120.544 47.7706 120.927 48.037 121.943 47.9376C122.793 47.8544 124.016 47.9048 124.689 47.3141C124.88 47.1458 125.635 45.7099 125.622 45.5139C125.233 45.2601 123.579 46.1252 123.07 45.6675C123.401 45.126 125.34 40.9671 125.371 40.5895C125.411 40.1036 122.667 38.0867 122.151 37.6247C121.572 37.1073 121.013 36.5657 120.437 36.0449C119.755 35.428 119.009 34.8251 118.442 34.095C119.273 33.99 123.634 33.319 123.987 33.5427C124.269 33.7211 124.487 34.2706 124.63 34.5732C124.793 34.9193 124.937 35.3923 125.3 35.5691C125.518 35.6081 125.68 35.5033 125.859 35.4244C126.614 35.0909 127.362 36.8345 128.19 37.236C128.353 37.1924 128.41 37.1476 128.51 37.009C128.718 36.72 128.769 36.3837 128.898 36.0609C129.136 35.4629 129.456 34.9032 129.704 34.3113C129.89 33.8676 129.993 33.3167 130.263 32.9173C130.593 32.429 134.221 32.3293 134.958 32.1745Z" fill="currentColor" />
-      <path d="M155.87 33.5091C155.978 33.5052 156.087 33.5078 156.195 33.5172C156.743 33.5609 157.555 33.7999 158.114 33.9521C160.75 34.6699 163.327 35.5561 165.699 36.9386C166.112 37.1794 166.401 37.4699 166.709 37.826C166.723 37.9736 166.757 38.4624 166.745 38.5783C166.587 40.2014 164.136 41.8323 163.056 42.8358C161.559 43.8615 159.978 44.9639 158.344 45.7431C157.824 45.9916 156.478 46.0697 156.366 45.2973C156.105 43.5085 155.839 41.5912 155.69 39.7911C155.548 38.0685 154.915 35.4034 155.25 33.766C155.44 33.6737 155.671 33.5885 155.87 33.5091ZM163.255 38.8674C163.625 38.7352 163.92 38.6809 164.108 38.333C164.126 38.1283 164.134 38.0118 163.992 37.8419C163.472 37.2203 158.47 35.5559 157.569 35.5156C157.507 35.5128 157.514 35.5135 157.462 35.5166C157.293 35.6284 157.115 35.7105 157.092 35.9393C157.022 36.6296 157.071 38.9218 157.389 39.4662C157.824 39.7106 158.025 39.4477 158.436 39.3239C159.994 38.8559 161.678 39.189 163.255 38.8674Z" fill="currentColor" />
-    </svg>
+    <div style={{
+      width: ROCKET_W, height: ROCKET_H,
+      backgroundImage: `url(${IMG}/arena/rocket-sheet-rgba.png)`,
+      backgroundSize: `${ROCKET_SHEET_PX * k}px ${ROCKET_SHEET_PX * k}px`,
+      backgroundPosition: `-${col * ROCKET_SHEET_PITCH * k}px -${row * ROCKET_SHEET_PITCH * k}px`,
+    }} />
   );
 }
 
 function Rocket({ x, y, deg, opacity, flying, outcome, flyAway }: { x: number; y: number; deg: number; opacity: number; flying: boolean; outcome: RocketOutcome; flyAway: boolean }) {
   return (
     <div style={{
-      position: 'absolute', left: x, top: y, width: ROCKET_W, height: ROCKET_H, color: ROCKET_COLORS[outcome],
+      position: 'absolute', left: x, top: y, width: ROCKET_W, height: ROCKET_H,
       transform: `translate(-50%,-50%) rotate(${deg}deg)`, opacity, zIndex: 6, pointerEvents: 'none',
-      filter: outcome !== 'normal' ? `drop-shadow(0 0 14px ${ROCKET_COLORS[outcome]})` : 'drop-shadow(0 0 10px rgba(252,74,135,0.55))',
+      // The sprite is a raster PNG (can't recolor via currentColor like the
+      // old vector plane) — outcome is signaled by the glow color instead.
+      filter: outcome !== 'normal' ? `drop-shadow(0 0 16px ${ROCKET_COLORS[outcome]}) saturate(${outcome === 'lost' ? 0.3 : 1})` : 'none',
       // The old easing (.5,0,.85,0) stalled the sprite for most of the
       // transition then snapped it at the very end, while opacity had
       // already faded out by then — it just vanished in place instead of
       // visibly darting off. Front-loaded ease-out fixes both.
       transition: flying ? 'none' : flyAway
-        ? 'left 0.45s cubic-bezier(.15,.6,.3,1), top 0.45s cubic-bezier(.15,.6,.3,1), opacity 0.35s ease-in 0.25s, color 0.2s ease'
-        : 'left 1.15s cubic-bezier(.3,0,.7,1), top 1.15s cubic-bezier(.3,0,.7,1), opacity 1.05s ease-in 0.15s, color 0.3s ease',
+        ? 'left 0.45s cubic-bezier(.15,.6,.3,1), top 0.45s cubic-bezier(.15,.6,.3,1), opacity 0.35s ease-in 0.25s'
+        : 'left 1.15s cubic-bezier(.3,0,.7,1), top 1.15s cubic-bezier(.3,0,.7,1), opacity 1.05s ease-in 0.15s',
     }}>
-      <RocketIcon />
+      <RocketSheetSprite />
     </div>
   );
 }
@@ -750,27 +759,14 @@ export default function AviatorPage() {
   const curveT = scalePosition(mult);
   const { tip, angle } = useMemo(() => splitBezier(curveT), [curveT]);
   const rocketDeg = (angle * 180) / Math.PI + ROCKET_ART_OFFSET_DEG;
-  const rotRad = (rocketDeg * Math.PI) / 180;
-  // Anchor the sprite's TAIL exactly on the curve's tip — solved backwards
-  // for the center position so the rotated tail always lands precisely on
-  // `tip`, instead of an eyeballed offset that can drift off the line.
-  const tailOffsetX = ROCKET_TAIL_LOCAL.x * Math.cos(rotRad) - ROCKET_TAIL_LOCAL.y * Math.sin(rotRad);
-  const tailOffsetY = ROCKET_TAIL_LOCAL.x * Math.sin(rotRad) + ROCKET_TAIL_LOCAL.y * Math.cos(rotRad);
   // Gentle up/down bob layered on top of the climb — makes the flight read
-  // as alive instead of rigidly glued to the line. Driven by `elapsed` (0
+  // as alive instead of rigidly glued to the path. Driven by `elapsed` (0
   // outside 'flying'), never Math.random(), so render stays pure.
   const bobOffset = Math.sin(elapsed * 2.1) * 6;
-  // Flush anchor, no lead gap — the Figma reference (node 992:11362, updated
-  // to a boolean union of the trail and the plane body) draws them as one
-  // continuous seamless shape, so the tail sits exactly on the tip.
-  const rocketX = tip.x - tailOffsetX;
-  // No clamp here on purpose — clamping the sprite's Y broke the tail-anchor
-  // guarantee below (the tail visibly detached from the line for most of the
-  // early-to-mid flight, since tip.y takes a while to climb past the old
-  // clamp threshold). The sprite is small enough now that any bottom-edge
-  // clipping at t=0 is brief and minor; the panel's overflow:hidden still
-  // contains it.
-  const rocketY = tip.y - tailOffsetY + bobOffset;
+  // No line to anchor a tail to anymore — the sprite is just centered
+  // directly on the invisible flight path (tip).
+  const rocketX = tip.x;
+  const rocketY = tip.y + bobOffset;
   const flying = phase === 'flying';
   const rocketOutcome: RocketOutcome = phase === 'crashed' ? (myStake !== null && myCashedAt !== null ? 'won' : 'lost') : 'normal';
   // Once the coefficient locks in (any crash, win or lose), the plane darts
@@ -926,8 +922,6 @@ export default function AviatorPage() {
         .av-btn:disabled { cursor: default; opacity: 0.4; }
         .av-scroll::-webkit-scrollbar { width: 6px; }
         .av-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
-        .av-propeller { animation: av-prop-pulse 0.22s ease-in-out infinite; }
-        @keyframes av-prop-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.35); } }
       `}</style>
     </div>
   );
