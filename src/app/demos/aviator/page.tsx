@@ -253,11 +253,39 @@ const FocalGlow = React.memo(function FocalGlow({ intensity }: { intensity: numb
   );
 });
 
-const LightRays = React.memo(function LightRays({ intensity, flying }: { intensity: number; flying: boolean }) {
+// Full 360deg radial burst (2600x2600, pivot at its own center 1300,1300) —
+// positioned so that pivot lands at the same bottom-left emanation point the
+// old partial-fan asset used, then spun continuously via rAF (not a CSS
+// keyframe) so the speed can track the live multiplier every frame.
+const RAYS_SIZE = 2600;
+const RAYS_PIVOT = 1300;
+const RAYS_ANCHOR: Pt = { x: -9, y: 489 };
+const RAYS_LEFT = RAYS_ANCHOR.x - RAYS_PIVOT;
+const RAYS_TOP = RAYS_ANCHOR.y - RAYS_PIVOT;
+
+const LightRays = React.memo(function LightRays({ intensity, multRef }: { intensity: number; multRef: React.RefObject<number> }) {
+  const spinRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let raf = 0;
+    let last = performance.now();
+    let angle = 0;
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      // Idle spin at 6deg/s, ramping up (sqrt so it doesn't explode at big
+      // ambient multipliers) as the coefficient climbs.
+      const speed = 6 + 18 * Math.sqrt(Math.max(multRef.current - 1, 0));
+      angle = (angle + speed * dt) % 360;
+      if (spinRef.current) spinRef.current.style.transform = `rotate(${angle}deg)`;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [multRef]);
   return (
-    <div className={`av-rays ${flying ? 'av-rays-flying' : 'av-rays-idle'}`} style={{
-      position: 'absolute', left: -58, top: 0, width: 1223, height: ARENA_H,
-      opacity: 0.35 + 0.45 * intensity, pointerEvents: 'none', transformOrigin: '49px 489px',
+    <div ref={spinRef} style={{
+      position: 'absolute', left: RAYS_LEFT, top: RAYS_TOP, width: RAYS_SIZE, height: RAYS_SIZE,
+      transformOrigin: `${RAYS_PIVOT}px ${RAYS_PIVOT}px`, opacity: 0.35 + 0.45 * intensity, pointerEvents: 'none',
     }}>
       <Sprite name="arena/light-rays.svg" alt="" style={{ width: '100%', height: '100%' }} fallback={<span />} />
     </div>
@@ -532,6 +560,7 @@ export default function AviatorPage() {
   const rowIdRef = useRef(1);
   const demoIdxRef = useRef(0);
   const nextRoundIdRef = useRef(1);
+  const multRef = useRef(1); // read by LightRays' own rAF loop, not React state
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { balanceRef.current = balance; }, [balance]);
   useEffect(() => { betRef.current = bet; }, [bet]);
@@ -694,6 +723,7 @@ export default function AviatorPage() {
   };
 
   const mult = phase === 'crashed' ? crashAt : phase === 'flying' ? multAt(elapsed) : 1;
+  useEffect(() => { multRef.current = mult; }, [mult]);
   // t is the multiplier's position within the fixed 30-step scale, not a
   // wall-clock ease — the curve's t=1 endpoint IS the scale's last step.
   const curveT = scalePosition(mult);
@@ -795,7 +825,7 @@ export default function AviatorPage() {
                 <div style={{ position: 'relative', width: ARENA_W, height: ARENA_H, overflow: 'hidden' }}>
                   <GridLines />
                   <FocalGlow intensity={glowIntensity} />
-                  <LightRays intensity={glowIntensity} flying={flying} />
+                  <LightRays intensity={glowIntensity} multRef={multRef} />
                   <CrashCurve t={curveT} dead={phase === 'crashed'} />
                   <Rocket x={rocketX} y={rocketY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} />
                   <MultiplierReadout mult={mult} crashed={phase === 'crashed'} />
@@ -849,17 +879,6 @@ export default function AviatorPage() {
       <style>{`
         .av-btn { cursor: pointer; border: none; font-family: inherit; background: none; }
         .av-btn:disabled { cursor: default; opacity: 0.4; }
-        .av-rays-idle { animation: av-ray-idle 24s ease-in-out infinite; }
-        @keyframes av-ray-idle { 0%,100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(3deg) scale(1.02); } }
-        .av-rays-flying { animation: av-ray-flicker 1.6s ease-in-out infinite; }
-        @keyframes av-ray-flicker {
-          0% { transform: rotate(-2deg) scaleX(1) scaleY(1); opacity: 0.88; }
-          20% { transform: rotate(3deg) scaleX(1.07) scaleY(0.96); opacity: 1; }
-          40% { transform: rotate(-4deg) scaleX(0.96) scaleY(1.06); opacity: 0.82; }
-          60% { transform: rotate(2deg) scaleX(1.09) scaleY(0.94); opacity: 1; }
-          80% { transform: rotate(-1deg) scaleX(0.97) scaleY(1.03); opacity: 0.9; }
-          100% { transform: rotate(-2deg) scaleX(1) scaleY(1); opacity: 0.88; }
-        }
         .av-flame { animation: av-flame-flicker 0.18s ease-in-out infinite alternate; }
         @keyframes av-flame-flicker { from { opacity: 0.85; transform: translate(-50%,-50%) scale(0.92); } to { opacity: 1; transform: translate(-50%,-50%) scale(1.05); } }
         .av-scroll::-webkit-scrollbar { width: 6px; }
