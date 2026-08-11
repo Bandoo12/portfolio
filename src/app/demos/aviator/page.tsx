@@ -61,8 +61,10 @@ function Rub({ children }: { children: React.ReactNode }) {
 const STAGE_W = 1600, STAGE_H = 900;
 const PAD = 24, GAP = 24;
 const HEADER_H = 80;
-const LB_W = 420;
-const ARENA_W = 1108, ARENA_H = 439, HISTORY_H = 64;
+const LB_W = 420; // unused while the leaderboard panel is hidden — kept for when it comes back
+// Full console-body width (STAGE_W - PAD*2) now that the leaderboard panel
+// isn't rendered — was 1108 (leaving room for a 420px leaderboard + gap).
+const ARENA_W = STAGE_W - PAD * 2, ARENA_H = 439, HISTORY_H = 64;
 const MAIN_ARENA_H = HISTORY_H + ARENA_H;
 const BET_PANEL_H = 221;
 
@@ -73,10 +75,14 @@ type Pt = { x: number; y: number };
 // the exact corner half the sprite sits past the panel's left/bottom edges
 // and gets clipped by its overflow:hidden at round-start. P2/P3 stay
 // Figma-exact.
-const CURVE_P0: Pt = { x: 95, y: 345 };
-const CURVE_P1: Pt = { x: 242, y: 345 };
-const CURVE_P2: Pt = { x: 553, y: 340.5 };
-const CURVE_P3: Pt = { x: 835, y: 159.5 };
+// X values scaled by ARENA_W/1108 (the leaderboard-era width these were
+// originally measured against) so the flight path spans the full width now
+// that the arena isn't sharing the row with a leaderboard panel.
+const CURVE_X_SCALE = ARENA_W / 1108;
+const CURVE_P0: Pt = { x: 95 * CURVE_X_SCALE, y: 345 };
+const CURVE_P1: Pt = { x: 242 * CURVE_X_SCALE, y: 345 };
+const CURVE_P2: Pt = { x: 553 * CURVE_X_SCALE, y: 340.5 };
+const CURVE_P3: Pt = { x: 835 * CURVE_X_SCALE, y: 159.5 };
 const CURVE_BASELINE_Y = 345;
 const GRID_Y = [1, 2, 3, 4, 5].map((i) => i * (ARENA_H / 6));
 
@@ -853,7 +859,10 @@ export default function AviatorPage() {
 
           {/* console body */}
           <div style={{ position: 'absolute', left: PAD, top: PAD + HEADER_H + GAP, width: STAGE_W - PAD * 2, height: STAGE_H - PAD * 2 - HEADER_H - GAP, display: 'flex', gap: GAP }}>
-            <Leaderboard tab={lbTab} onTab={setLbTab} rows={rows} prevRows={prevRows} topRows={topRows} />
+            {/* Leaderboard (Все ставки/Предыдущие/Топ) hidden for now per
+                request — flip this to `true` to bring it back; the row-feed
+                state/logic below keeps running either way. */}
+            {false && <Leaderboard tab={lbTab} onTab={setLbTab} rows={rows} prevRows={prevRows} topRows={topRows} />}
 
             <div style={{ width: ARENA_W, display: 'flex', flexDirection: 'column', gap: GAP }}>
               <Panel style={{ width: ARENA_W, height: MAIN_ARENA_H, overflow: 'hidden', position: 'relative' }}>
