@@ -116,7 +116,11 @@ function rollAmbientCrash(u: number) {
 // ---------- rocket art ----------
 const ROCKET_W = 336, ROCKET_H = 187;
 const ROCKET_TIP_OFFSET = 102;
-const ROCKET_ART_OFFSET_DEG = 12; // calibrated so the art's nose sits along the tangent
+// Measured directly from the source art: the nose-tip pixel sits ~6.1deg
+// below the sprite's horizontal centerline (before the scaleX mirror below),
+// so the rotation needs an equal-and-opposite offset to put the nose exactly
+// on the flight tangent instead of tilting it toward the ground.
+const ROCKET_ART_OFFSET_DEG = -6.13;
 
 // ---------- palette / fake data ----------
 const CHIP_BANDS: { max: number; color: string }[] = [
