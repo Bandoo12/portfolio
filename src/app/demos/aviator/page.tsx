@@ -88,10 +88,31 @@ function splitBezier(t: number) {
 
 // ---------- multiplier growth ----------
 const LAMBDA = Math.LN2 / 2.6; // doubles every 2.6s
-const CURVE_TAU = 3.2;
 function multAt(t: number) { return Math.exp(LAMBDA * t); }
 function tOfMult(m: number) { return Math.log(m) / LAMBDA; }
-function curveTOfElapsed(elapsed: number) { return 1 - Math.exp(-elapsed / CURVE_TAU); }
+
+// ---------- fixed 30-step coefficient scale ----------
+// This is a static ruler (matches the Figma "кф 1.10 / 1.33 / 1.62 / ..."
+// strip), NOT a per-round history — the same 30 values always exist, and the
+// flight scrolls through them. The bezier's t=1 endpoint is defined to land
+// exactly on the ladder's last (highest) step, so — because the ladder is
+// geometric, not linear — climbing gets harder at high multipliers: each
+// equal slice of curve height covers an exponentially larger multiplier gap.
+function buildLadder(count: number, start: number, end: number): number[] {
+  const ratio = Math.pow(end / start, 1 / (count - 1));
+  const ladder: number[] = [];
+  for (let i = 0; i < count; i++) ladder.push(start * Math.pow(ratio, i));
+  return ladder.map((m) => Math.round(m * 100) / 100);
+}
+const SCALE_START = 1.1, SCALE_END = 300;
+const SCALE = buildLadder(30, SCALE_START, SCALE_END);
+const SCALE_LOG_RATIO = Math.log(SCALE_END / SCALE_START) / (SCALE.length - 1);
+const SCALE_CHIP_COLORS = ['#ff3382', '#2ecc71', '#f39c12', '#9b59b6', '#3498db', '#34495e'];
+// Continuous 0..1 position of a multiplier within the ladder (log-scale),
+// clamped — drives both the curve height and the scale strip's scroll.
+function scalePosition(m: number) {
+  return clamp(Math.log(m / SCALE_START) / SCALE_LOG_RATIO / (SCALE.length - 1), 0, 1);
+}
 
 // ---------- round timing ----------
 const BETTING_MS = 5200, LAUNCH_MS = 500, CRASH_HOLD_MS = 2600;
@@ -114,22 +135,25 @@ function rollAmbientCrash(u: number) {
 }
 
 // ---------- rocket art ----------
+// All of the following were measured directly from the source pixels of
+// arena/rocket.png (nose/tail/nozzle extremes in a 1400x781 export, scaled
+// into the 336x187 render box) rather than eyeballed, so the sprite anchors
+// exactly instead of drifting off the curve.
 const ROCKET_W = 336, ROCKET_H = 187;
-const ROCKET_TIP_OFFSET = 102;
-// Measured directly from the source art: the nose-tip pixel sits ~6.1deg
-// below the sprite's horizontal centerline (before the scaleX mirror below),
-// so the rotation needs an equal-and-opposite offset to put the nose exactly
-// on the flight tangent instead of tilting it toward the ground.
+// Nose-tip sits ~6.1deg below the sprite's horizontal centerline; the
+// rotation needs the equal-and-opposite offset to put the nose exactly on
+// the flight tangent instead of tilting it toward the ground.
 const ROCKET_ART_OFFSET_DEG = -6.13;
+// Tail/engine anchor (trailing tip of the flame plume), relative to the
+// sprite's own center, AFTER the scaleX(-1) mirror — this is what the curve
+// line's endpoint is pinned to, so the tail never drifts off the line.
+const ROCKET_TAIL_LOCAL: Pt = { x: -133.6, y: -39.75 };
+// Engine-nozzle anchor (where the flame glow originates), in PRE-flip
+// absolute box coordinates — used as-is since EngineFlame is a sibling
+// inside the same rotated+flipped container as the sprite image.
+const ROCKET_NOZZLE_PREFLIP: Pt = { x: 203.3, y: 91.4 };
 
 // ---------- palette / fake data ----------
-const CHIP_BANDS: { max: number; color: string }[] = [
-  { max: 2, color: '#FF3382' },
-  { max: 10, color: '#9B59B6' },
-  { max: Infinity, color: '#F1C40F' },
-];
-function chipColor(v: number) { return (CHIP_BANDS.find((b) => v < b.max) ?? CHIP_BANDS[CHIP_BANDS.length - 1]).color; }
-
 const AVATAR_COLORS = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6', '#1abc9c'];
 const HANDLES = [
   'paris66', 'marna94', 'tericc41', 'lores70', 'marano88', 'rmanos7', 'ordefhia63', 'pariolly',
@@ -229,9 +253,9 @@ const FocalGlow = React.memo(function FocalGlow({ intensity }: { intensity: numb
   );
 });
 
-const LightRays = React.memo(function LightRays({ intensity }: { intensity: number }) {
+const LightRays = React.memo(function LightRays({ intensity, flying }: { intensity: number; flying: boolean }) {
   return (
-    <div className="av-rays" style={{
+    <div className={`av-rays ${flying ? 'av-rays-flying' : 'av-rays-idle'}`} style={{
       position: 'absolute', left: -58, top: 0, width: 1223, height: ARENA_H,
       opacity: 0.35 + 0.45 * intensity, pointerEvents: 'none', transformOrigin: '49px 489px',
     }}>
@@ -265,7 +289,7 @@ function EngineFlame({ show }: { show: boolean }) {
   if (!show) return null;
   return (
     <div className="av-flame" style={{
-      position: 'absolute', left: 6, top: '58%', width: 60, height: 60, transform: 'translate(-50%,-50%)',
+      position: 'absolute', left: ROCKET_NOZZLE_PREFLIP.x, top: ROCKET_NOZZLE_PREFLIP.y, width: 60, height: 60, transform: 'translate(-50%,-50%)',
       background: 'radial-gradient(circle, rgba(255,230,140,0.95) 0%, rgba(255,120,60,0.6) 45%, transparent 75%)',
       filter: 'blur(2px)', pointerEvents: 'none',
     }} />
@@ -305,28 +329,31 @@ function CountdownBar({ roundId, ms }: { roundId: number; ms: number }) {
   );
 }
 
-// ---------- history strip ----------
-type HistoryEntry = { id: number; value: number };
-const HistoryChip = React.memo(function HistoryChip({ value }: { value: number }) {
-  const c = chipColor(value);
+// ---------- fixed coefficient scale ----------
+// A static ruler (matches the Figma "кф 1.10 / 1.33 / ..." strip) — the
+// same 30 chips always exist; only the scroll position changes, tracking
+// how far the current multiplier sits within the ladder.
+const SCALE_SLOT_W = 100;
+const SCALE_VISIBLE_LEAD = 2; // keep this many passed chips in view before scrolling starts
+const ScaleChip = React.memo(function ScaleChip({ value, index, active }: { value: number; index: number; active: boolean }) {
+  const c = SCALE_CHIP_COLORS[index % SCALE_CHIP_COLORS.length];
   return (
     <div className={inter.className} style={{
-      flexShrink: 0, borderRadius: 100, padding: '8px 16px', background: `${c}20`, color: c, fontWeight: 700, fontSize: 13,
+      flexShrink: 0, width: SCALE_SLOT_W - 10, marginRight: 10, borderRadius: 100, padding: '8px 0', textAlign: 'center',
+      background: `${c}20`, color: c, fontWeight: 700, fontSize: 13, boxShadow: active ? `0 0 0 1px ${c}` : 'none',
     }}>кф {value.toFixed(2)}</div>
   );
 });
-const HistoryStrip = React.memo(function HistoryStrip({ history }: { history: HistoryEntry[] }) {
+const ScaleStrip = React.memo(function ScaleStrip({ mult }: { mult: number }) {
+  const pos = scalePosition(mult) * (SCALE.length - 1);
+  const activeIndex = Math.round(pos);
+  const scrollIndex = clamp(pos - SCALE_VISIBLE_LEAD, 0, SCALE.length - 1);
   return (
     <div style={{ position: 'relative', height: HISTORY_H, borderBottom: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-      <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 24px', gap: 10, overflow: 'hidden' }}>
-        <AnimatePresence initial={false}>
-          {history.map((h) => (
-            <motion.div key={h.id} initial={{ opacity: 0, x: -16, scale: 0.8 }} animate={{ opacity: 1, x: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }} transition={{ duration: 0.25 }} style={{ flexShrink: 0 }}>
-              <HistoryChip value={h.value} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+      <motion.div animate={{ x: -scrollIndex * SCALE_SLOT_W }} transition={{ type: 'tween', duration: 0.35, ease: 'easeOut' }}
+        style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '0 24px' }}>
+        {SCALE.map((v, i) => <ScaleChip key={i} value={v} index={i} active={i === activeIndex} />)}
+      </motion.div>
       <div style={{ position: 'absolute', right: 0, top: 0, width: 90, height: '100%', background: 'linear-gradient(90deg, rgba(5,3,16,0), #050310)', pointerEvents: 'none' }} />
     </div>
   );
@@ -485,7 +512,6 @@ export default function AviatorPage() {
   const [rows, setRows] = useState<BetRow[]>([]);
   const [prevRows, setPrevRows] = useState<BetRow[]>([]);
   const [topRows, setTopRows] = useState<BetRow[]>([]);
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [lbTab, setLbTab] = useState<LbTab>('all');
   const [betTab, setBetTab] = useState<'bet' | 'auto'>('bet');
   const [autoOn, setAutoOn] = useState(false);
@@ -642,7 +668,6 @@ export default function AviatorPage() {
       setPhase('crashed');
       phaseRef.current = 'crashed';
       setShakeKey((k) => k + 1);
-      setHistory((h) => [{ id: rowIdRef.current++, value: crashAtRef.current }, ...h].slice(0, 30));
       setRows((rs) => {
         const finished = rs.filter((r) => r.win !== null && !r.isYou);
         setTopRows((top) => [...top, ...finished].sort((a, b) => (b.win ?? 0) - (a.win ?? 0)).slice(0, 13));
@@ -669,14 +694,22 @@ export default function AviatorPage() {
   };
 
   const mult = phase === 'crashed' ? crashAt : phase === 'flying' ? multAt(elapsed) : 1;
-  const curveT = phase === 'flying' || phase === 'crashed' ? curveTOfElapsed(Math.min(elapsed, tOfMult(crashAt))) : 0;
+  // t is the multiplier's position within the fixed 30-step scale, not a
+  // wall-clock ease — the curve's t=1 endpoint IS the scale's last step.
+  const curveT = scalePosition(mult);
   const { tip, angle } = useMemo(() => splitBezier(curveT), [curveT]);
-  const rocketX = tip.x + ROCKET_TIP_OFFSET * Math.cos(angle);
-  // Clamp so the sprite's bottom edge never dips under the panel's bottom
-  // edge — near t=0 the raw curve point sits right on the baseline, which
-  // would clip half the rocket off (overflow:hidden on the arena panel).
-  const rocketY = Math.min(tip.y + ROCKET_TIP_OFFSET * Math.sin(angle), ARENA_H - 8 - ROCKET_H / 2);
   const rocketDeg = (angle * 180) / Math.PI + ROCKET_ART_OFFSET_DEG;
+  const rotRad = (rocketDeg * Math.PI) / 180;
+  // Anchor the sprite's TAIL exactly on the curve's tip — solved backwards
+  // for the center position so the rotated tail always lands precisely on
+  // `tip`, instead of an eyeballed offset that can drift off the line.
+  const tailOffsetX = ROCKET_TAIL_LOCAL.x * Math.cos(rotRad) - ROCKET_TAIL_LOCAL.y * Math.sin(rotRad);
+  const tailOffsetY = ROCKET_TAIL_LOCAL.x * Math.sin(rotRad) + ROCKET_TAIL_LOCAL.y * Math.cos(rotRad);
+  const rocketX = tip.x - tailOffsetX;
+  // Clamp so the sprite's bottom edge never dips under the panel's bottom
+  // edge — solving the tail-anchor near t=0 places the center just past the
+  // baseline, which would clip the sprite (overflow:hidden on the panel).
+  const rocketY = Math.min(tip.y - tailOffsetY, ARENA_H - 8 - ROCKET_H / 2);
   const flying = phase === 'flying';
   const rocketOpacity = phase === 'crashed' ? 0 : 1;
   const glowIntensity = clamp(mult / 10, 0, 1);
@@ -758,11 +791,11 @@ export default function AviatorPage() {
 
             <div style={{ width: ARENA_W, display: 'flex', flexDirection: 'column', gap: GAP }}>
               <Panel style={{ width: ARENA_W, height: MAIN_ARENA_H, overflow: 'hidden', position: 'relative' }}>
-                <HistoryStrip history={history} />
+                <ScaleStrip mult={mult} />
                 <div style={{ position: 'relative', width: ARENA_W, height: ARENA_H, overflow: 'hidden' }}>
                   <GridLines />
                   <FocalGlow intensity={glowIntensity} />
-                  <LightRays intensity={glowIntensity} />
+                  <LightRays intensity={glowIntensity} flying={flying} />
                   <CrashCurve t={curveT} dead={phase === 'crashed'} />
                   <Rocket x={rocketX} y={rocketY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} />
                   <MultiplierReadout mult={mult} crashed={phase === 'crashed'} />
@@ -816,8 +849,17 @@ export default function AviatorPage() {
       <style>{`
         .av-btn { cursor: pointer; border: none; font-family: inherit; background: none; }
         .av-btn:disabled { cursor: default; opacity: 0.4; }
-        .av-rays { animation: av-ray-spin 24s ease-in-out infinite; }
-        @keyframes av-ray-spin { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+        .av-rays-idle { animation: av-ray-idle 24s ease-in-out infinite; }
+        @keyframes av-ray-idle { 0%,100% { transform: rotate(-3deg) scale(1); } 50% { transform: rotate(3deg) scale(1.02); } }
+        .av-rays-flying { animation: av-ray-flicker 1.6s ease-in-out infinite; }
+        @keyframes av-ray-flicker {
+          0% { transform: rotate(-2deg) scaleX(1) scaleY(1); opacity: 0.88; }
+          20% { transform: rotate(3deg) scaleX(1.07) scaleY(0.96); opacity: 1; }
+          40% { transform: rotate(-4deg) scaleX(0.96) scaleY(1.06); opacity: 0.82; }
+          60% { transform: rotate(2deg) scaleX(1.09) scaleY(0.94); opacity: 1; }
+          80% { transform: rotate(-1deg) scaleX(0.97) scaleY(1.03); opacity: 0.9; }
+          100% { transform: rotate(-2deg) scaleX(1) scaleY(1); opacity: 0.88; }
+        }
         .av-flame { animation: av-flame-flicker 0.18s ease-in-out infinite alternate; }
         @keyframes av-flame-flicker { from { opacity: 0.85; transform: translate(-50%,-50%) scale(0.92); } to { opacity: 1; transform: translate(-50%,-50%) scale(1.05); } }
         .av-scroll::-webkit-scrollbar { width: 6px; }
