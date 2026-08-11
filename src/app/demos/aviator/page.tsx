@@ -272,7 +272,7 @@ function Rocket({ x, y, deg, opacity, flying }: { x: number; y: number; deg: num
   return (
     <div style={{
       position: 'absolute', left: x, top: y, width: ROCKET_W, height: ROCKET_H,
-      transform: `translate(-50%,-50%) rotate(${deg}deg)`, opacity, zIndex: 6, pointerEvents: 'none',
+      transform: `translate(-50%,-50%) rotate(${deg}deg) scaleX(-1)`, opacity, zIndex: 6, pointerEvents: 'none',
       transition: flying ? 'none' : 'left 1.15s cubic-bezier(.3,0,.7,1), top 1.15s cubic-bezier(.3,0,.7,1), opacity 1.05s ease-in 0.15s',
     }}>
       <Sprite name="arena/rocket.png" alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} fallback={<span />} />
