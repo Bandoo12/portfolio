@@ -71,9 +71,10 @@ const BET_PANEL_H = 221;
 // ---------- rocket flight path (launch dash + fixed cruise point) ----------
 // v2 doesn't track a curve for the rocket's position at all — instead it
 // dashes from the pad corner to a fixed on-screen point once per round and
-// holds there for the whole flight, while ParallaxObjects (below) scrolls
-// planets/asteroids past it. That's what actually sells "the rocket is
-// moving" once the sprite itself stops traveling across the arena.
+// holds there for the whole flight, while NebulaBackground/FlybyObjects
+// (below) scroll the starfield and planets/asteroids past it. That's what
+// actually sells "the rocket is moving" once the sprite itself stops
+// traveling across the arena.
 type Pt = { x: number; y: number };
 const LAUNCH_START: Pt = { x: ARENA_W * 0.086, y: ARENA_H * 0.75 };
 const CRUISE_POINT: Pt = { x: ARENA_W * 0.30, y: ARENA_H * 0.52 };
@@ -215,44 +216,21 @@ function glowGradient(stops: string) {
   return `radial-gradient(circle closest-side, ${stops})`;
 }
 
-const NebulaBackground = React.memo(function NebulaBackground() {
-  return (
-    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      <div style={{
-        position: 'absolute', inset: 0,
-        backgroundImage: `url(${IMG}/arena/nebula-bg.png)`, backgroundSize: 'cover', backgroundPosition: 'center',
-      }} />
-      {/* focal-glow, centered */}
-      <div style={{
-        position: 'absolute', left: '50%', top: '50%', width: 800, height: 800, transform: 'translate(-50%,-50%)',
-        background: glowGradient('rgba(255,0,119,0.1333) 0%, rgba(255,0,119,0) 100%'),
-      }} />
-    </div>
-  );
-});
+// The starfield itself also drifts — tiled edge-to-edge with every other
+// copy mirrored (same technique as the old nebula-tile approach, just
+// applied to the single corrected export now) and scrolled leftward via its
+// own rAF loop, slower than the flyby objects below so it reads as the far
+// parallax layer instead of moving in lockstep with them.
+const NEBULA_TILES = Math.ceil((ARENA_W + ARENA_W * 2) / ARENA_W) + 1;
+const NEBULA_SPEED_BASE = 14;
 
-// ---------- parallax planet strip ----------
-// Figma node 1031:12158 — a horizontal band of planets/asteroids/comets,
-// exported flat and alpha-keyed the same way as the rocket sheet (script:
-// scripts/prep-aviator-planet-strip.py). Tiled edge-to-edge with every other
-// copy mirrored (per spec, so the repeat doesn't read as an obvious loop),
-// then scrolled leftward via its own rAF loop. The rocket holds its
-// CRUISE_POINT for the whole flight now — this drift is what actually sells
-// "the rocket is flying past them".
-const PLANET_STRIP_NATIVE_W = 703, PLANET_STRIP_NATIVE_H = 99;
-const PLANET_STRIP_SCALE = 1.6;
-const PLANET_STRIP_W = Math.round(PLANET_STRIP_NATIVE_W * PLANET_STRIP_SCALE);
-const PLANET_STRIP_H = Math.round(PLANET_STRIP_NATIVE_H * PLANET_STRIP_SCALE);
-const PLANET_STRIP_PERIOD = PLANET_STRIP_W * 2; // one normal + one mirrored tile
-const PLANET_STRIP_TILES = Math.ceil((ARENA_W + PLANET_STRIP_PERIOD) / PLANET_STRIP_W) + 1;
-
-const ParallaxObjects = React.memo(function ParallaxObjects({ flying, multRef }: { flying: boolean; multRef: React.RefObject<number> }) {
+const NebulaBackground = React.memo(function NebulaBackground({ flying, multRef }: { flying: boolean; multRef: React.RefObject<number> }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const flyingRef = useRef(flying);
   const offsetRef = useRef(0);
   useEffect(() => {
     flyingRef.current = flying;
-    if (!flying) offsetRef.current = 0; // fresh drift each round, per spec
+    if (!flying) offsetRef.current = 0;
   }, [flying]);
   useEffect(() => {
     let raf = 0;
@@ -261,8 +239,8 @@ const ParallaxObjects = React.memo(function ParallaxObjects({ flying, multRef }:
       const dt = (now - last) / 1000;
       last = now;
       if (flyingRef.current) {
-        const speed = 50 + 110 * Math.sqrt(Math.max(multRef.current - 1, 0));
-        offsetRef.current = (offsetRef.current + speed * dt) % PLANET_STRIP_PERIOD;
+        const speed = NEBULA_SPEED_BASE * (1 + 0.6 * Math.sqrt(Math.max(multRef.current - 1, 0)));
+        offsetRef.current = (offsetRef.current + speed * dt) % (ARENA_W * 2);
         if (trackRef.current) trackRef.current.style.transform = `translateX(-${offsetRef.current}px)`;
       }
       raf = requestAnimationFrame(tick);
@@ -271,19 +249,141 @@ const ParallaxObjects = React.memo(function ParallaxObjects({ flying, multRef }:
     return () => cancelAnimationFrame(raf);
   }, [multRef]);
   return (
-    <div style={{
-      position: 'absolute', left: 0, top: CRUISE_POINT.y - PLANET_STRIP_H / 2, width: ARENA_W, height: PLANET_STRIP_H,
-      overflow: 'hidden', pointerEvents: 'none',
-    }}>
-      <div ref={trackRef} style={{ position: 'absolute', left: 0, top: 0, height: PLANET_STRIP_H, width: PLANET_STRIP_W * PLANET_STRIP_TILES }}>
-        {Array.from({ length: PLANET_STRIP_TILES }, (_, i) => (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <div ref={trackRef} style={{ position: 'absolute', left: 0, top: 0, height: ARENA_H, width: ARENA_W * NEBULA_TILES }}>
+        {Array.from({ length: NEBULA_TILES }, (_, i) => (
           <div key={i} style={{
-            position: 'absolute', left: i * PLANET_STRIP_W, top: 0, width: PLANET_STRIP_W, height: PLANET_STRIP_H,
-            backgroundImage: `url(${IMG}/arena/planet-strip.png)`, backgroundSize: `${PLANET_STRIP_W}px ${PLANET_STRIP_H}px`,
+            position: 'absolute', left: i * ARENA_W, top: 0, width: ARENA_W, height: ARENA_H,
+            backgroundImage: `url(${IMG}/arena/nebula-bg.png)`, backgroundSize: `${ARENA_W}px ${ARENA_H}px`,
             transform: i % 2 === 1 ? 'scaleX(-1)' : 'none',
           }} />
         ))}
       </div>
+      {/* focal-glow, centered — fixed to the viewport, doesn't scroll with the track */}
+      <div style={{
+        position: 'absolute', left: '50%', top: '50%', width: 800, height: 800, transform: 'translate(-50%,-50%)',
+        background: glowGradient('rgba(255,0,119,0.1333) 0%, rgba(255,0,119,0) 100%'),
+      }} />
+    </div>
+  );
+});
+
+// ---------- flyby objects (planets/asteroids/comet) ----------
+// Figma node 1031:12158's reference sheet, cropped into individual sprites
+// and alpha-keyed the same way as the rocket sheet (script:
+// scripts/prep-aviator-planet-strip.py + a one-off per-object crop, see
+// public/img/aviator/arena/objects/). Rendered as an independent particle
+// pool rather than one tiled strip: each slot spawns off the right edge at
+// a random height/scale/speed and drifts left on its own, un-mirrored (per
+// spec — only the background tile above gets mirrored), so it reads as
+// scattered debris the rocket flies past instead of one rigid row where
+// everything moves in lockstep.
+type FlybyDef = { src: string; w: number; h: number };
+const FLYBY_OBJECTS: FlybyDef[] = [
+  { src: 'comet', w: 140, h: Math.round(140 * (151 / 262)) },
+  { src: 'ringed-planet', w: 130, h: Math.round(130 * (292 / 447)) },
+  { src: 'striped-planet', w: 110, h: Math.round(110 * (233 / 223)) },
+  { src: 'planet-a', w: 70, h: Math.round(70 * (157 / 162)) },
+  { src: 'planet-b', w: 60, h: Math.round(60 * (127 / 131)) },
+  { src: 'planet-c', w: 55, h: Math.round(55 * (114 / 117)) },
+  { src: 'rock-a', w: 34, h: Math.round(34 * (64 / 65)) },
+  { src: 'rock-6', w: 30, h: Math.round(30 * (40 / 60)) },
+  { src: 'star', w: 16, h: 16 },
+  { src: 'rock-1', w: 16, h: 16 },
+];
+const FLYBY_POOL_SIZE = 5;
+const FLYBY_SPEED_BASE = 55; // px/s at scale 1, before the multiplier speedup
+
+function randRange(min: number, max: number) { return min + Math.random() * (max - min); }
+
+type FlybyParticle = { defIdx: number; x: number; y: number; scale: number; speed: number; nextSpawnAt: number; active: boolean };
+
+// Math.random() here is fine — this whole component lives inside a rAF loop
+// inside useEffect (client-only, post-mount), never the render body, so
+// there's no SSR/hydration purity concern (contrast the bob offset in the
+// main component, which IS computed in render and deliberately avoids it).
+const FlybyObjects = React.memo(function FlybyObjects({ flying, multRef }: { flying: boolean; multRef: React.RefObject<number> }) {
+  const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // Passed as a useRef initial value (an argument, not a `.current` read) so
+  // this never touches the ref during render — React only keeps the value
+  // from the first call anyway. Deterministic stagger here; spawn() below
+  // (effect-only) is where actual randomness belongs.
+  const particlesRef = useRef<FlybyParticle[]>(
+    Array.from({ length: FLYBY_POOL_SIZE }, (_, i) => ({
+      defIdx: 0, x: 0, y: 0, scale: 1, speed: 0, nextSpawnAt: i * 0.5, active: false,
+    }))
+  );
+  const flyingRef = useRef(flying);
+  const clockRef = useRef(0);
+  const lastDefIdxRef = useRef(-1);
+  useEffect(() => {
+    flyingRef.current = flying;
+    if (!flying) {
+      clockRef.current = 0;
+      particlesRef.current.forEach((p, i) => { p.active = false; p.nextSpawnAt = randRange(0, 2.5) + i * 0.5; });
+    }
+  }, [flying]);
+  useEffect(() => {
+    let raf = 0;
+    let last = performance.now();
+    const spawn = (p: FlybyParticle) => {
+      let idx = Math.floor(Math.random() * FLYBY_OBJECTS.length);
+      while (idx === lastDefIdxRef.current) idx = Math.floor(Math.random() * FLYBY_OBJECTS.length);
+      lastDefIdxRef.current = idx;
+      const def = FLYBY_OBJECTS[idx];
+      p.defIdx = idx;
+      p.scale = randRange(0.7, 1.35);
+      p.speed = FLYBY_SPEED_BASE * p.scale * randRange(0.85, 1.15);
+      p.y = randRange(ARENA_H * 0.06, ARENA_H * 0.92 - def.h * p.scale);
+      p.x = ARENA_W + def.w * p.scale;
+      p.active = true;
+    };
+    const tick = (now: number) => {
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      if (flyingRef.current) {
+        clockRef.current += dt;
+        const speedMul = 1 + 0.7 * Math.sqrt(Math.max(multRef.current - 1, 0));
+        particlesRef.current.forEach((p) => {
+          if (!p.active) {
+            if (clockRef.current >= p.nextSpawnAt) spawn(p);
+          } else {
+            p.x -= p.speed * speedMul * dt;
+            const def = FLYBY_OBJECTS[p.defIdx];
+            if (p.x < -def.w * p.scale) {
+              p.active = false;
+              p.nextSpawnAt = clockRef.current + randRange(0.6, 2.2);
+            }
+          }
+        });
+      }
+      particlesRef.current.forEach((p, i) => {
+        const el = slotRefs.current[i];
+        if (!el) return;
+        if (p.active) {
+          const def = FLYBY_OBJECTS[p.defIdx];
+          el.style.display = 'block';
+          el.style.left = `${p.x}px`;
+          el.style.top = `${p.y}px`;
+          el.style.width = `${def.w * p.scale}px`;
+          el.style.height = `${def.h * p.scale}px`;
+          el.style.backgroundImage = `url(${IMG}/arena/objects/${def.src}.png)`;
+        } else {
+          el.style.display = 'none';
+        }
+      });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [multRef]);
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {Array.from({ length: FLYBY_POOL_SIZE }, (_, i) => (
+        <div key={i} ref={(el) => { slotRefs.current[i] = el; }} style={{
+          position: 'absolute', display: 'none', backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat',
+        }} />
+      ))}
     </div>
   );
 });
@@ -861,8 +961,8 @@ export default function AviatorPage() {
               <Panel style={{ width: ARENA_W, height: MAIN_ARENA_H, overflow: 'hidden', position: 'relative' }}>
                 <HistoryStrip history={history} />
                 <div style={{ position: 'relative', width: ARENA_W, height: ARENA_H, overflow: 'hidden' }}>
-                  <NebulaBackground />
-                  <ParallaxObjects flying={flying} multRef={multRef} />
+                  <NebulaBackground flying={flying} multRef={multRef} />
+                  <FlybyObjects flying={flying} multRef={multRef} />
                   <Rocket x={rocketDisplayX} y={rocketDisplayY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} outcome={rocketOutcome} flyAway={flyAway} />
                   <MultiplierReadout
                     mult={phase === 'crashed' && rocketOutcome === 'won' ? myCashedAt! : mult}
