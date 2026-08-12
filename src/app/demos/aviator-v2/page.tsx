@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Inter, Geist_Mono, Fredoka } from 'next/font/google';
 
@@ -68,61 +68,25 @@ const ARENA_W = STAGE_W - PAD * 2, ARENA_H = 439, HISTORY_H = 64;
 const MAIN_ARENA_H = HISTORY_H + ARENA_H;
 const BET_PANEL_H = 221;
 
-// ---------- crash curve geometry (canvas-viewport coords, 1108x439) ----------
+// ---------- rocket flight path (launch dash + fixed cruise point) ----------
+// v2 doesn't track a curve for the rocket's position at all — instead it
+// dashes from the pad corner to a fixed on-screen point once per round and
+// holds there for the whole flight, while ParallaxObjects (below) scrolls
+// planets/asteroids past it. That's what actually sells "the rocket is
+// moving" once the sprite itself stops traveling across the arena.
 type Pt = { x: number; y: number };
-// P0's x/y is nudged in from the Figma-exact (8.5, 436.5) — the rocket
-// sprite is centered directly on this flight path (170px square), and at
-// the exact corner half the sprite sits past the panel's left/bottom edges
-// and gets clipped by its overflow:hidden at round-start. P2/P3 stay
-// Figma-exact.
-// X values scaled by ARENA_W/1108 (the leaderboard-era width these were
-// originally measured against) so the flight path spans the full width now
-// that the arena isn't sharing the row with a leaderboard panel.
-const CURVE_X_SCALE = ARENA_W / 1108;
-const CURVE_P0: Pt = { x: 95 * CURVE_X_SCALE, y: 330 };
-const CURVE_P1: Pt = { x: 242 * CURVE_X_SCALE, y: 330 };
-const CURVE_P2: Pt = { x: 553 * CURVE_X_SCALE, y: 340.5 };
-const CURVE_P3: Pt = { x: 835 * CURVE_X_SCALE, y: 159.5 };
-const CURVE_BASELINE_Y = 330;
-
-function lerpPt(a: Pt, b: Pt, t: number): Pt { return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }; }
-function splitBezier(t: number) {
-  const A = lerpPt(CURVE_P0, CURVE_P1, t), B = lerpPt(CURVE_P1, CURVE_P2, t), C = lerpPt(CURVE_P2, CURVE_P3, t);
-  const D = lerpPt(A, B, t), E = lerpPt(B, C, t);
-  const F = lerpPt(D, E, t);
-  const strokeD = `M ${CURVE_P0.x} ${CURVE_P0.y} C ${A.x} ${A.y} ${D.x} ${D.y} ${F.x} ${F.y}`;
-  const areaD = `${strokeD} L ${F.x} ${CURVE_BASELINE_Y} L ${CURVE_P0.x} ${CURVE_BASELINE_Y} Z`;
-  const angle = Math.atan2(E.y - D.y, E.x - D.x);
-  return { strokeD, areaD, tip: F, angle };
-}
+const LAUNCH_START: Pt = { x: ARENA_W * 0.086, y: ARENA_H * 0.75 };
+const CRUISE_POINT: Pt = { x: ARENA_W * 0.30, y: ARENA_H * 0.52 };
+const LAUNCH_DEG = -58; // steep pad blast-off tilt
+const CRUISE_DEG = -10; // shallow in-flight climb tilt
+const ROCKET_DASH_S = 0.5; // seconds of `elapsed` spent dashing to CRUISE_POINT
+function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
+function easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3); }
 
 // ---------- multiplier growth ----------
 const LAMBDA = Math.LN2 / 2.6; // doubles every 2.6s
 function multAt(t: number) { return Math.exp(LAMBDA * t); }
 function tOfMult(m: number) { return Math.log(m) / LAMBDA; }
-
-// ---------- fixed 30-step coefficient scale ----------
-// This is a static ruler (matches the Figma "кф 1.10 / 1.33 / 1.62 / ..."
-// strip), NOT a per-round history — the same 30 values always exist, and the
-// flight scrolls through them. The bezier's t=1 endpoint is defined to land
-// exactly on the ladder's last (highest) step, so — because the ladder is
-// geometric, not linear — climbing gets harder at high multipliers: each
-// equal slice of curve height covers an exponentially larger multiplier gap.
-function buildLadder(count: number, start: number, end: number): number[] {
-  const ratio = Math.pow(end / start, 1 / (count - 1));
-  const ladder: number[] = [];
-  for (let i = 0; i < count; i++) ladder.push(start * Math.pow(ratio, i));
-  return ladder.map((m) => Math.round(m * 100) / 100);
-}
-const SCALE_START = 1.1, SCALE_END = 300;
-const SCALE = buildLadder(30, SCALE_START, SCALE_END);
-const SCALE_LOG_RATIO = Math.log(SCALE_END / SCALE_START) / (SCALE.length - 1);
-// Continuous 0..1 position of a multiplier within the ladder (log-scale),
-// clamped — drives curve height and glow intensity (see scalePosition uses
-// below); the visible strip itself now shows round history, not this ladder.
-function scalePosition(m: number) {
-  return clamp(Math.log(m / SCALE_START) / SCALE_LOG_RATIO / (SCALE.length - 1), 0, 1);
-}
 
 // ---------- round timing ----------
 const BETTING_MS = 5200, LAUNCH_MS = 500, CRASH_HOLD_MS = 2600;
@@ -267,6 +231,63 @@ const NebulaBackground = React.memo(function NebulaBackground() {
   );
 });
 
+// ---------- parallax planet strip ----------
+// Figma node 1031:12158 — a horizontal band of planets/asteroids/comets,
+// exported flat and alpha-keyed the same way as the rocket sheet (script:
+// scripts/prep-aviator-planet-strip.py). Tiled edge-to-edge with every other
+// copy mirrored (per spec, so the repeat doesn't read as an obvious loop),
+// then scrolled leftward via its own rAF loop. The rocket holds its
+// CRUISE_POINT for the whole flight now — this drift is what actually sells
+// "the rocket is flying past them".
+const PLANET_STRIP_NATIVE_W = 703, PLANET_STRIP_NATIVE_H = 99;
+const PLANET_STRIP_SCALE = 1.6;
+const PLANET_STRIP_W = Math.round(PLANET_STRIP_NATIVE_W * PLANET_STRIP_SCALE);
+const PLANET_STRIP_H = Math.round(PLANET_STRIP_NATIVE_H * PLANET_STRIP_SCALE);
+const PLANET_STRIP_PERIOD = PLANET_STRIP_W * 2; // one normal + one mirrored tile
+const PLANET_STRIP_TILES = Math.ceil((ARENA_W + PLANET_STRIP_PERIOD) / PLANET_STRIP_W) + 1;
+
+const ParallaxObjects = React.memo(function ParallaxObjects({ flying, multRef }: { flying: boolean; multRef: React.RefObject<number> }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const flyingRef = useRef(flying);
+  const offsetRef = useRef(0);
+  useEffect(() => {
+    flyingRef.current = flying;
+    if (!flying) offsetRef.current = 0; // fresh drift each round, per spec
+  }, [flying]);
+  useEffect(() => {
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      if (flyingRef.current) {
+        const speed = 50 + 110 * Math.sqrt(Math.max(multRef.current - 1, 0));
+        offsetRef.current = (offsetRef.current + speed * dt) % PLANET_STRIP_PERIOD;
+        if (trackRef.current) trackRef.current.style.transform = `translateX(-${offsetRef.current}px)`;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [multRef]);
+  return (
+    <div style={{
+      position: 'absolute', left: 0, top: CRUISE_POINT.y - PLANET_STRIP_H / 2, width: ARENA_W, height: PLANET_STRIP_H,
+      overflow: 'hidden', pointerEvents: 'none',
+    }}>
+      <div ref={trackRef} style={{ position: 'absolute', left: 0, top: 0, height: PLANET_STRIP_H, width: PLANET_STRIP_W * PLANET_STRIP_TILES }}>
+        {Array.from({ length: PLANET_STRIP_TILES }, (_, i) => (
+          <div key={i} style={{
+            position: 'absolute', left: i * PLANET_STRIP_W, top: 0, width: PLANET_STRIP_W, height: PLANET_STRIP_H,
+            backgroundImage: `url(${IMG}/arena/planet-strip.png)`, backgroundSize: `${PLANET_STRIP_W}px ${PLANET_STRIP_H}px`,
+            transform: i % 2 === 1 ? 'scaleX(-1)' : 'none',
+          }} />
+        ))}
+      </div>
+    </div>
+  );
+});
+
 type RocketOutcome = 'normal' | 'won' | 'lost';
 const ROCKET_COLORS: Record<RocketOutcome, string> = { normal: '#FFEFE6', won: '#2ecc71', lost: '#FF4D6A' };
 
@@ -346,9 +367,8 @@ function CountdownBar({ roundId, ms }: { roundId: number; ms: number }) {
 }
 
 // ---------- round-history strip ----------
-// Dynamic history of past rounds' crash coefficients (newest first) — NOT
-// the fixed 30-step SCALE above (that one only drives curve height/glow
-// intensity now). Colored by value band so the colors carry meaning.
+// Dynamic history of past rounds' crash coefficients (newest first).
+// Colored by value band so the colors carry meaning.
 const HISTORY_BANDS: { max: number; color: string }[] = [
   { max: 2, color: '#ff3382' },
   { max: 10, color: '#9b59b6' },
@@ -561,6 +581,7 @@ export default function AviatorPage() {
   const rowIdRef = useRef(1);
   const demoIdxRef = useRef(0);
   const nextRoundIdRef = useRef(1);
+  const multRef = useRef(1); // read by ParallaxObjects' own rAF loop, not React state
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { balanceRef.current = balance; }, [balance]);
   useEffect(() => { betRef.current = bet; }, [bet]);
@@ -731,19 +752,21 @@ export default function AviatorPage() {
   };
 
   const mult = phase === 'crashed' ? crashAt : phase === 'flying' ? multAt(elapsed) : 1;
-  // t is the multiplier's position within the fixed 30-step scale, not a
-  // wall-clock ease — the curve's t=1 endpoint IS the scale's last step.
-  const curveT = scalePosition(mult);
-  const { tip, angle } = useMemo(() => splitBezier(curveT), [curveT]);
-  const rocketDeg = (angle * 180) / Math.PI + ROCKET_ART_OFFSET_DEG;
-  // Gentle up/down bob layered on top of the climb — makes the flight read
-  // as alive instead of rigidly glued to the path. Driven by `elapsed` (0
-  // outside 'flying'), never Math.random(), so render stays pure.
-  const bobOffset = Math.sin(elapsed * 2.1) * 6;
-  // No line to anchor a tail to anymore — the sprite is just centered
-  // directly on the invisible flight path (tip).
-  const rocketX = tip.x;
-  const rocketY = tip.y + bobOffset;
+  useEffect(() => { multRef.current = mult; }, [mult]);
+  // `elapsed` is 0 outside 'flying' (only the flight rAF loop advances it),
+  // so this dash is inert during betting/launching — the rocket just sits
+  // at LAUNCH_START in its pad tilt until flight actually starts, then
+  // dashes to CRUISE_POINT and holds (ParallaxObjects sells the motion
+  // from there — see its comment above).
+  const dashT = clamp(elapsed / ROCKET_DASH_S, 0, 1);
+  const dashE = easeOutCubic(dashT);
+  const rocketDeg = lerp(LAUNCH_DEG, CRUISE_DEG, dashE) + ROCKET_ART_OFFSET_DEG;
+  // Gentle up/down bob once cruising — ramped in by dashE so it doesn't
+  // fight the launch dash. Driven by `elapsed`, never Math.random(), so
+  // render stays pure.
+  const bobOffset = Math.sin(elapsed * 2.1) * 6 * dashE;
+  const rocketX = lerp(LAUNCH_START.x, CRUISE_POINT.x, dashE);
+  const rocketY = lerp(LAUNCH_START.y, CRUISE_POINT.y, dashE) + bobOffset;
   const flying = phase === 'flying';
   const rocketOutcome: RocketOutcome = phase === 'crashed' ? (myStake !== null && myCashedAt !== null ? 'won' : 'lost') : 'normal';
   // Once the coefficient locks in (any crash, win or lose), the plane darts
@@ -839,6 +862,7 @@ export default function AviatorPage() {
                 <HistoryStrip history={history} />
                 <div style={{ position: 'relative', width: ARENA_W, height: ARENA_H, overflow: 'hidden' }}>
                   <NebulaBackground />
+                  <ParallaxObjects flying={flying} multRef={multRef} />
                   <Rocket x={rocketDisplayX} y={rocketDisplayY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} outcome={rocketOutcome} flyAway={flyAway} />
                   <MultiplierReadout
                     mult={phase === 'crashed' && rocketOutcome === 'won' ? myCashedAt! : mult}
