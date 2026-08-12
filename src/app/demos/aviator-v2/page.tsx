@@ -282,9 +282,9 @@ type FlybyDef = { src: string; w: number; h: number };
 const FLYBY_OBJECTS: FlybyDef[] = [
   { src: 'ringed-planet', w: 130, h: Math.round(130 * (292 / 447)) },
   { src: 'striped-planet', w: 110, h: Math.round(110 * (233 / 223)) },
-  { src: 'planet-a', w: 70, h: Math.round(70 * (157 / 162)) },
-  { src: 'planet-b', w: 60, h: Math.round(60 * (127 / 131)) },
-  { src: 'planet-c', w: 55, h: Math.round(55 * (114 / 117)) },
+  { src: 'planet-a', w: 70, h: Math.round(70 * (116 / 115)) },
+  { src: 'planet-b', w: 60, h: Math.round(60 * (100 / 101)) },
+  { src: 'planet-c', w: 55, h: Math.round(55 * (89 / 88)) },
   { src: 'rock-a', w: 34, h: Math.round(34 * (64 / 65)) },
   { src: 'rock-6', w: 30, h: Math.round(30 * (40 / 60)) },
   { src: 'star', w: 16, h: 16 },
