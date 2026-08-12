@@ -236,48 +236,27 @@ function ToggleSwitch({ on, onClick }: { on: boolean; onClick: () => void }) {
 }
 
 // ---------- arena visuals (nebula-background variant) ----------
-// Figma node 1015:11985's arena backdrop: a 4-up nebula texture tile
-// (mirrored on alternating tiles so the seams stay soft) plus a handful of
-// pink radial-gradient glow blooms. The tile art is a raster export
-// (arena/nebula-tile.png); the glows were plain SVG radial gradients in
-// Figma (#FF0077/#FF1B8D), so those are reproduced directly as CSS
-// gradients instead of shipping four near-identical tiny image assets.
-const NEBULA_TILE = 440;
-const GLOW_PINK = '#FF1B8D';
-
-// closest-side (not the CSS default farthest-corner) so the fade actually
-// reaches transparent before the box edge — with farthest-corner on a
-// square box the transparent stop lands past the edge and the box shows up
-// as a hard-edged tinted rectangle instead of a soft circular bloom.
+// Figma node 1015:11985's arena backdrop: a single color-corrected nebula
+// export (arena/nebula-bg.png — deep-space starfield with constellations,
+// re-graded in Figma from the original raw upload, hence pulling the
+// `export` asset rather than `rawImages`) sized to exactly fill the arena,
+// plus the one glow layer Figma still keeps as a separate node on top
+// (focal-glow, a plain SVG radial gradient reproduced as CSS instead of
+// shipping another near-solid-color image asset).
 function glowGradient(stops: string) {
+  // closest-side (not the CSS default farthest-corner) so the fade actually
+  // reaches transparent before the box edge — with farthest-corner on a
+  // square box the transparent stop lands past the edge and the box shows
+  // up as a hard-edged tinted rectangle instead of a soft circular bloom.
   return `radial-gradient(circle closest-side, ${stops})`;
 }
 
 const NebulaBackground = React.memo(function NebulaBackground() {
-  const tileSrc = `${IMG}/arena/nebula-tile.png`;
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {[0, 1, 2, 3].map((i) => (
-        <div key={i} style={{
-          position: 'absolute', left: i * NEBULA_TILE, top: 1, width: NEBULA_TILE, height: NEBULA_TILE,
-          backgroundImage: `url(${tileSrc})`, backgroundSize: 'cover', backgroundPosition: 'center',
-          transform: i % 2 === 1 ? 'scaleX(-1)' : 'none',
-        }} />
-      ))}
-      {/* origin-glow-ambient (small) */}
       <div style={{
-        position: 'absolute', left: -100, top: 320, width: 250, height: 250, opacity: 0.3,
-        background: glowGradient(`${GLOW_PINK} 0%, rgba(255,27,141,0) 80%`),
-      }} />
-      {/* origin-glow-ambient (big) */}
-      <div style={{
-        position: 'absolute', left: -143, top: 258, width: 333, height: 333, opacity: 0.4,
-        background: glowGradient(`${GLOW_PINK} 0%, rgba(255,27,141,0) 80%`),
-      }} />
-      {/* origin-glow-hotspot */}
-      <div style={{
-        position: 'absolute', left: -85, top: 366, width: 150, height: 150, opacity: 0.6,
-        background: glowGradient(`#fff 0%, ${GLOW_PINK} 40%, rgba(255,27,141,0) 100%`),
+        position: 'absolute', inset: 0,
+        backgroundImage: `url(${IMG}/arena/nebula-bg.png)`, backgroundSize: 'cover', backgroundPosition: 'center',
       }} />
       {/* focal-glow, centered */}
       <div style={{
