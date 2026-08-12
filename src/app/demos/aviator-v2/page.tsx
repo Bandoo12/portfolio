@@ -101,7 +101,7 @@ const PRESETS = [50, 100, 300, 1000, 3000, 5000, 10000, 15000];
 // shows a real spread of outcomes instead of leaving it to chance. Only
 // advances when a bet was actually placed (see demoIdxRef), so an idle
 // visitor never burns through the cycle.
-const DEMO_CRASH_SEQUENCE = [2.5, 3.5, 5.3, 1.8, 16, 8.3];
+const DEMO_CRASH_SEQUENCE = [10, 20, 30];
 
 function rollAmbientCrash(u: number) {
   const raw = 0.98 / (1 - u);
