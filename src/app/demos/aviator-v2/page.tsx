@@ -335,7 +335,12 @@ const FlybyObjects = React.memo(function FlybyObjects({ flying, multRef }: { fly
       p.scale = randRange(0.7, 1.35);
       p.speed = FLYBY_SPEED_BASE * p.scale * randRange(0.85, 1.15);
       p.y = randRange(ARENA_H * 0.06, ARENA_H * 0.92 - def.h * p.scale);
-      p.x = ARENA_W + def.w * p.scale;
+      // Spawning fully off-screen (x = ARENA_W + width) meant short rounds
+      // (many ambient crashes land under ~2s) never got far enough into
+      // flight to show anything at all. Starting already partway across the
+      // right edge keeps the "enters from off-screen" feel while making the
+      // very first spawn of a round visible almost immediately.
+      p.x = ARENA_W - def.w * p.scale * randRange(0.25, 1.1);
       p.active = true;
     };
     const tick = (now: number) => {
