@@ -336,7 +336,10 @@ function Rocket({ x, y, deg, opacity, flying, outcome, flyAway }: { x: number; y
   return (
     <div style={{
       position: 'absolute', left: x, top: y, width: ROCKET_W, height: ROCKET_H,
-      transform: `translate(-50%,-50%) rotate(${deg}deg)`, opacity, zIndex: 6, pointerEvents: 'none',
+      // The new sprite's nose faces left in the source art (opposite of the
+      // old vector plane) — scaleX flips it so the nose leads in the
+      // direction of travel instead of flying tail-first.
+      transform: `translate(-50%,-50%) rotate(${deg}deg) scaleX(-1)`, opacity, zIndex: 6, pointerEvents: 'none',
       // The sprite is a raster PNG (can't recolor via currentColor like the
       // old vector plane) — outcome is signaled by the glow color instead.
       filter: outcome !== 'normal' ? `drop-shadow(0 0 16px ${ROCKET_COLORS[outcome]}) saturate(${outcome === 'lost' ? 0.3 : 1})` : 'none',
