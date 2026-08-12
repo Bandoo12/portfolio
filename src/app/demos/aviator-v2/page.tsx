@@ -289,6 +289,17 @@ const FLYBY_OBJECTS: FlybyDef[] = [
   { src: 'rock-6', w: 30, h: Math.round(30 * (40 / 60)) },
   { src: 'star', w: 16, h: 16 },
   { src: 'rock-1', w: 16, h: 16 },
+  // Figma node 1033:12176 — a second batch, deliberately spanning a wider
+  // scale range than the first set (from the small rusty-asteroid up to the
+  // wide ringed-planet-2) so the mix reads as more varied, not just more.
+  { src: 'ringed-planet-2', w: 120, h: Math.round(120 * (184 / 260)) },
+  { src: 'gem-asteroid', w: 90, h: Math.round(90 * (260 / 259)) },
+  { src: 'armored-orb', w: 95, h: Math.round(95 * (256 / 260)) },
+  { src: 'blue-crystal', w: 85, h: Math.round(85 * (260 / 228)) },
+  { src: 'roped-gold-orb', w: 80, h: Math.round(80 * (253 / 260)) },
+  { src: 'crystal-cluster', w: 78, h: Math.round(78 * (260 / 253)) },
+  { src: 'red-spiky-planet', w: 72, h: Math.round(72 * (260 / 251)) },
+  { src: 'rusty-asteroid', w: 60, h: Math.round(60 * (260 / 253)) },
 ];
 const FLYBY_POOL_SIZE = 5;
 const FLYBY_SPEED_BASE = 55; // px/s at scale 1, before the multiplier speedup
