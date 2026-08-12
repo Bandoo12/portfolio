@@ -96,17 +96,10 @@ const BETTING_MS = 5200, LAUNCH_MS = 500, CRASH_HOLD_MS = 2600;
 const BET_MIN = 10, BET_STEP = 10, BET_MAX = 15000;
 const PRESETS = [50, 100, 300, 1000, 3000, 5000, 10000, 15000];
 
-// Scripted crash points for rounds where the visitor has a bet down — a
-// fixed, requested chronology that loops, so a portfolio visit reliably
-// shows a real spread of outcomes instead of leaving it to chance. Only
-// advances when a bet was actually placed (see demoIdxRef), so an idle
-// visitor never burns through the cycle.
+// Every round — bet or ambient — crashes at exactly one of these, picked
+// randomly each time. A fixed, requested set instead of a realistic random
+// distribution, so a portfolio visit only ever sees these three outcomes.
 const DEMO_CRASH_SEQUENCE = [10, 20, 30];
-
-function rollAmbientCrash(u: number) {
-  const raw = 0.98 / (1 - u);
-  return clamp(raw, 1.0, 60);
-}
 
 // ---------- rocket art ----------
 // Animated glossy 3D rocket (user-supplied Nana Banana frames, assembled by
@@ -228,6 +221,7 @@ const NEBULA_W = Math.round(ARENA_W * NEBULA_OVERSCAN);
 const NEBULA_H = Math.round(ARENA_H * NEBULA_OVERSCAN);
 const NEBULA_MAX_PAN = NEBULA_W - ARENA_W;
 const NEBULA_SPEED_BASE = 6;
+const NEBULA_IDLE_SPEED = 9; // slow but noticeable drift while sitting on the pad
 
 const NebulaBackground = React.memo(function NebulaBackground({ flying, multRef }: { flying: boolean; multRef: React.RefObject<number> }) {
   const imgRef = useRef<HTMLDivElement>(null);
@@ -243,11 +237,14 @@ const NebulaBackground = React.memo(function NebulaBackground({ flying, multRef 
     const tick = (now: number) => {
       const dt = (now - last) / 1000;
       last = now;
-      if (flyingRef.current) {
-        const speed = NEBULA_SPEED_BASE * (1 + 0.6 * Math.sqrt(Math.max(multRef.current - 1, 0)));
-        panRef.current = clamp(panRef.current + speed * dt, 0, NEBULA_MAX_PAN);
-        if (imgRef.current) imgRef.current.style.transform = `translateX(-${panRef.current}px)`;
-      }
+      // Pans continuously now, not just while flying — idle (betting/
+      // launching/just-crashed) gets a slow constant drift instead of a
+      // frozen frame, flying ramps it up with the multiplier same as before.
+      const speed = flyingRef.current
+        ? NEBULA_SPEED_BASE * (1 + 0.6 * Math.sqrt(Math.max(multRef.current - 1, 0)))
+        : NEBULA_IDLE_SPEED;
+      panRef.current = clamp(panRef.current + speed * dt, 0, NEBULA_MAX_PAN);
+      if (imgRef.current) imgRef.current.style.transform = `translateX(-${panRef.current}px)`;
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -699,6 +696,38 @@ export default function AviatorPage() {
 
   const [rulesOpen, setRulesOpen] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // ---- audio: looping bg music + one-shot launch/flyaway SFX. Same
+  // pattern as capybara-road — autoplay is blocked without a user gesture
+  // in most browsers, so play() is retried on the first pointerdown. ----
+  const [musicOn, setMusicOn] = useState(true);
+  const [soundOn, setSoundOn] = useState(true);
+  const soundOnRef = useRef(soundOn);
+  useEffect(() => { soundOnRef.current = soundOn; }, [soundOn]);
+  const musicRef = useRef<HTMLAudioElement>(null);
+  useEffect(() => {
+    const el = musicRef.current;
+    if (!el) return;
+    el.volume = 0.35;
+    el.play().catch(() => {
+      const retry = () => { el.play().catch(() => {}); window.removeEventListener('pointerdown', retry); };
+      window.addEventListener('pointerdown', retry);
+      return () => window.removeEventListener('pointerdown', retry);
+    });
+  }, []);
+  useEffect(() => {
+    const el = musicRef.current;
+    if (!el) return;
+    el.muted = !musicOn;
+  }, [musicOn]);
+  const launchAudioRef = useRef<HTMLAudioElement>(null);
+  const flyawayAudioRef = useRef<HTMLAudioElement>(null);
+  const playSfx = (ref: React.RefObject<HTMLAudioElement | null>) => {
+    const el = ref.current;
+    if (!el || !soundOnRef.current) return;
+    el.currentTime = 0;
+    el.play().catch(() => {});
+  };
   const [isFullscreen, setIsFullscreen] = useState(false);
   useEffect(() => {
     const onChange = () => setIsFullscreen(!!document.fullscreenElement);
@@ -747,7 +776,6 @@ export default function AviatorPage() {
   const autoOnRef = useRef(autoOn);
   const autoTargetRef = useRef(autoTarget);
   const rowIdRef = useRef(1);
-  const demoIdxRef = useRef(0);
   const nextRoundIdRef = useRef(1);
   const multRef = useRef(1); // read by ParallaxObjects' own rAF loop, not React state
   useEffect(() => { phaseRef.current = phase; }, [phase]);
@@ -839,14 +867,7 @@ export default function AviatorPage() {
 
     const startLaunch = () => {
       setPhase('launching');
-      const hasBet = myStakeRef.current !== null;
-      let ca: number;
-      if (hasBet) {
-        ca = DEMO_CRASH_SEQUENCE[demoIdxRef.current % DEMO_CRASH_SEQUENCE.length];
-        demoIdxRef.current += 1;
-      } else {
-        ca = rollAmbientCrash(Math.random());
-      }
+      const ca = DEMO_CRASH_SEQUENCE[Math.floor(Math.random() * DEMO_CRASH_SEQUENCE.length)];
       setCrashAt(ca);
       crashAtRef.current = ca;
       schedule(startFlying, LAUNCH_MS);
@@ -856,6 +877,7 @@ export default function AviatorPage() {
     const startFlying = () => {
       setPhase('flying');
       phaseRef.current = 'flying';
+      playSfx(launchAudioRef);
       const t0 = performance.now();
       const crashElapsed = tOfMult(crashAtRef.current);
       lastRowTick = 0;
@@ -886,6 +908,7 @@ export default function AviatorPage() {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       setPhase('crashed');
       phaseRef.current = 'crashed';
+      playSfx(flyawayAudioRef);
       setShakeKey((k) => k + 1);
       setHistory((h) => [{ id: rowIdRef.current++, value: crashAtRef.current }, ...h].slice(0, 30));
       setRows((rs) => {
@@ -1005,9 +1028,19 @@ export default function AviatorPage() {
                         <button className="av-btn" onClick={() => setMenuOpen(false)} style={{ width: '100%', textAlign: 'left', padding: '16px 20px', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                           <span className={inter.className} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>История</span>
                         </button>
-                        <button className="av-btn" onClick={() => setMenuOpen(false)} style={{ width: '100%', textAlign: 'left', padding: '16px 20px', background: 'transparent' }}>
+                        <button className="av-btn" onClick={() => setMenuOpen(false)} style={{ width: '100%', textAlign: 'left', padding: '16px 20px', background: 'transparent', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
                           <span className={inter.className} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>Прогноз на исход</span>
                         </button>
+                        <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <ToggleSwitch on={musicOn} onClick={() => setMusicOn((v) => !v)} />
+                            <span className={inter.className} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>Музыка</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <ToggleSwitch on={soundOn} onClick={() => setSoundOn((v) => !v)} />
+                            <span className={inter.className} style={{ fontWeight: 600, fontSize: 16, color: '#fff' }}>Звук</span>
+                          </div>
+                        </div>
                       </motion.div>
                     </React.Fragment>
                   )}
@@ -1085,6 +1118,10 @@ export default function AviatorPage() {
         </motion.div>
 
         {rulesOpen && <RulesModal onClose={() => setRulesOpen(false)} />}
+
+        <audio ref={musicRef} src={`${BASE}/audio/aviator-v2/bg-music.mp3`} loop />
+        <audio ref={launchAudioRef} src={`${BASE}/audio/aviator-v2/launch.mp3`} />
+        <audio ref={flyawayAudioRef} src={`${BASE}/audio/aviator-v2/flyaway.mp3`} />
       </div>
 
       <style>{`
