@@ -216,21 +216,26 @@ function glowGradient(stops: string) {
   return `radial-gradient(circle closest-side, ${stops})`;
 }
 
-// The starfield itself also drifts — tiled edge-to-edge with every other
-// copy mirrored (same technique as the old nebula-tile approach, just
-// applied to the single corrected export now) and scrolled leftward via its
-// own rAF loop, slower than the flyby objects below so it reads as the far
-// parallax layer instead of moving in lockstep with them.
-const NEBULA_TILES = Math.ceil((ARENA_W + ARENA_W * 2) / ARENA_W) + 1;
-const NEBULA_SPEED_BASE = 14;
+// The starfield also drifts, but NOT via tiling — the art has strong
+// asymmetric features near its edges (a vignette/dark cloud), so mirroring
+// or repeating it edge-to-edge produced an obvious symmetric "butterfly"
+// artifact right at the seam instead of reading as seamless. Oversizing the
+// single image and panning within its own margin sidesteps the seam
+// entirely: there's only ever one copy on screen, just cropped differently
+// over time.
+const NEBULA_OVERSCAN = 1.28;
+const NEBULA_W = Math.round(ARENA_W * NEBULA_OVERSCAN);
+const NEBULA_H = Math.round(ARENA_H * NEBULA_OVERSCAN);
+const NEBULA_MAX_PAN = NEBULA_W - ARENA_W;
+const NEBULA_SPEED_BASE = 6;
 
 const NebulaBackground = React.memo(function NebulaBackground({ flying, multRef }: { flying: boolean; multRef: React.RefObject<number> }) {
-  const trackRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLDivElement>(null);
   const flyingRef = useRef(flying);
-  const offsetRef = useRef(0);
+  const panRef = useRef(0);
   useEffect(() => {
     flyingRef.current = flying;
-    if (!flying) offsetRef.current = 0;
+    if (!flying) panRef.current = 0;
   }, [flying]);
   useEffect(() => {
     let raf = 0;
@@ -240,8 +245,8 @@ const NebulaBackground = React.memo(function NebulaBackground({ flying, multRef 
       last = now;
       if (flyingRef.current) {
         const speed = NEBULA_SPEED_BASE * (1 + 0.6 * Math.sqrt(Math.max(multRef.current - 1, 0)));
-        offsetRef.current = (offsetRef.current + speed * dt) % (ARENA_W * 2);
-        if (trackRef.current) trackRef.current.style.transform = `translateX(-${offsetRef.current}px)`;
+        panRef.current = clamp(panRef.current + speed * dt, 0, NEBULA_MAX_PAN);
+        if (imgRef.current) imgRef.current.style.transform = `translateX(-${panRef.current}px)`;
       }
       raf = requestAnimationFrame(tick);
     };
@@ -250,16 +255,11 @@ const NebulaBackground = React.memo(function NebulaBackground({ flying, multRef 
   }, [multRef]);
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      <div ref={trackRef} style={{ position: 'absolute', left: 0, top: 0, height: ARENA_H, width: ARENA_W * NEBULA_TILES }}>
-        {Array.from({ length: NEBULA_TILES }, (_, i) => (
-          <div key={i} style={{
-            position: 'absolute', left: i * ARENA_W, top: 0, width: ARENA_W, height: ARENA_H,
-            backgroundImage: `url(${IMG}/arena/nebula-bg.png)`, backgroundSize: `${ARENA_W}px ${ARENA_H}px`,
-            transform: i % 2 === 1 ? 'scaleX(-1)' : 'none',
-          }} />
-        ))}
-      </div>
-      {/* focal-glow, centered — fixed to the viewport, doesn't scroll with the track */}
+      <div ref={imgRef} style={{
+        position: 'absolute', left: 0, top: 0, width: NEBULA_W, height: NEBULA_H,
+        backgroundImage: `url(${IMG}/arena/nebula-bg.png)`, backgroundSize: `${NEBULA_W}px ${NEBULA_H}px`,
+      }} />
+      {/* focal-glow, centered — fixed to the viewport, doesn't pan with the image */}
       <div style={{
         position: 'absolute', left: '50%', top: '50%', width: 800, height: 800, transform: 'translate(-50%,-50%)',
         background: glowGradient('rgba(255,0,119,0.1333) 0%, rgba(255,0,119,0) 100%'),
@@ -293,8 +293,13 @@ const FLYBY_OBJECTS: FlybyDef[] = [
 ];
 const FLYBY_POOL_SIZE = 5;
 const FLYBY_SPEED_BASE = 55; // px/s at scale 1, before the multiplier speedup
+const FLYBY_MIN_SPACING = 100; // px, center-to-center — keeps concurrent objects from bunching up
+const FLYBY_IDLE_PREVIEW_COUNT = 3; // objects already sitting on screen (not moving) during betting
 
 function randRange(min: number, max: number) { return min + Math.random() * (max - min); }
+function farEnough(x: number, y: number, others: FlybyParticle[], minDist: number) {
+  return !others.some((o) => o.active && Math.hypot(o.x - x, o.y - y) < minDist);
+}
 
 type FlybyParticle = { defIdx: number; x: number; y: number; scale: number; speed: number; nextSpawnAt: number; active: boolean };
 
@@ -316,31 +321,71 @@ const FlybyObjects = React.memo(function FlybyObjects({ flying, multRef }: { fly
   const flyingRef = useRef(flying);
   const clockRef = useRef(0);
   const lastDefIdxRef = useRef(-1);
+  const pickDef = () => {
+    let idx = Math.floor(Math.random() * FLYBY_OBJECTS.length);
+    while (idx === lastDefIdxRef.current) idx = Math.floor(Math.random() * FLYBY_OBJECTS.length);
+    lastDefIdxRef.current = idx;
+    return idx;
+  };
   useEffect(() => {
     flyingRef.current = flying;
+    const particles = particlesRef.current;
     if (!flying) {
+      // Betting/idle: a few objects sit already on screen, static, instead
+      // of an empty arena — the rest of the pool waits off-stage for its
+      // staggered first spawn once flight starts.
       clockRef.current = 0;
-      particlesRef.current.forEach((p, i) => { p.active = false; p.nextSpawnAt = randRange(0, 2.5) + i * 0.5; });
+      particles.forEach((p, i) => {
+        if (i < FLYBY_IDLE_PREVIEW_COUNT) {
+          const idx = pickDef();
+          const def = FLYBY_OBJECTS[idx];
+          p.defIdx = idx;
+          p.scale = randRange(0.7, 1.15);
+          let x = 0, y = 0;
+          for (let tries = 0; tries < 8; tries++) {
+            // Two bands flanking the centered multiplier readout (roughly
+            // 32-68% of the width) rather than one range spanning it —
+            // otherwise idle objects kept landing right on top of the text.
+            const band = Math.random() < 0.5
+              ? [ARENA_W * 0.2, ARENA_W * 0.3]
+              : [ARENA_W * 0.7, ARENA_W * 0.94];
+            x = randRange(band[0], band[1] - def.w * p.scale);
+            y = randRange(ARENA_H * 0.06, ARENA_H * 0.9 - def.h * p.scale);
+            if (farEnough(x, y, particles, FLYBY_MIN_SPACING)) break;
+          }
+          p.x = x; p.y = y; p.speed = 0; p.active = true;
+        } else {
+          p.active = false;
+          p.nextSpawnAt = randRange(0, 2.5) + i * 0.5;
+        }
+      });
+    } else {
+      // Flight just started — anything sitting idle (speed 0) starts
+      // drifting from wherever it already was instead of teleporting.
+      particles.forEach((p) => {
+        if (p.active && p.speed === 0) p.speed = FLYBY_SPEED_BASE * p.scale * randRange(0.85, 1.15);
+      });
     }
   }, [flying]);
   useEffect(() => {
     let raf = 0;
     let last = performance.now();
-    const spawn = (p: FlybyParticle) => {
-      let idx = Math.floor(Math.random() * FLYBY_OBJECTS.length);
-      while (idx === lastDefIdxRef.current) idx = Math.floor(Math.random() * FLYBY_OBJECTS.length);
-      lastDefIdxRef.current = idx;
+    const spawn = (p: FlybyParticle, others: FlybyParticle[]) => {
+      const idx = pickDef();
       const def = FLYBY_OBJECTS[idx];
       p.defIdx = idx;
       p.scale = randRange(0.7, 1.35);
-      p.speed = FLYBY_SPEED_BASE * p.scale * randRange(0.85, 1.15);
-      p.y = randRange(ARENA_H * 0.06, ARENA_H * 0.92 - def.h * p.scale);
       // Spawning fully off-screen (x = ARENA_W + width) meant short rounds
       // (many ambient crashes land under ~2s) never got far enough into
       // flight to show anything at all. Starting already partway across the
       // right edge keeps the "enters from off-screen" feel while making the
       // very first spawn of a round visible almost immediately.
       p.x = ARENA_W - def.w * p.scale * randRange(0.25, 1.1);
+      p.y = randRange(ARENA_H * 0.06, ARENA_H * 0.92 - def.h * p.scale);
+      for (let tries = 0; tries < 6 && !farEnough(p.x, p.y, others, FLYBY_MIN_SPACING); tries++) {
+        p.y = randRange(ARENA_H * 0.06, ARENA_H * 0.92 - def.h * p.scale);
+      }
+      p.speed = FLYBY_SPEED_BASE * p.scale * randRange(0.85, 1.15);
       p.active = true;
     };
     const tick = (now: number) => {
@@ -349,9 +394,10 @@ const FlybyObjects = React.memo(function FlybyObjects({ flying, multRef }: { fly
       if (flyingRef.current) {
         clockRef.current += dt;
         const speedMul = 1 + 0.7 * Math.sqrt(Math.max(multRef.current - 1, 0));
-        particlesRef.current.forEach((p) => {
+        const particles = particlesRef.current;
+        particles.forEach((p) => {
           if (!p.active) {
-            if (clockRef.current >= p.nextSpawnAt) spawn(p);
+            if (clockRef.current >= p.nextSpawnAt) spawn(p, particles);
           } else {
             p.x -= p.speed * speedMul * dt;
             const def = FLYBY_OBJECTS[p.defIdx];
@@ -426,7 +472,7 @@ function RocketSheetSprite() {
   );
 }
 
-function Rocket({ x, y, deg, opacity, flying, outcome, flyAway }: { x: number; y: number; deg: number; opacity: number; flying: boolean; outcome: RocketOutcome; flyAway: boolean }) {
+function Rocket({ x, y, deg, opacity, flying, outcome, flyAway, idle }: { x: number; y: number; deg: number; opacity: number; flying: boolean; outcome: RocketOutcome; flyAway: boolean; idle: boolean }) {
   return (
     <div style={{
       position: 'absolute', left: x, top: y, width: ROCKET_W, height: ROCKET_H,
@@ -444,6 +490,13 @@ function Rocket({ x, y, deg, opacity, flying, outcome, flyAway }: { x: number; y
       transition: flying ? 'none' : flyAway
         ? 'left 0.45s cubic-bezier(.15,.6,.3,1), top 0.45s cubic-bezier(.15,.6,.3,1), opacity 0.35s ease-in 0.25s'
         : 'left 1.15s cubic-bezier(.3,0,.7,1), top 1.15s cubic-bezier(.3,0,.7,1), opacity 1.05s ease-in 0.15s',
+      // Idle micro-hover animates margin-top, not transform — the box's own
+      // `transform` above already handles centering/rotate/mirror, and a
+      // keyframe animating `transform` would just replace that value each
+      // frame instead of layering on top of it. Margin stacks with the
+      // `top` offset for an absolutely-positioned box, so this bobs the
+      // sprite without touching that transform at all.
+      animation: idle ? 'av-rocket-hover 2.6s ease-in-out infinite' : 'none',
     }}>
       <RocketSheetSprite />
     </div>
@@ -883,6 +936,7 @@ export default function AviatorPage() {
   const rocketDisplayX = flyAway && crashSettled ? rocketX + 900 : rocketX;
   const rocketDisplayY = rocketY;
   const rocketOpacity = flyAway && crashSettled ? 0 : 1;
+  const rocketIdle = phase === 'betting' || phase === 'launching';
 
   const actionState: ActionState = phase === 'betting'
     ? (myStake === null ? 'bet' : 'cancel')
@@ -968,7 +1022,7 @@ export default function AviatorPage() {
                 <div style={{ position: 'relative', width: ARENA_W, height: ARENA_H, overflow: 'hidden' }}>
                   <NebulaBackground flying={flying} multRef={multRef} />
                   <FlybyObjects flying={flying} multRef={multRef} />
-                  <Rocket x={rocketDisplayX} y={rocketDisplayY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} outcome={rocketOutcome} flyAway={flyAway} />
+                  <Rocket x={rocketDisplayX} y={rocketDisplayY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} outcome={rocketOutcome} flyAway={flyAway} idle={rocketIdle} />
                   <MultiplierReadout
                     mult={phase === 'crashed' && rocketOutcome === 'won' ? myCashedAt! : mult}
                     variant={phase === 'crashed' ? (rocketOutcome === 'won' ? 'won' : 'lost') : 'live'}
@@ -1028,6 +1082,7 @@ export default function AviatorPage() {
         .av-btn:disabled { cursor: default; opacity: 0.4; }
         .av-scroll::-webkit-scrollbar { width: 6px; }
         .av-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+        @keyframes av-rocket-hover { 0%, 100% { margin-top: 0px; } 50% { margin-top: -6px; } }
       `}</style>
     </div>
   );
