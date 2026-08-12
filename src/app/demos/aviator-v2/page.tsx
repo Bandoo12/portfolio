@@ -268,7 +268,7 @@ const NebulaBackground = React.memo(function NebulaBackground({ flying, multRef 
   );
 });
 
-// ---------- flyby objects (planets/asteroids/comet) ----------
+// ---------- flyby objects (planets/asteroids) ----------
 // Figma node 1031:12158's reference sheet, cropped into individual sprites
 // and alpha-keyed the same way as the rocket sheet (script:
 // scripts/prep-aviator-planet-strip.py + a one-off per-object crop, see
@@ -280,7 +280,6 @@ const NebulaBackground = React.memo(function NebulaBackground({ flying, multRef 
 // everything moves in lockstep.
 type FlybyDef = { src: string; w: number; h: number };
 const FLYBY_OBJECTS: FlybyDef[] = [
-  { src: 'comet', w: 140, h: Math.round(140 * (151 / 262)) },
   { src: 'ringed-planet', w: 130, h: Math.round(130 * (292 / 447)) },
   { src: 'striped-planet', w: 110, h: Math.round(110 * (233 / 223)) },
   { src: 'planet-a', w: 70, h: Math.round(70 * (157 / 162)) },
