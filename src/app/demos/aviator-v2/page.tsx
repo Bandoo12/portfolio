@@ -82,12 +82,17 @@ const BET_PANEL_H = 221;
 // with the endpoint (matching the last instance's ~0deg heading).
 type Pt = { x: number; y: number };
 const PAD_WORLD: Pt = { x: 284, y: 1139 };
-const ROCKET_REST_LIFT = 78; // world px the resting rocket sits above the pad's own anchor point
+const ROCKET_REST_LIFT = 90; // world px the resting rocket sits above the pad's own anchor point
 const ARC_P0: Pt = { x: PAD_WORLD.x, y: PAD_WORLD.y - ROCKET_REST_LIFT };
 const ARC_P3: Pt = { x: ARC_P0.x + 690, y: ARC_P0.y - 733 };
 const ARC_P1: Pt = { x: ARC_P0.x, y: ARC_P0.y - 0.75 * (ARC_P0.y - ARC_P3.y) };
 const ARC_P2: Pt = { x: ARC_P3.x - 0.8 * (ARC_P3.x - ARC_P0.x), y: ARC_P3.y };
-const PAD_SCREEN: Pt = { x: ARENA_W * 0.10, y: ARENA_H * 0.86 };
+// Sits higher/righter than a literal Figma-scale mockup would put it — the
+// reference bleeds the platform off the left/bottom edges, but at this
+// arena's much shorter aspect ratio that clipped most of the platform;
+// pulling the pad anchor in gives PLATFORM_W enough headroom to render the
+// whole structure on screen.
+const PAD_SCREEN: Pt = { x: ARENA_W * 0.14, y: ARENA_H * 0.55 };
 const CRUISE_POINT: Pt = { x: ARENA_W * 0.30, y: ARENA_H * 0.52 };
 const CRUISE_DEG = -10; // shallow in-flight climb tilt, blended into after the arc completes
 const ARC_S = 1.8; // seconds of `elapsed` spent flying the launch arc
@@ -294,7 +299,7 @@ const NebulaBackground = React.memo(function NebulaBackground({ camX, camY, flyi
   );
 });
 
-const PLATFORM_W = 500;
+const PLATFORM_W = 380;
 const PLATFORM_H = Math.round(PLATFORM_W * (1395 / 2047));
 // Normalized point on launch-platform.png at the center of the pad ring
 // (deck height) — the point PAD_WORLD anchors to. Tune against a screenshot.
@@ -335,7 +340,6 @@ const FLYBY_OBJECTS: FlybyDef[] = [
   { src: 'planet-c', w: 55, h: Math.round(55 * (89 / 88)) },
   { src: 'rock-a', w: 34, h: Math.round(34 * (64 / 65)) },
   { src: 'rock-6', w: 30, h: Math.round(30 * (40 / 60)) },
-  { src: 'star', w: 16, h: 16 },
   { src: 'rock-1', w: 16, h: 16 },
   // Figma node 1033:12176 — a second batch, deliberately spanning a wider
   // scale range than the first set (from the small rusty-asteroid up to the
@@ -542,7 +546,7 @@ function RocketSheetSprite() {
   );
 }
 
-function Rocket({ x, y, deg, opacity, flying, outcome, flyAway, idle }: { x: number; y: number; deg: number; opacity: number; flying: boolean; outcome: RocketOutcome; flyAway: boolean; idle: boolean }) {
+function Rocket({ x, y, deg, opacity, flying, outcome, flyAway }: { x: number; y: number; deg: number; opacity: number; flying: boolean; outcome: RocketOutcome; flyAway: boolean }) {
   return (
     <div style={{
       position: 'absolute', left: x, top: y, width: ROCKET_W, height: ROCKET_H,
@@ -560,13 +564,10 @@ function Rocket({ x, y, deg, opacity, flying, outcome, flyAway, idle }: { x: num
       transition: flying ? 'none' : flyAway
         ? 'left 0.45s cubic-bezier(.15,.6,.3,1), top 0.45s cubic-bezier(.15,.6,.3,1), opacity 0.35s ease-in 0.25s'
         : 'left 1.15s cubic-bezier(.3,0,.7,1), top 1.15s cubic-bezier(.3,0,.7,1), opacity 1.05s ease-in 0.15s',
-      // Idle micro-hover animates margin-top, not transform — the box's own
-      // `transform` above already handles centering/rotate/mirror, and a
-      // keyframe animating `transform` would just replace that value each
-      // frame instead of layering on top of it. Margin stacks with the
-      // `top` offset for an absolutely-positioned box, so this bobs the
-      // sprite without touching that transform at all.
-      animation: idle ? 'av-rocket-hover 2.6s ease-in-out infinite' : 'none',
+      // No idle hover anymore — now that it's resting on a physical
+      // platform, a floating/bobbing rocket read as wrong. `idle` prop kept
+      // for now in case a different idle treatment comes back later.
+      animation: 'none',
     }}>
       <RocketSheetSprite />
     </div>
@@ -1071,7 +1072,6 @@ export default function AviatorPage() {
   const rocketDisplayX = flyAway && crashSettled ? rocketX + 900 : rocketX;
   const rocketDisplayY = rocketY;
   const rocketOpacity = flyAway && crashSettled ? 0 : 1;
-  const rocketIdle = phase === 'betting' || phase === 'launching';
 
   const actionState: ActionState = phase === 'betting'
     ? (myStake === null ? 'bet' : 'cancel')
@@ -1168,7 +1168,7 @@ export default function AviatorPage() {
                   <NebulaBackground camX={camX} camY={camY} flying={flying} />
                   <FlybyObjects flying={flying} multRef={multRef} camY={camY} />
                   <LaunchPlatform camX={camX} camY={camY} flying={flying} />
-                  <Rocket x={rocketDisplayX} y={rocketDisplayY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} outcome={rocketOutcome} flyAway={flyAway} idle={rocketIdle} />
+                  <Rocket x={rocketDisplayX} y={rocketDisplayY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} outcome={rocketOutcome} flyAway={flyAway} />
                   <MultiplierReadout
                     mult={phase === 'crashed' && rocketOutcome === 'won' ? myCashedAt! : mult}
                     variant={phase === 'crashed' ? (rocketOutcome === 'won' ? 'won' : 'lost') : 'live'}
@@ -1232,7 +1232,6 @@ export default function AviatorPage() {
         .av-btn:disabled { cursor: default; opacity: 0.4; }
         .av-scroll::-webkit-scrollbar { width: 6px; }
         .av-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
-        @keyframes av-rocket-hover { 0%, 100% { margin-top: 0px; } 50% { margin-top: -6px; } }
       `}</style>
     </div>
   );
