@@ -68,21 +68,47 @@ const ARENA_W = STAGE_W - PAD * 2, ARENA_H = 439, HISTORY_H = 64;
 const MAIN_ARENA_H = HISTORY_H + ARENA_H;
 const BET_PANEL_H = 221;
 
-// ---------- rocket flight path (launch dash + fixed cruise point) ----------
-// v2 doesn't track a curve for the rocket's position at all — instead it
-// dashes from the pad corner to a fixed on-screen point once per round and
-// holds there for the whole flight, while NebulaBackground/FlybyObjects
-// (below) scroll the starfield and planets/asteroids past it. That's what
-// actually sells "the rocket is moving" once the sprite itself stops
-// traveling across the arena.
+// ---------- launch platform + arc trajectory (world space) ----------
+// World coords are Figma frame 1063:430's own coordinate space (each
+// background tile is 1552x659 == ARENA_W, 1:1 px, no extra scale). The
+// rocket is always rendered at a screen-space `anchor` point (see the main
+// component below); "camera" position is just how far that world has
+// scrolled under the fixed arena viewport. Reference: Figma node 1063:430
+// showed the platform plus 4 instances of the rocket sprite tracing its own
+// launch path — vertical liftoff off the pad, then curving right into the
+// existing cruise heading. P1/P2 (the curve's control points) are derived
+// from that reference: P1 pulls straight up off the pad (matching the
+// reference's first two instances, both at the same X), P2 pulls in level
+// with the endpoint (matching the last instance's ~0deg heading).
 type Pt = { x: number; y: number };
-const LAUNCH_START: Pt = { x: ARENA_W * 0.086, y: ARENA_H * 0.75 };
+const PAD_WORLD: Pt = { x: 284, y: 1139 };
+const ROCKET_REST_LIFT = 78; // world px the resting rocket sits above the pad's own anchor point
+const ARC_P0: Pt = { x: PAD_WORLD.x, y: PAD_WORLD.y - ROCKET_REST_LIFT };
+const ARC_P3: Pt = { x: ARC_P0.x + 690, y: ARC_P0.y - 733 };
+const ARC_P1: Pt = { x: ARC_P0.x, y: ARC_P0.y - 0.75 * (ARC_P0.y - ARC_P3.y) };
+const ARC_P2: Pt = { x: ARC_P3.x - 0.8 * (ARC_P3.x - ARC_P0.x), y: ARC_P3.y };
+const PAD_SCREEN: Pt = { x: ARENA_W * 0.10, y: ARENA_H * 0.86 };
 const CRUISE_POINT: Pt = { x: ARENA_W * 0.30, y: ARENA_H * 0.52 };
-const LAUNCH_DEG = -58; // steep pad blast-off tilt
-const CRUISE_DEG = -10; // shallow in-flight climb tilt
-const ROCKET_DASH_S = 0.5; // seconds of `elapsed` spent dashing to CRUISE_POINT
+const CRUISE_DEG = -10; // shallow in-flight climb tilt, blended into after the arc completes
+const ARC_S = 1.8; // seconds of `elapsed` spent flying the launch arc
+const CRUISE_VX_BASE = 30; // world px/s the camera keeps panning after the arc, at mult=1
+
 function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
-function easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3); }
+function smoothstep(t: number) { const c = clamp(t, 0, 1); return c * c * (3 - 2 * c); }
+function bezierPoint(p0: Pt, p1: Pt, p2: Pt, p3: Pt, t: number): Pt {
+  const mt = 1 - t;
+  return {
+    x: mt * mt * mt * p0.x + 3 * mt * mt * t * p1.x + 3 * mt * t * t * p2.x + t * t * t * p3.x,
+    y: mt * mt * mt * p0.y + 3 * mt * mt * t * p1.y + 3 * mt * t * t * p2.y + t * t * t * p3.y,
+  };
+}
+function bezierTangent(p0: Pt, p1: Pt, p2: Pt, p3: Pt, t: number): Pt {
+  const mt = 1 - t;
+  return {
+    x: 3 * mt * mt * (p1.x - p0.x) + 6 * mt * t * (p2.x - p1.x) + 3 * t * t * (p3.x - p2.x),
+    y: 3 * mt * mt * (p1.y - p0.y) + 6 * mt * t * (p2.y - p1.y) + 3 * t * t * (p3.y - p2.y),
+  };
+}
 
 // ---------- multiplier growth ----------
 const LAMBDA = Math.LN2 / 2.6; // doubles every 2.6s
@@ -194,13 +220,11 @@ function ToggleSwitch({ on, onClick }: { on: boolean; onClick: () => void }) {
 }
 
 // ---------- arena visuals (nebula-background variant) ----------
-// Figma node 1015:11985's arena backdrop: a single color-corrected nebula
-// export (arena/nebula-bg.png — deep-space starfield with constellations,
-// re-graded in Figma from the original raw upload, hence pulling the
-// `export` asset rather than `rawImages`) sized to exactly fill the arena,
-// plus the one glow layer Figma still keeps as a separate node on top
-// (focal-glow, a plain SVG radial gradient reproduced as CSS instead of
-// shipping another near-solid-color image asset).
+// Figma node 1015:11985's original arena backdrop (a color-corrected nebula
+// export) is now the base tile for a proper 2D camera-follow world — see
+// WORLD_TILE_W/H and NebulaBackground below. focal-glow is still a plain
+// SVG radial gradient reproduced as CSS instead of shipping another
+// near-solid-color image asset.
 function glowGradient(stops: string) {
   // closest-side (not the CSS default farthest-corner) so the fade actually
   // reaches transparent before the box edge — with farthest-corner on a
@@ -209,59 +233,86 @@ function glowGradient(stops: string) {
   return `radial-gradient(circle closest-side, ${stops})`;
 }
 
-// The starfield also drifts, but NOT via tiling — the art has strong
-// asymmetric features near its edges (a vignette/dark cloud), so mirroring
-// or repeating it edge-to-edge produced an obvious symmetric "butterfly"
-// artifact right at the seam instead of reading as seamless. Oversizing the
-// single image and panning within its own margin sidesteps the seam
-// entirely: there's only ever one copy on screen, just cropped differently
-// over time.
-const NEBULA_OVERSCAN = 1.28;
-const NEBULA_W = Math.round(ARENA_W * NEBULA_OVERSCAN);
-const NEBULA_H = Math.round(ARENA_H * NEBULA_OVERSCAN);
-const NEBULA_MAX_PAN = NEBULA_W - ARENA_W;
-const NEBULA_SPEED_BASE = 6;
+// A real seamless tile now (arena/nebula-tile-2x2.png — a 2x2 mirror
+// composite built by scripts/prep-aviator-nebula-tile.py from the Figma
+// source; every shared edge is byte-identical by construction, so plain
+// `background-repeat: repeat` tiles it with no seam). Position is driven by
+// the shared `camX`/`camY` world-camera (see the main component) scaled by
+// a parallax factor so it reads as the far layer relative to the flyby
+// objects/platform, plus its own small idle-only drift that keeps running
+// even while the parent isn't re-rendering every frame (betting/launching).
+const WORLD_TILE_W = 3104, WORLD_TILE_H = 1318;
+const BG_PARALLAX = 0.55;
 const NEBULA_IDLE_SPEED = 9; // slow but noticeable drift while sitting on the pad
 
-const NebulaBackground = React.memo(function NebulaBackground({ flying, multRef }: { flying: boolean; multRef: React.RefObject<number> }) {
-  const imgRef = useRef<HTMLDivElement>(null);
+const NebulaBackground = React.memo(function NebulaBackground({ camX, camY, flying }: { camX: number; camY: number; flying: boolean }) {
+  const bgRef = useRef<HTMLDivElement>(null);
   const flyingRef = useRef(flying);
-  const panRef = useRef(0);
-  useEffect(() => {
-    flyingRef.current = flying;
-    if (!flying) panRef.current = 0;
-  }, [flying]);
+  const camXRef = useRef(camX);
+  const camYRef = useRef(camY);
+  const idleDriftRef = useRef(0);
+  useEffect(() => { flyingRef.current = flying; if (!flying) idleDriftRef.current = 0; }, [flying]);
+  useEffect(() => { camXRef.current = camX; }, [camX]);
+  useEffect(() => { camYRef.current = camY; }, [camY]);
   useEffect(() => {
     let raf = 0;
     let last = performance.now();
     const tick = (now: number) => {
       const dt = (now - last) / 1000;
       last = now;
-      // Pans continuously now, not just while flying — idle (betting/
-      // launching/just-crashed) gets a slow constant drift instead of a
-      // frozen frame, flying ramps it up with the multiplier same as before.
-      const speed = flyingRef.current
-        ? NEBULA_SPEED_BASE * (1 + 0.6 * Math.sqrt(Math.max(multRef.current - 1, 0)))
-        : NEBULA_IDLE_SPEED;
-      panRef.current = clamp(panRef.current + speed * dt, 0, NEBULA_MAX_PAN);
-      if (imgRef.current) imgRef.current.style.transform = `translateX(-${panRef.current}px)`;
+      if (!flyingRef.current) idleDriftRef.current += NEBULA_IDLE_SPEED * dt;
+      if (bgRef.current) {
+        const px = -(camXRef.current * BG_PARALLAX + idleDriftRef.current);
+        const py = -(camYRef.current * BG_PARALLAX);
+        bgRef.current.style.backgroundPosition = `${px}px ${py}px`;
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [multRef]);
+  }, []);
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      <div ref={imgRef} style={{
-        position: 'absolute', left: 0, top: 0, width: NEBULA_W, height: NEBULA_H,
-        backgroundImage: `url(${IMG}/arena/nebula-bg.png)`, backgroundSize: `${NEBULA_W}px ${NEBULA_H}px`,
+      <div ref={bgRef} style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `url(${IMG}/arena/nebula-tile-2x2.png)`,
+        backgroundSize: `${WORLD_TILE_W}px ${WORLD_TILE_H}px`, backgroundRepeat: 'repeat',
+        // Enabled only while idle/returning — during flight the position is
+        // rewritten every frame above, and animating that would fight the
+        // transition. Reused for the smooth snap-back after a crash: this
+        // was already active during the 'crashed' phase (also non-flying),
+        // so by the time the next betting phase resets the camera to its
+        // idle value, the transition is already live from a prior commit.
+        transition: flying ? 'none' : 'background-position 1.1s cubic-bezier(.4,0,.2,1)',
       }} />
-      {/* focal-glow, centered — fixed to the viewport, doesn't pan with the image */}
+      {/* focal-glow, centered — fixed to the viewport, doesn't pan with the world */}
       <div style={{
         position: 'absolute', left: '50%', top: '50%', width: 800, height: 800, transform: 'translate(-50%,-50%)',
         background: glowGradient('rgba(255,0,119,0.1333) 0%, rgba(255,0,119,0) 100%'),
       }} />
     </div>
+  );
+});
+
+const PLATFORM_W = 500;
+const PLATFORM_H = Math.round(PLATFORM_W * (1395 / 2047));
+// Normalized point on launch-platform.png at the center of the pad ring
+// (deck height) — the point PAD_WORLD anchors to. Tune against a screenshot.
+const PAD_ANCHOR_NORM: Pt = { x: 0.448, y: 0.585 };
+
+const LaunchPlatform = React.memo(function LaunchPlatform({ camX, camY, flying }: { camX: number; camY: number; flying: boolean }) {
+  const screenX = PAD_WORLD.x - camX;
+  const screenY = PAD_WORLD.y - camY;
+  return (
+    <div style={{
+      position: 'absolute',
+      left: screenX - PLATFORM_W * PAD_ANCHOR_NORM.x,
+      top: screenY - PLATFORM_H * PAD_ANCHOR_NORM.y,
+      width: PLATFORM_W, height: PLATFORM_H,
+      backgroundImage: `url(${IMG}/arena/launch-platform.png)`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat',
+      transition: flying ? 'none' : 'left 1.1s cubic-bezier(.4,0,.2,1), top 1.1s cubic-bezier(.4,0,.2,1)',
+      pointerEvents: 'none', zIndex: 2,
+    }} />
   );
 });
 
@@ -314,7 +365,7 @@ type FlybyParticle = { defIdx: number; x: number; y: number; scale: number; spee
 // inside useEffect (client-only, post-mount), never the render body, so
 // there's no SSR/hydration purity concern (contrast the bob offset in the
 // main component, which IS computed in render and deliberately avoids it).
-const FlybyObjects = React.memo(function FlybyObjects({ flying, multRef }: { flying: boolean; multRef: React.RefObject<number> }) {
+const FlybyObjects = React.memo(function FlybyObjects({ flying, multRef, camY }: { flying: boolean; multRef: React.RefObject<number>; camY: number }) {
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   // Passed as a useRef initial value (an argument, not a `.current` read) so
   // this never touches the ref during render — React only keeps the value
@@ -353,11 +404,15 @@ const FlybyObjects = React.memo(function FlybyObjects({ flying, multRef }: { fly
             // Two bands flanking the centered multiplier readout (roughly
             // 32-68% of the width) rather than one range spanning it —
             // otherwise idle objects kept landing right on top of the text.
-            const band = Math.random() < 0.5
-              ? [ARENA_W * 0.2, ARENA_W * 0.3]
-              : [ARENA_W * 0.7, ARENA_W * 0.94];
+            // The left band is also capped well above the launch platform's
+            // idle-rest position (bottom-left corner) so idle objects don't
+            // spawn on top of it.
+            const left = Math.random() < 0.5;
+            const band = left ? [ARENA_W * 0.2, ARENA_W * 0.3] : [ARENA_W * 0.7, ARENA_W * 0.94];
             x = randRange(band[0], band[1] - def.w * p.scale);
-            y = randRange(ARENA_H * 0.06, ARENA_H * 0.9 - def.h * p.scale);
+            y = left
+              ? randRange(ARENA_H * 0.06, ARENA_H * 0.4 - def.h * p.scale)
+              : randRange(ARENA_H * 0.06, ARENA_H * 0.9 - def.h * p.scale);
             if (farEnough(x, y, particles, FLYBY_MIN_SPACING)) break;
           }
           p.x = x; p.y = y; p.speed = 0; p.active = true;
@@ -404,7 +459,9 @@ const FlybyObjects = React.memo(function FlybyObjects({ flying, multRef }: { fly
         const particles = particlesRef.current;
         particles.forEach((p) => {
           if (!p.active) {
-            if (clockRef.current >= p.nextSpawnAt) spawn(p, particles);
+            // Gated past the arc — planets/asteroids read as cruise-altitude
+            // scenery, not something in play during the vertical liftoff.
+            if (clockRef.current > ARC_S && clockRef.current >= p.nextSpawnAt) spawn(p, particles);
           } else {
             p.x -= p.speed * speedMul * dt;
             const def = FLYBY_OBJECTS[p.defIdx];
@@ -437,11 +494,17 @@ const FlybyObjects = React.memo(function FlybyObjects({ flying, multRef }: { fly
   }, [multRef]);
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-      {Array.from({ length: FLYBY_POOL_SIZE }, (_, i) => (
-        <div key={i} ref={(el) => { slotRefs.current[i] = el; }} style={{
-          position: 'absolute', display: 'none', backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat',
-        }} />
-      ))}
+      {/* Scenery at "cruise altitude" — scrolls with the camera's vertical
+          pan during the arc so idle-preview leftovers don't hang static
+          while everything else pans hard. X is unaffected (already has its
+          own drift above; adding camX here too would double-count it). */}
+      <div style={{ position: 'absolute', inset: 0, transform: `translateY(${-camY * 0.75}px)` }}>
+        {Array.from({ length: FLYBY_POOL_SIZE }, (_, i) => (
+          <div key={i} ref={(el) => { slotRefs.current[i] = el; }} style={{
+            position: 'absolute', display: 'none', backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat',
+          }} />
+        ))}
+      </div>
     </div>
   );
 });
@@ -778,6 +841,10 @@ export default function AviatorPage() {
   const rowIdRef = useRef(1);
   const nextRoundIdRef = useRef(1);
   const multRef = useRef(1); // read by ParallaxObjects' own rAF loop, not React state
+  // React state, not a ref — camX is derived from this during render (refs
+  // can't be read there), and the flight rAF loop already calls setElapsed
+  // every frame it updates this, so it's a free ride on an existing commit.
+  const [cruiseX, setCruiseX] = useState(0);
   useEffect(() => { phaseRef.current = phase; }, [phase]);
   useEffect(() => { balanceRef.current = balance; }, [balance]);
   useEffect(() => { betRef.current = bet; }, [bet]);
@@ -838,6 +905,7 @@ export default function AviatorPage() {
       setMyCashedAt(null);
       setDiceKey((k) => k + 1);
       setCrashSettled(false);
+      setCruiseX(0);
 
       const seedBase = id * 97;
       const rowCount = 14 + Math.floor(seededRand(seedBase) * 10);
@@ -879,12 +947,15 @@ export default function AviatorPage() {
       phaseRef.current = 'flying';
       playSfx(launchAudioRef);
       const t0 = performance.now();
+      let lastT = t0;
       const crashElapsed = tOfMult(crashAtRef.current);
       lastRowTick = 0;
 
       const tick = (now: number) => {
         if (!aliveRef.current || phaseRef.current !== 'flying') return;
         const e = (now - t0) / 1000;
+        const dt = (now - lastT) / 1000;
+        lastT = now;
         if (e >= crashElapsed) {
           setElapsed(crashElapsed);
           finishCrash();
@@ -892,6 +963,13 @@ export default function AviatorPage() {
         }
         setElapsed(e);
         const m = multAt(e);
+        // Past the arc, the camera keeps panning under its own steam (the
+        // arc itself only covers ARC_S seconds) — this is what keeps the
+        // background/flyby scrolling for the rest of a long flight.
+        if (e > ARC_S) {
+          const cruiseSpeedMul = 1 + 0.6 * Math.sqrt(Math.max(m - 1, 0));
+          setCruiseX((v) => v + CRUISE_VX_BASE * cruiseSpeedMul * dt);
+        }
         if (autoOnRef.current && myStakeRef.current !== null && myCashedAtRef.current === null && m >= autoTargetRef.current) {
           settle(Math.min(m, crashAtRef.current));
         }
@@ -945,19 +1023,43 @@ export default function AviatorPage() {
   const mult = phase === 'crashed' ? crashAt : phase === 'flying' ? multAt(elapsed) : 1;
   useEffect(() => { multRef.current = mult; }, [mult]);
   // `elapsed` is 0 outside 'flying' (only the flight rAF loop advances it),
-  // so this dash is inert during betting/launching — the rocket just sits
-  // at LAUNCH_START in its pad tilt until flight actually starts, then
-  // dashes to CRUISE_POINT and holds (ParallaxObjects sells the motion
-  // from there — see its comment above).
-  const dashT = clamp(elapsed / ROCKET_DASH_S, 0, 1);
-  const dashE = easeOutCubic(dashT);
-  const rocketDeg = lerp(LAUNCH_DEG, CRUISE_DEG, dashE) + ROCKET_ART_OFFSET_DEG;
-  // Gentle up/down bob once cruising — ramped in by dashE so it doesn't
-  // fight the launch dash. Driven by `elapsed`, never Math.random(), so
+  // so this is inert during betting/launching — the rocket just sits at
+  // ARC_P0 (on the pad) until flight actually starts, then flies the arc.
+  // Camera derivation: `anchor` is the rocket's fixed SCREEN position at
+  // each point along the arc (interpolated PAD_SCREEN -> CRUISE_POINT by
+  // the rocket's own axis-wise progress through world space, not by `s` —
+  // using `s` directly here would make the camera briefly scroll backwards
+  // during the vertical-rise segment, since world X barely changes there
+  // while `s` keeps advancing). `cam` is just world-position minus that
+  // screen anchor, so it's the single source both the rocket and the
+  // background/platform read from — they can never drift out of sync since
+  // they're derived in the same render from the same `elapsed`.
+  const arcU = clamp(elapsed / ARC_S, 0, 1);
+  const arcS = smoothstep(arcU);
+  const arcPos = bezierPoint(ARC_P0, ARC_P1, ARC_P2, ARC_P3, arcS);
+  const arcFx = (arcPos.x - ARC_P0.x) / (ARC_P3.x - ARC_P0.x);
+  const arcFy = (ARC_P0.y - arcPos.y) / (ARC_P0.y - ARC_P3.y);
+  const anchorX = lerp(PAD_SCREEN.x, CRUISE_POINT.x, arcFx);
+  const anchorY = lerp(PAD_SCREEN.y, CRUISE_POINT.y, arcFy);
+  const camX = arcPos.x - anchorX + cruiseX;
+  const camY = arcPos.y - anchorY;
+  const arcTangent = bezierTangent(ARC_P0, ARC_P1, ARC_P2, ARC_P3, arcS);
+  let rocketDeg = Math.atan2(arcTangent.y, arcTangent.x) * (180 / Math.PI);
+  if (arcU >= 1) {
+    // The arc's tangent at s=1 already resolves to ~0deg (level, matching
+    // the Figma reference's last instance) — blend from there into the
+    // slight cruise tilt instead of holding dead-level for the rest of the
+    // flight.
+    const cruiseBlend = clamp((elapsed - ARC_S) / 0.5, 0, 1);
+    rocketDeg = lerp(0, CRUISE_DEG, cruiseBlend);
+  }
+  rocketDeg += ROCKET_ART_OFFSET_DEG;
+  // Gentle up/down bob once cruising — ramped in by arcS so it doesn't
+  // fight the launch arc. Driven by `elapsed`, never Math.random(), so
   // render stays pure.
-  const bobOffset = Math.sin(elapsed * 2.1) * 6 * dashE;
-  const rocketX = lerp(LAUNCH_START.x, CRUISE_POINT.x, dashE);
-  const rocketY = lerp(LAUNCH_START.y, CRUISE_POINT.y, dashE) + bobOffset;
+  const bobOffset = Math.sin(elapsed * 2.1) * 6 * arcS;
+  const rocketX = anchorX;
+  const rocketY = anchorY + bobOffset;
   const flying = phase === 'flying';
   const rocketOutcome: RocketOutcome = phase === 'crashed' ? (myStake !== null && myCashedAt !== null ? 'won' : 'lost') : 'normal';
   // Once the coefficient locks in (any crash, win or lose), the plane darts
@@ -1063,8 +1165,9 @@ export default function AviatorPage() {
               <Panel style={{ width: ARENA_W, height: MAIN_ARENA_H, overflow: 'hidden', position: 'relative' }}>
                 <HistoryStrip history={history} />
                 <div style={{ position: 'relative', width: ARENA_W, height: ARENA_H, overflow: 'hidden' }}>
-                  <NebulaBackground flying={flying} multRef={multRef} />
-                  <FlybyObjects flying={flying} multRef={multRef} />
+                  <NebulaBackground camX={camX} camY={camY} flying={flying} />
+                  <FlybyObjects flying={flying} multRef={multRef} camY={camY} />
+                  <LaunchPlatform camX={camX} camY={camY} flying={flying} />
                   <Rocket x={rocketDisplayX} y={rocketDisplayY} deg={rocketDeg} opacity={rocketOpacity} flying={flying} outcome={rocketOutcome} flyAway={flyAway} idle={rocketIdle} />
                   <MultiplierReadout
                     mult={phase === 'crashed' && rocketOutcome === 'won' ? myCashedAt! : mult}
