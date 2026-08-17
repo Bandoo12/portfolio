@@ -92,7 +92,7 @@ const ARC_P2: Pt = { x: ARC_P3.x - 0.8 * (ARC_P3.x - ARC_P0.x), y: ARC_P3.y };
 // arena's much shorter aspect ratio that clipped most of the platform;
 // pulling the pad anchor in gives PLATFORM_W enough headroom to render the
 // whole structure on screen.
-const PAD_SCREEN: Pt = { x: ARENA_W * 0.14, y: ARENA_H * 0.55 };
+const PAD_SCREEN: Pt = { x: ARENA_W * 0.11, y: ARENA_H * 0.55 };
 const CRUISE_POINT: Pt = { x: ARENA_W * 0.30, y: ARENA_H * 0.52 };
 const CRUISE_DEG = -10; // shallow in-flight climb tilt, blended into after the arc completes
 const ARC_S = 1.8; // seconds of `elapsed` spent flying the launch arc
