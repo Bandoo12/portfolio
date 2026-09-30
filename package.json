@@ -12,6 +12,8 @@
     "figma:tokens": "tsx scripts/figma-tokens.ts"
   },
   "dependencies": {
+    "@esotericsoftware/spine-canvas": "~4.2.120",
+    "@esotericsoftware/spine-webgl": "4.2.120",
     "axios": "^1.16.1",
     "clsx": "^2.1.1",
     "dotenv": "^17.4.2",

@@ -1,0 +1,31 @@
+{
+ "frame": [
+  380,
+  500
+ ],
+ "cols": 10,
+ "rows": 6,
+ "anims": {
+  "idle": {
+   "n": 60,
+   "foot": 440.0,
+   "anchor": "foot"
+  },
+  "jump": {
+   "n": 60,
+   "foot": 440.0,
+   "anchor": "foot"
+  },
+  "fall": {
+   "n": 60,
+   "foot": 250.0,
+   "anchor": "mass"
+  },
+  "win": {
+   "n": 60,
+   "foot": 440.0,
+   "anchor": "foot"
+  }
+ },
+ "height": 217
+}

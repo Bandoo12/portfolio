@@ -1,0 +1,132 @@
+character_atlas.png
+size: 1024, 2048
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+pma: false
+near_thigh
+  rotate: false
+  xy: 4, 4
+  size: 219, 536
+  orig: 219, 536
+  offset: 0, 0
+  index: -1
+torso
+  rotate: false
+  xy: 227, 4
+  size: 445, 532
+  orig: 445, 532
+  offset: 0, 0
+  index: -1
+far_thigh
+  rotate: false
+  xy: 676, 4
+  size: 192, 520
+  orig: 192, 520
+  offset: 0, 0
+  index: -1
+near_shin
+  rotate: false
+  xy: 4, 544
+  size: 180, 453
+  orig: 180, 453
+  offset: 0, 0
+  index: -1
+far_shin
+  rotate: false
+  xy: 188, 544
+  size: 156, 414
+  orig: 156, 414
+  offset: 0, 0
+  index: -1
+near_forearm
+  rotate: false
+  xy: 348, 544
+  size: 176, 317
+  orig: 176, 317
+  offset: 0, 0
+  index: -1
+far_forearm
+  rotate: false
+  xy: 528, 544
+  size: 211, 309
+  orig: 211, 309
+  offset: 0, 0
+  index: -1
+near_upper_arm
+  rotate: false
+  xy: 743, 544
+  size: 177, 305
+  orig: 177, 305
+  offset: 0, 0
+  index: -1
+far_upper_arm
+  rotate: false
+  xy: 4, 1001
+  size: 160, 301
+  orig: 160, 301
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 168, 1001
+  size: 239, 296
+  orig: 239, 296
+  offset: 0, 0
+  index: -1
+pelvis
+  rotate: false
+  xy: 411, 1001
+  size: 356, 295
+  orig: 356, 295
+  offset: 0, 0
+  index: -1
+near_hand
+  rotate: false
+  xy: 771, 1001
+  size: 128, 243
+  orig: 128, 243
+  offset: 0, 0
+  index: -1
+far_hand
+  rotate: false
+  xy: 4, 1306
+  size: 121, 226
+  orig: 121, 226
+  offset: 0, 0
+  index: -1
+far_boot
+  rotate: false
+  xy: 129, 1306
+  size: 201, 162
+  orig: 201, 162
+  offset: 0, 0
+  index: -1
+near_boot
+  rotate: false
+  xy: 334, 1306
+  size: 130, 149
+  orig: 130, 149
+  offset: 0, 0
+  index: -1
+mask_circle
+  rotate: false
+  xy: 468, 1306
+  size: 95, 99
+  orig: 95, 99
+  offset: 0, 0
+  index: -1
+mask_square
+  rotate: false
+  xy: 567, 1306
+  size: 80, 99
+  orig: 80, 99
+  offset: 0, 0
+  index: -1
+mask_triangle
+  rotate: false
+  xy: 651, 1306
+  size: 89, 91
+  orig: 89, 91
+  offset: 0, 0
+  index: -1
