@@ -1,132 +1,320 @@
-character_atlas.png
-size: 1024, 2048
-format: RGBA8888
-filter: Linear, Linear
-repeat: none
-pma: false
-near_thigh
-  rotate: false
-  xy: 4, 4
-  size: 219, 536
-  orig: 219, 536
-  offset: 0, 0
-  index: -1
-torso
-  rotate: false
-  xy: 227, 4
-  size: 445, 532
-  orig: 445, 532
-  offset: 0, 0
-  index: -1
-far_thigh
-  rotate: false
-  xy: 676, 4
-  size: 192, 520
-  orig: 192, 520
-  offset: 0, 0
-  index: -1
-near_shin
-  rotate: false
-  xy: 4, 544
-  size: 180, 453
-  orig: 180, 453
-  offset: 0, 0
-  index: -1
-far_shin
-  rotate: false
-  xy: 188, 544
-  size: 156, 414
-  orig: 156, 414
-  offset: 0, 0
-  index: -1
-near_forearm
-  rotate: false
-  xy: 348, 544
-  size: 176, 317
-  orig: 176, 317
-  offset: 0, 0
-  index: -1
-far_forearm
-  rotate: false
-  xy: 528, 544
-  size: 211, 309
-  orig: 211, 309
-  offset: 0, 0
-  index: -1
-near_upper_arm
-  rotate: false
-  xy: 743, 544
-  size: 177, 305
-  orig: 177, 305
-  offset: 0, 0
-  index: -1
-far_upper_arm
-  rotate: false
-  xy: 4, 1001
-  size: 160, 301
-  orig: 160, 301
-  offset: 0, 0
-  index: -1
-head
-  rotate: false
-  xy: 168, 1001
-  size: 239, 296
-  orig: 239, 296
-  offset: 0, 0
-  index: -1
-pelvis
-  rotate: false
-  xy: 411, 1001
-  size: 356, 295
-  orig: 356, 295
-  offset: 0, 0
-  index: -1
-near_hand
-  rotate: false
-  xy: 771, 1001
-  size: 128, 243
-  orig: 128, 243
-  offset: 0, 0
-  index: -1
-far_hand
-  rotate: false
-  xy: 4, 1306
-  size: 121, 226
-  orig: 121, 226
-  offset: 0, 0
-  index: -1
-far_boot
-  rotate: false
-  xy: 129, 1306
-  size: 201, 162
-  orig: 201, 162
-  offset: 0, 0
-  index: -1
-near_boot
-  rotate: false
-  xy: 334, 1306
-  size: 130, 149
-  orig: 130, 149
-  offset: 0, 0
-  index: -1
+character_frames.webp
+size:3845,1341
+filter:Linear,Linear
+flat:true
+fall_00
+bounds:1018,1040,214,299
+offsets:0,0,214,300
+fall_01
+bounds:1335,143,188,296
+fall_02
+bounds:1753,451,163,293
+fall_03
+bounds:1904,1049,165,290
+fall_04
+bounds:1890,756,166,290
+fall_05
+bounds:1695,155,167,293
+fall_06
+bounds:1525,149,168,294
+fall_07
+bounds:1864,157,178,292
+offsets:0,0,179,292
+fall_08
+bounds:2062,471,203,286
+offsets:1,0,204,286
+fall_09
+bounds:2696,504,231,274
+fall_10
+bounds:2929,521,246,269
+fall_11
+bounds:3009,256,250,263
+fall_12
+bounds:3197,6,248,255
+rotate:90
+fall_13
+bounds:3589,534,240,247
+offsets:0,0,241,247
+rotate:90
+fall_14
+bounds:2960,2,227,235
+offsets:1,0,228,235
+rotate:90
+fall_15
+bounds:3631,1101,212,238
+fall_16
+bounds:2733,17,194,225
+offsets:0,0,195,225
+rotate:90
+fall_17
+bounds:3631,918,181,211
+offsets:0,1,181,212
+rotate:90
+fall_18
+bounds:2540,6,191,195
+fall_19
+bounds:2337,10,201,172
+fall_20
+bounds:3597,2,211,158
+offsets:1,0,212,158
+fall_21
+bounds:3657,313,219,148
+offsets:1,1,220,149
+rotate:90
+fall_22
+bounds:3597,162,224,143
+fall_23
+bounds:3513,307,225,142
+rotate:90
+idle_00
+bounds:1234,1040,142,299
+offsets:0,0,144,299
+idle_01
+bounds:1177,438,142,299
+offsets:0,0,144,301
+idle_02
+bounds:168,423,142,301
+offsets:0,0,144,301
+idle_03
+bounds:292,732,142,301
+offsets:0,0,144,301
+idle_04
+bounds:310,1038,142,301
+offsets:0,0,144,301
+idle_05
+bounds:312,429,142,301
+offsets:0,0,144,301
+idle_06
+bounds:436,735,142,301
+offsets:0,0,144,301
+idle_07
+bounds:454,1038,142,301
+offsets:0,0,144,301
+idle_08
+bounds:312,126,141,301
+offsets:1,0,142,301
+idle_09
+bounds:455,126,141,301
+offsets:1,0,142,301
+idle_10
+bounds:456,432,141,301
+offsets:3,0,145,301
+idle_11
+bounds:1032,436,143,299
+offsets:1,0,145,301
+idle_12
+bounds:1150,739,143,299
+offsets:1,0,145,299
+idle_13
+bounds:599,433,143,300
+offsets:1,0,145,300
+idle_14
+bounds:717,736,143,300
+offsets:1,0,145,300
+idle_15
+bounds:729,1039,143,300
+offsets:1,0,145,300
+idle_16
+bounds:599,131,143,300
+offsets:1,0,145,300
+idle_17
+bounds:744,434,143,300
+offsets:1,0,145,300
+idle_18
+bounds:862,737,143,300
+offsets:1,0,145,300
+idle_19
+bounds:744,132,141,300
+offsets:3,0,145,300
+idle_20
+bounds:887,132,141,300
+offsets:2,0,143,300
+idle_21
+bounds:889,435,141,300
+offsets:1,0,142,300
+idle_22
+bounds:1007,737,141,300
+offsets:1,0,144,300
+idle_23
+bounds:874,1039,142,300
+offsets:0,0,144,300
+jump_00
+bounds:2490,773,117,281
+offsets:0,0,117,282
+jump_01
+bounds:2761,230,116,272
+jump_02
+bounds:312,6,118,266
+offsets:0,1,118,267
+rotate:90
+jump_03
+bounds:3250,1074,125,265
+offsets:1,0,126,265
+jump_04
+bounds:3040,796,128,269
+jump_05
+bounds:599,2,127,279
+offsets:0,1,127,280
+rotate:90
+jump_06
+bounds:1625,450,126,294
+offsets:0,1,127,295
+jump_07
+bounds:2,723,127,307
+offsets:0,1,127,308
+jump_08
+bounds:598,1038,129,301
+jump_09
+bounds:1755,750,133,291
+jump_10
+bounds:2901,792,137,272
+jump_11
+bounds:3448,563,139,254
+offsets:1,1,140,255
+jump_12
+bounds:3454,41,141,247
+offsets:1,0,142,247
+jump_13
+bounds:3589,776,140,248
+rotate:90
+jump_14
+bounds:3305,549,141,258
+offsets:1,0,142,258
+jump_15
+bounds:2852,1066,141,273
+jump_16
+bounds:1453,2,139,293
+rotate:90
+jump_17
+bounds:580,735,135,301
+offsets:1,0,136,302
+jump_18
+bounds:1769,1048,133,291
+offsets:1,0,134,291
+jump_19
+bounds:2418,485,131,281
+jump_20
+bounds:2879,231,128,271
+jump_21
+bounds:3177,537,126,263
+offsets:0,0,126,264
+jump_22
+bounds:3377,1079,125,260
+jump_23
+bounds:3388,290,123,257
+offsets:1,0,124,257
+jump_24
+bounds:3504,1082,125,257
+jump_25
+bounds:3424,819,125,258
+jump_26
+bounds:3261,275,125,260
+jump_27
+bounds:3297,809,125,263
+jump_28
+bounds:3170,802,125,266
+jump_29
+bounds:3123,1070,125,269
+offsets:1,0,126,269
+jump_30
+bounds:2995,1067,126,272
+offsets:0,0,127,273
+jump_31
+bounds:2632,213,127,276
+offsets:0,0,127,277
+jump_32
+bounds:880,2,128,280
+rotate:90
+jump_33
+bounds:2425,1056,129,283
+jump_34
+bounds:2209,764,129,286
+jump_35
+bounds:1162,3,129,289
+rotate:90
 mask_circle
-  rotate: false
-  xy: 468, 1306
-  size: 95, 99
-  orig: 95, 99
-  offset: 0, 0
-  index: -1
+bounds:83,13,93,98
+offsets:1,1,95,99
 mask_square
-  rotate: false
-  xy: 567, 1306
-  size: 80, 99
-  orig: 80, 99
-  offset: 0, 0
-  index: -1
+bounds:2,12,79,99
+offsets:0,0,80,99
 mask_triangle
-  rotate: false
-  xy: 651, 1306
-  size: 89, 91
-  orig: 89, 91
-  offset: 0, 0
-  index: -1
+bounds:178,22,89,90
+offsets:0,0,89,91
+win_00
+bounds:1562,1043,205,296
+win_01
+bounds:1378,1042,182,297
+win_02
+bounds:2,417,164,304
+offsets:0,0,165,304
+win_03
+bounds:2,113,151,302
+win_04
+bounds:2043,5,150,292
+rotate:90
+win_05
+bounds:2267,478,149,284
+win_06
+bounds:2609,780,145,277
+win_07
+bounds:2485,203,145,280
+win_08
+bounds:1181,139,152,297
+win_09
+bounds:2,1032,153,307
+offsets:0,1,153,308
+win_10
+bounds:157,1035,151,304
+offsets:1,0,152,304
+win_11
+bounds:1321,441,150,297
+win_12
+bounds:1030,134,149,299
+win_13
+bounds:2191,184,145,285
+win_14
+bounds:2340,768,148,284
+win_15
+bounds:1598,746,155,295
+offsets:1,0,156,295
+win_16
+bounds:155,114,155,301
+offsets:1,0,156,301
+win_17
+bounds:1748,2,151,293
+rotate:90
+win_18
+bounds:1449,743,147,297
+win_19
+bounds:1918,465,142,289
+win_20
+bounds:2044,176,145,287
+win_21
+bounds:1473,445,150,296
+win_22
+bounds:2058,759,149,288
+win_23
+bounds:2705,1062,145,277
+offsets:0,1,145,278
+win_24
+bounds:2338,194,145,282
+offsets:0,1,145,284
+win_25
+bounds:2551,491,143,280
+offsets:1,0,144,280
+win_26
+bounds:2756,787,143,273
+win_27
+bounds:2556,1059,147,280
+win_28
+bounds:1295,740,152,298
+win_29
+bounds:131,726,159,304
+offsets:0,0,159,305
+win_30
+bounds:2071,1052,169,287
+offsets:0,1,169,288
+win_31
+bounds:2242,1054,181,285
+offsets:1,0,182,285

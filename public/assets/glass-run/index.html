@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GLASS RUN — ассеты</title>
+<style>
+  :root{--bg:#06070f;--panel:#0d1526;--line:rgba(63,240,255,.16);--text:#e9f6ff;--muted:#8b97b3;--cyan:#3ff0ff;--pink:#ff2d8a}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,-apple-system,system-ui,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 24px 90px}
+  h1{font-size:40px;letter-spacing:-.025em;margin:0 0 10px}
+  .lead{color:var(--muted);max-width:720px;margin:0 0 14px}
+  .stamp{color:var(--muted);font-size:14px;margin:0 0 36px}
+  h2{font-size:22px;margin:46px 0 6px;letter-spacing:-.01em}
+  h2 .num{color:var(--cyan);font-variant-numeric:tabular-nums;margin-right:10px}
+  .note{color:var(--muted);font-size:15px;margin:0 0 18px;max-width:760px}
+  .big{display:flex;gap:16px;flex-wrap:wrap;margin:26px 0 8px}
+  .cta{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#1b3a5c,#141a33);
+       border:1px solid var(--cyan);border-radius:12px;padding:18px 24px;text-decoration:none;color:var(--text)}
+  .cta:hover{background:linear-gradient(135deg,#235079,#182142)}
+  .cta b{font-size:18px;display:block}
+  .cta span{color:var(--muted);font-size:14px}
+  .files{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+  a.f{display:block;background:var(--panel);border:1px solid rgba(255,255,255,.07);border-radius:12px;
+      padding:13px 16px;text-decoration:none;color:var(--text)}
+  a.f:hover{border-color:var(--cyan)}
+  a.f b{font-weight:600;font-size:15px}
+  a.f span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+  table{width:100%;border-collapse:collapse;margin:14px 0 0;font-size:15px}
+  th{text-align:left;color:var(--muted);font-weight:500;font-size:13px;text-transform:uppercase;letter-spacing:.06em;
+     padding:0 14px 10px;border-bottom:1px solid var(--line)}
+  td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
+  code{background:rgba(63,240,255,.1);border-radius:5px;padding:2px 6px;font-size:14px;color:var(--cyan)}
+  ul{color:var(--muted);padding-left:20px}
+  li{margin:7px 0}
+  li b{color:var(--text);font-weight:600}
+  .prev{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-top:14px}
+  .prev figure{margin:0;background:radial-gradient(120% 90% at 50% 100%,#1a2342 0%,#070a14 70%);
+               border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px;text-align:center}
+  .prev img{width:100%;height:170px;object-fit:contain}
+  .prev figcaption{color:var(--muted);font-size:13px;margin-top:6px}
+  footer{margin-top:60px;padding-top:24px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+  a{color:var(--cyan)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>GLASS RUN — ассеты</h1>
+<p class="lead">Всё, что нужно, чтобы собрать игру 1 в 1 по макетам Figma: скелеты Spine, текстуры, плиты, фон и спецификация.</p>
+<p class="stamp">Обновлено 16.10.2026 · <a href="https://bandoo12.github.io/portfolio/demos/glass-run-e/">открыть живое демо</a></p>
+
+<div class="big">
+  <a class="cta" href="glass-run-assets.zip" download><div><b>Скачать всё одним архивом</b><span>ZIP, 20 МБ, 46 файлов</span></div></a>
+  <a class="cta" href="README.md" download><div><b>Спецификация</b><span>README.md — полный разбор</span></div></a>
+</div>
+
+<h2><span class="num">01</span>Персонаж — Spine</h2>
+<p class="note">Формат Spine <b>4.2.00</b>. Тело — покадровая подмена аттачментов: 116 кадров настоящего 3D-рендера переключаются таймлайном слота <code>char</code>. Поэтому движение живое, а не марионеточное. Символ на маске — отдельный слот на кости <code>mask</code>, она каждый кадр едет за центром лицевой пластины.</p>
+<div class="files">
+  <a class="f" href="character/skeleton.json" download><b>skeleton.json</b><span>скелет, 26 КБ</span></a>
+  <a class="f" href="character/character.atlas" download><b>character.atlas</b><span>описание атласа, 5 КБ</span></a>
+  <a class="f" href="character/character_frames.webp" download><b>character_frames.webp</b><span>текстура для рантайма · 3845×1341 · 5,1 МБ</span></a>
+  <a class="f" href="character/character_frames.png" download><b>character_frames.png</b><span>та же текстура для редактора Spine · 7,7 МБ</span></a>
+</div>
+<p class="note" style="margin-top:14px">Текстуры идентичны попиксельно, включая bleed-кайму. В рантайме берите webp, в редакторе png.</p>
+
+<table>
+<tr><th>Анимация</th><th>Кадров</th><th>FPS</th><th>Длительность</th><th>Луп</th><th>Когда играет</th></tr>
+<tr><td><code>idle</code></td><td>24</td><td>12</td><td>1,92 с</td><td>да</td><td>стоит на плите, ждёт хода</td></tr>
+<tr><td><code>jump</code></td><td>36</td><td>60</td><td>0,58 с</td><td>нет</td><td>шаг на следующую плиту</td></tr>
+<tr><td><code>fall</code></td><td>24</td><td>30</td><td>0,77 с</td><td>нет</td><td>наступил на ловушку</td></tr>
+<tr><td><code>win</code></td><td>32</td><td>30</td><td>1,03 с</td><td>да</td><td>забрал выигрыш / финиш</td></tr>
+</table>
+
+<table>
+<tr><th>Событие</th><th>Анимация</th><th>Время</th><th>Что делать</th></tr>
+<tr><td><code>takeoff</code></td><td>jump</td><td>0,08 с</td><td>звук отталкивания, старт полёта по дуге</td></tr>
+<tr><td><code>land</code></td><td>jump</td><td>0,50 с</td><td>звук приземления, проверка плиты</td></tr>
+<tr><td><code>glass_break</code></td><td>fall</td><td>0,05 с</td><td>запустить разбитие стекла, см. раздел 04</td></tr>
+</table>
+
+<ul style="margin-top:22px">
+  <li><b>Скины.</b> <code>default</code> — общее тело, 116 кадров. Поверх включается <code>circle</code>, <code>square</code> или <code>triangle</code>: <code>skeleton.setSkinByName('circle')</code>.</li>
+  <li><b>Масштаб.</b> В игре <code>scale = 0.200</code> (у ботов 0,200–0,205, чтобы толпа не выглядела клонами) и <code>scaleY = -1</code>, потому что ось Y канваса смотрит вниз, а у Spine вверх.</li>
+  <li><b>Привязка.</b> Точка <code>root</code> стоит ровно под ступнями — ставьте её в точку опоры на плите, вертикальных поправок не нужно. Рост стоящей фигуры 840 единиц, то есть 168 px на экране.</li>
+  <li><b>После прыжка</b> ставьте в очередь покой: <code>state.addAnimation(0, 'idle', true, 0)</code>.</li>
+</ul>
+
+<h2><span class="num">02</span>Сцена — Spine</h2>
+<p class="note">Одна анимация <code>idle</code>, луп: туман двумя слоями с разной скоростью, бегущий неон, вращение портала. Все пять текстур рисуются аддитивно (<code>lighter</code>). Туманные полосы шириной 7680 прокручиваются бесшовно, по ширине их ресайзить нельзя.</p>
+<div class="files">
+  <a class="f" href="scene/fx.json" download><b>fx.json</b><span>скелет сцены</span></a>
+  <a class="f" href="scene/fx.atlas" download><b>fx.atlas</b><span>описание атласа</span></a>
+  <a class="f" href="scene/shaft.webp" download><b>shaft.webp</b><span>световой столб · 1354×1504</span></a>
+  <a class="f" href="scene/neon_glow.webp" download><b>neon_glow.webp</b><span>неоновая полоса · 3840×572</span></a>
+  <a class="f" href="scene/fog_a.webp" download><b>fog_a.webp</b><span>верхний туман · 7680×1076</span></a>
+  <a class="f" href="scene/fog_b.webp" download><b>fog_b.webp</b><span>нижний туман · 7680×1073</span></a>
+  <a class="f" href="scene/portal_swirl.webp" download><b>portal_swirl.webp</b><span>вихрь портала · 638×663</span></a>
+</div>
+
+<h2><span class="num">03</span>Плиты и фон</h2>
+<p class="note">12 плит, по одной на ячейку: <code>tile-{ряд}-{колонка}.png</code>, ряд 0 — дальний, ряд 1 — ближний. Перспектива запечена в спрайт, масштабировать по колонкам не нужно. Зелёная подсветка безопасной плиты — не отдельная картинка, а наложение цвета поверх спрайта.</p>
+<div class="files">
+  <a class="f" href="tiles/tile-0-0.png" download><b>Плиты, дальний ряд</b><span>tile-0-0 … tile-0-5</span></a>
+  <a class="f" href="tiles/tile-1-0.png" download><b>Плиты, ближний ряд</b><span>tile-1-0 … tile-1-5</span></a>
+  <a class="f" href="background/arena.jpg" download><b>arena.jpg</b><span>задник ангара · 3840×2160</span></a>
+  <a class="f" href="background/struct.webp" download><b>struct.webp</b><span>ферма моста отдельным слоем · 3840×1555</span></a>
+  <a class="f" href="background/fair-badge.svg" download><b>fair-badge.svg</b><span>печать «Честная игра»</span></a>
+</div>
+
+<h2><span class="num">04</span>Разбивающееся стекло — не ассет, а код</h2>
+<p class="note">Процедурная анимация на канвасе, спрайтов для неё нет. Параметры, по которым она собрана:</p>
+<ul>
+  <li><b>Осколки</b> — диаграмма Вороного по 22 точкам. Первые 14 кучкуются у точки удара (разброс ±0,2 ширины и ±0,3 высоты плиты), остальные 8 равномерно по плите.</li>
+  <li><b>Трещины</b> — 7 лучей из точки удара, по 4 сегмента, каждый 0,05–0,12 ширины, угловое дрожание ±0,5 рад.</li>
+  <li><b>Фаза трещин без распада</b> — 0,1 с, потом осколки разлетаются.</li>
+  <li><b>Скорость осколка</b> — по X <code>(смещение от удара) × 1,6 ± 40</code>, по Y от −190 до −55. Вращение ±7 рад/с, гравитация 1700 px/с².</li>
+  <li><b>Мерцание</b> — <code>scaleY = 0,55 + 0,45·cos(t · spin)</code>, spin от 4 до 11.</li>
+  <li><b>Затухание</b> — за 0,6 с, начиная с 0,45 с после удара.</li>
+  <li><b>Каждый осколок</b> несёт те пиксели стекла, из которых вырезан: рисуется с клипом по своему полигону, а не заливкой.</li>
+  <li><b>Точка удара</b> берётся из позиции персонажа по X и зажимается в пределах ±0,32 ширины плиты.</li>
+</ul>
+
+<h2><span class="num">05</span>Превью анимаций</h2>
+<p class="note">Для глазами посмотреть. В сборку класть не нужно, в игре всё это рисуется из Spine.</p>
+<div class="prev">
+  <figure><img src="previews/idle_circle.webp" alt="покой"><figcaption>idle · circle</figcaption></figure>
+  <figure><img src="previews/jump_circle.webp" alt="прыжок"><figcaption>jump · circle</figcaption></figure>
+  <figure><img src="previews/fall_circle.webp" alt="падение"><figcaption>fall · circle</figcaption></figure>
+  <figure><img src="previews/win_circle.webp" alt="победа"><figcaption>win · circle</figcaption></figure>
+  <figure><img src="previews/jump_square.webp" alt="прыжок квадрат"><figcaption>jump · square</figcaption></figure>
+  <figure><img src="previews/jump_triangle.webp" alt="прыжок треугольник"><figcaption>jump · triangle</figcaption></figure>
+  <figure><img src="previews/win_square.webp" alt="победа квадрат"><figcaption>win · square</figcaption></figure>
+  <figure><img src="previews/win_triangle.webp" alt="победа треугольник"><figcaption>win · triangle</figcaption></figure>
+</div>
+
+<h2><span class="num">06</span>Как проверить, что всё встало правильно</h2>
+<ul>
+  <li>Импортируйте <code>skeleton.json</code> в Spine, рядом положите <code>character.atlas</code> и <code>character_frames.png</code>.</li>
+  <li>Редактор может ругнуться, что файл версии 4.2 — это нормально, открывайте.</li>
+  <li>Переключите скин на <code>circle</code> и прогоните <code>idle</code>: фигура дышит, не крутится и не шагает, рост не меняется.</li>
+  <li>Прогоните <code>jump</code> на 0,25× скорости: голова в верхней точке целая, символ на маске не отрывается.</li>
+  <li>Прогоните <code>fall</code>: под ногами нет посторонних обрезков фона.</li>
+</ul>
+
+<footer>GLASS RUN · ассеты и спецификация для разработки · 16.10.2026</footer>
+</div>
+</body>
+</html>
