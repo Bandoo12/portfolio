@@ -36,8 +36,10 @@ const page = `<!doctype html>
        border-radius:8px;padding:24px;display:flex;flex-direction:column;gap:12px}
   h1{margin:0;font-size:16px;line-height:24px;font-weight:600}
   p{margin:0;color:var(--fg-2);font-size:13px;line-height:18px}
-  input{height:40px;padding:0 12px;border:1px solid var(--border);border-radius:var(--r);
-        background:var(--card);color:var(--fg);font:inherit;outline:none}
+  /* ровно 16px: при меньшем размере iOS Safari зумит страницу на фокусе
+     и обратно её не отпускает — дальше весь прототип едет вбок */
+  input{height:44px;padding:0 12px;border:1px solid var(--border);border-radius:var(--r);
+        background:var(--card);color:var(--fg);font:inherit;font-size:16px;outline:none}
   input:focus{border-color:var(--brand)}
   button{height:40px;border:0;border-radius:var(--r);background:var(--brand);color:#fff;
          font:600 14px/20px inherit;cursor:pointer}
