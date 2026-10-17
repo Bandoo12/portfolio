@@ -2,12 +2,182 @@
  "picks": [
   {
    "date": "2026-10-17",
+   "time": "22:00",
+   "league": "SP2",
+   "home": "Лас-Пальмас",
+   "away": "Кастельон",
+   "home_en": "Las Palmas",
+   "away_en": "Castellon",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.5007,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.12,
+   "stake": 500.0,
+   "edge": 0.0615,
+   "status": "won",
+   "result": "0:3",
+   "pnl": 560.0,
+   "clv": null,
+   "placed_at": "2026-10-17T19:16:33+00:00",
+   "mode": "paper",
+   "id": 148,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 45,
+    "score": "0:2"
+   },
+   "source": "consensus"
+  },
+  {
+   "date": "2026-10-17",
+   "time": "22:00",
+   "league": "SP1",
+   "home": "Валенсия",
+   "away": "Атлетик Бильбао",
+   "home_en": "Valencia",
+   "away_en": "Ath Bilbao",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.4422,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.3,
+   "stake": 60.0,
+   "edge": 0.0171,
+   "status": "lost",
+   "result": "0:0",
+   "pnl": -60.0,
+   "clv": null,
+   "placed_at": "2026-10-17T19:04:47+00:00",
+   "mode": "paper",
+   "id": 147,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 85,
+    "score": "0:0"
+   },
+   "source": "consensus"
+  },
+  {
+   "date": "2026-10-17",
+   "time": "21:45",
+   "league": "I1",
+   "home": "Рома",
+   "away": "Дженоа",
+   "home_en": "Roma",
+   "away_en": "Genoa",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.4704,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.3,
+   "stake": 500.0,
+   "edge": 0.082,
+   "status": "lost",
+   "result": "2:0",
+   "pnl": -500.0,
+   "clv": null,
+   "placed_at": "2026-10-17T18:55:40+00:00",
+   "mode": "paper",
+   "id": 146,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 60,
+    "score": "1:0"
+   },
+   "source": "consensus"
+  },
+  {
+   "date": "2026-10-17",
+   "time": "21:30",
+   "league": "USA",
+   "home": "Филадельфия Юнион",
+   "away": "Шарлотт",
+   "home_en": "Philadelphia Union",
+   "away_en": "Charlotte",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 3.5,
+   "pick_label": "ТБ3.5",
+   "p": 0.465,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.2,
+   "stake": 150.0,
+   "edge": 0.023,
+   "status": "won",
+   "result": "2:2",
+   "pnl": 180.00000000000003,
+   "clv": null,
+   "placed_at": "2026-10-17T18:52:51+00:00",
+   "mode": "paper",
+   "id": 145,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 95,
+    "score": "2:2"
+   },
+   "source": "consensus"
+  },
+  {
+   "date": "2026-10-17",
+   "time": "21:00",
+   "league": "N1",
+   "home": "Телстар",
+   "away": "Фейеноорд",
+   "home_en": "Telstar",
+   "away_en": "Feyenoord",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 7.5,
+   "pick_label": "ТБ7.5",
+   "p": 0.4286,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.4,
+   "stake": 180.0,
+   "edge": 0.0285,
+   "status": "lost",
+   "result": "3:4",
+   "pnl": -180.0,
+   "clv": null,
+   "placed_at": "2026-10-17T18:46:34+00:00",
+   "mode": "paper",
+   "id": 144,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 83,
+    "score": "3:4"
+   },
+   "source": "consensus"
+  },
+  {
+   "date": "2026-10-17",
    "time": "18:30",
    "league": "SWE",
-   "home": "АИК",
+   "home": "Аик",
    "away": "Гетеборг",
-   "home_en": "АИК",
-   "away_en": "Гетеборг",
+   "home_en": "AIK",
+   "away_en": "Goteborg",
    "market": "OU",
    "selection": "OVER",
    "line": 3.5,
@@ -28,7 +198,10 @@
    "id": 143,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 81,
+    "score": "2:2"
+   },
    "source": "consensus"
   },
   {
@@ -37,8 +210,8 @@
    "league": "I1",
    "home": "Болонья",
    "away": "Интер Милан",
-   "home_en": "Болонья",
-   "away_en": "Интер Милан",
+   "home_en": "Bologna",
+   "away_en": "Inter",
    "market": "OU",
    "selection": "OVER",
    "line": 3.5,
@@ -59,7 +232,10 @@
    "id": 142,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 80,
+    "score": "1:2"
+   },
    "source": "consensus"
   },
   {
@@ -100,7 +276,7 @@
    "home": "Спортинг Хихон",
    "away": "Альбасете",
    "home_en": "Спортинг Хихон",
-   "away_en": "Альбасете",
+   "away_en": "Albacete",
    "market": "OU",
    "selection": "OVER",
    "line": 2.5,
@@ -112,15 +288,15 @@
    "odds": 2.5,
    "stake": 330.0,
    "edge": 0.0467,
-   "status": "open",
-   "result": null,
-   "pnl": null,
+   "status": "won",
+   "result": "2:1",
+   "pnl": 495.0,
    "clv": null,
    "placed_at": "2026-10-17T16:44:04+00:00",
    "mode": "paper",
    "id": 139,
    "stage": "лайв",
-   "playing": true,
+   "playing": false,
    "live": null,
    "source": "consensus"
   },
@@ -130,8 +306,8 @@
    "league": "NOR",
    "home": "Викинг",
    "away": "Фредрикстад",
-   "home_en": "Викинг",
-   "away_en": "Фредрикстад",
+   "home_en": "Viking",
+   "away_en": "Fredrikstad",
    "market": "OU",
    "selection": "OVER",
    "line": 3.5,
@@ -152,7 +328,10 @@
    "id": 138,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 82,
+    "score": "3:2"
+   },
    "source": "consensus"
   },
   {
@@ -190,10 +369,10 @@
    "date": "2026-10-17",
    "time": "18:30",
    "league": "POL",
-   "home": "ГКС Катовице",
+   "home": "Гкс Катовице",
    "away": "Погонь Щецин",
-   "home_en": "ГКС Катовице",
-   "away_en": "Погонь Щецин",
+   "home_en": "GKS Katowice",
+   "away_en": "Pogon Szczecin",
    "market": "OU",
    "selection": "OVER",
    "line": 2.5,
@@ -214,17 +393,20 @@
    "id": 136,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "0:1"
+   },
    "source": "consensus"
   },
   {
    "date": "2026-10-17",
    "time": "18:00",
    "league": "AUT",
-   "home": "Аустрия Лустенау",
-   "away": "ЛАСК",
-   "home_en": "Аустрия Лустенау",
-   "away_en": "ЛАСК",
+   "home": "A. Lustenau",
+   "away": "Ласк",
+   "home_en": "A. Lustenau",
+   "away_en": "LASK",
    "market": "OU",
    "selection": "OVER",
    "line": 2.5,
@@ -245,17 +427,20 @@
    "id": 135,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 63,
+    "score": "0:1"
+   },
    "source": "consensus"
   },
   {
    "date": "2026-10-17",
    "time": "17:00",
    "league": "E3",
-   "home": "Порт Вейл",
+   "home": "Port Vale",
    "away": "Честерфилд",
-   "home_en": "Порт Вейл",
-   "away_en": "Честерфилд",
+   "home_en": "Port Vale",
+   "away_en": "Chesterfield",
    "market": "DC",
    "selection": "X2",
    "line": null,
@@ -276,17 +461,20 @@
    "id": 134,
    "stage": "прематч",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "1:0"
+   },
    "source": "consensus"
   },
   {
    "date": "2026-10-17",
    "time": "16:30",
    "league": "D1",
-   "home": "Эльверсберг",
+   "home": "Elversberg",
    "away": "Аугсбург",
-   "home_en": "Эльверсберг",
-   "away_en": "Аугсбург",
+   "home_en": "Elversberg",
+   "away_en": "Augsburg",
    "market": "DC",
    "selection": "X2",
    "line": null,
@@ -307,7 +495,10 @@
    "id": 133,
    "stage": "прематч",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 69,
+    "score": "3:1"
+   },
    "source": "consensus"
   },
   {
@@ -347,8 +538,8 @@
    "league": "D1",
    "home": "Унион Берлин",
    "away": "Боруссия Дортмунд",
-   "home_en": "Унион Берлин",
-   "away_en": "Боруссия Дортмунд",
+   "home_en": "Union Berlin",
+   "away_en": "Dortmund",
    "market": "OU",
    "selection": "UNDER",
    "line": 0.5,
@@ -369,7 +560,10 @@
    "id": 130,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -378,8 +572,8 @@
    "league": "SP1",
    "home": "Вильярреал",
    "away": "Эльче",
-   "home_en": "Вильярреал",
-   "away_en": "Эльче",
+   "home_en": "Villarreal",
+   "away_en": "Elche",
    "market": "OU",
    "selection": "OVER",
    "line": 2.5,
@@ -400,17 +594,20 @@
    "id": 129,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 94,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
    "date": "2026-10-17",
    "time": "16:00",
    "league": "I1",
-   "home": "Венеция",
+   "home": "Виченца",
    "away": "Наполи",
-   "home_en": "Венеция",
-   "away_en": "Наполи",
+   "home_en": "Venezia",
+   "away_en": "Napoli",
    "market": "DC",
    "selection": "X2",
    "line": null,
@@ -431,7 +628,10 @@
    "id": 128,
    "stage": "прематч",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "1:0"
+   },
    "source": "consensus"
   },
   {
@@ -440,8 +640,8 @@
    "league": "E1",
    "home": "Бристоль Сити",
    "away": "Шеффилд Юнайтед",
-   "home_en": "Бристоль Сити",
-   "away_en": "Шеффилд Юнайтед",
+   "home_en": "Bristol City",
+   "away_en": "Sheffield United",
    "market": "OU",
    "selection": "OVER",
    "line": 2.5,
@@ -462,7 +662,10 @@
    "id": 127,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "0:1"
+   },
    "source": "consensus"
   },
   {
@@ -471,8 +674,8 @@
    "league": "I2",
    "home": "Каррарезе",
    "away": "Модена",
-   "home_en": "Каррарезе",
-   "away_en": "Модена",
+   "home_en": "Carrarese",
+   "away_en": "Modena",
    "market": "OU",
    "selection": "UNDER",
    "line": 3.5,
@@ -493,7 +696,10 @@
    "id": 126,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 78,
+    "score": "2:1"
+   },
    "source": "consensus"
   },
   {
@@ -502,8 +708,8 @@
    "league": "E3",
    "home": "Транмир Роверс",
    "away": "Барнет",
-   "home_en": "Транмир Роверс",
-   "away_en": "Барнет",
+   "home_en": "Tranmere",
+   "away_en": "Barnet",
    "market": "OU",
    "selection": "UNDER",
    "line": 2.5,
@@ -524,7 +730,10 @@
    "id": 124,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 77,
+    "score": "1:1"
+   },
    "source": "consensus"
   },
   {
@@ -533,8 +742,8 @@
    "league": "T1",
    "home": "Генчлербирлиги",
    "away": "Галатасарай",
-   "home_en": "Генчлербирлиги",
-   "away_en": "Галатасарай",
+   "home_en": "Genclerbirligi",
+   "away_en": "Galatasaray",
    "market": "OU",
    "selection": "UNDER",
    "line": 0.5,
@@ -555,7 +764,10 @@
    "id": 125,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 86,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -564,8 +776,8 @@
    "league": "NOR",
    "home": "Кристиансунн",
    "away": "Олесунн",
-   "home_en": "Кристиансунн",
-   "away_en": "Олесунн",
+   "home_en": "Kristiansund",
+   "away_en": "Aalesund",
    "market": "OU",
    "selection": "OVER",
    "line": 3.5,
@@ -586,7 +798,10 @@
    "id": 123,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 68,
+    "score": "1:2"
+   },
    "source": "consensus"
   },
   {
@@ -594,9 +809,9 @@
    "time": "17:00",
    "league": "E1",
    "home": "Саутгемптон",
-   "away": "Болтон Уондерерс",
-   "home_en": "Саутгемптон",
-   "away_en": "Болтон Уондерерс",
+   "away": "Bolton",
+   "home_en": "Southampton",
+   "away_en": "Bolton",
    "market": "OU",
    "selection": "OVER",
    "line": 2.5,
@@ -617,7 +832,10 @@
    "id": 122,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 91,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -625,9 +843,9 @@
    "time": "17:15",
    "league": "SP2",
    "home": "Эйбар",
-   "away": "Мальорка",
-   "home_en": "Эйбар",
-   "away_en": "Мальорка",
+   "away": "Mallorca",
+   "home_en": "Eibar",
+   "away_en": "Mallorca",
    "market": "OU",
    "selection": "OVER",
    "line": 2.5,
@@ -648,7 +866,10 @@
    "id": 120,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 74,
+    "score": "0:1"
+   },
    "source": "consensus"
   },
   {
@@ -657,8 +878,8 @@
    "league": "E2",
    "home": "Уиган Атлетик",
    "away": "Рединг",
-   "home_en": "Уиган Атлетик",
-   "away_en": "Рединг",
+   "home_en": "Wigan",
+   "away_en": "Reading",
    "market": "OU",
    "selection": "OVER",
    "line": 2.5,
@@ -679,7 +900,10 @@
    "id": 121,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 89,
+    "score": "1:0"
+   },
    "source": "consensus"
   },
   {
@@ -688,8 +912,8 @@
    "league": "G1",
    "home": "Левадиакос",
    "away": "Волос",
-   "home_en": "Левадиакос",
-   "away_en": "Волос",
+   "home_en": "Levadeiakos",
+   "away_en": "Volos NFC",
    "market": "OU",
    "selection": "UNDER",
    "line": 1.5,
@@ -710,7 +934,10 @@
    "id": 119,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 75,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -718,9 +945,9 @@
    "time": "17:00",
    "league": "E1",
    "home": "Саутгемптон",
-   "away": "Болтон Уондерерс",
-   "home_en": "Саутгемптон",
-   "away_en": "Болтон Уондерерс",
+   "away": "Bolton",
+   "home_en": "Southampton",
+   "away_en": "Bolton",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -741,7 +968,10 @@
    "id": 117,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 91,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -750,8 +980,8 @@
    "league": "I2",
    "home": "Каррарезе",
    "away": "Модена",
-   "home_en": "Каррарезе",
-   "away_en": "Модена",
+   "home_en": "Carrarese",
+   "away_en": "Modena",
    "market": "OU",
    "selection": "UNDER",
    "line": 2.5,
@@ -772,7 +1002,10 @@
    "id": 118,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 78,
+    "score": "2:1"
+   },
    "source": "consensus"
   },
   {
@@ -781,8 +1014,8 @@
    "league": "E3",
    "home": "Аккрингтон Стэнли",
    "away": "Джиллингем",
-   "home_en": "Аккрингтон Стэнли",
-   "away_en": "Джиллингем",
+   "home_en": "Accrington",
+   "away_en": "Gillingham",
    "market": "BTTS",
    "selection": "NO",
    "line": null,
@@ -803,7 +1036,10 @@
    "id": 115,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 60,
+    "score": "2:1"
+   },
    "source": "consensus"
   },
   {
@@ -812,8 +1048,8 @@
    "league": "NOR",
    "home": "Кристиансунн",
    "away": "Олесунн",
-   "home_en": "Кристиансунн",
-   "away_en": "Олесунн",
+   "home_en": "Kristiansund",
+   "away_en": "Aalesund",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -834,7 +1070,10 @@
    "id": 116,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 68,
+    "score": "1:2"
+   },
    "source": "consensus"
   },
   {
@@ -843,8 +1082,8 @@
    "league": "G1",
    "home": "Левадиакос",
    "away": "Волос",
-   "home_en": "Левадиакос",
-   "away_en": "Волос",
+   "home_en": "Levadeiakos",
+   "away_en": "Volos NFC",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -865,7 +1104,10 @@
    "id": 114,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 75,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -874,8 +1116,8 @@
    "league": "D1",
    "home": "Унион Берлин",
    "away": "Боруссия Дортмунд",
-   "home_en": "Унион Берлин",
-   "away_en": "Боруссия Дортмунд",
+   "home_en": "Union Berlin",
+   "away_en": "Dortmund",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -896,7 +1138,10 @@
    "id": 112,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -905,8 +1150,8 @@
    "league": "SP1",
    "home": "Вильярреал",
    "away": "Эльче",
-   "home_en": "Вильярреал",
-   "away_en": "Эльче",
+   "home_en": "Villarreal",
+   "away_en": "Elche",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -927,7 +1172,10 @@
    "id": 113,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 94,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -967,8 +1215,8 @@
    "league": "E1",
    "home": "Бристоль Сити",
    "away": "Шеффилд Юнайтед",
-   "home_en": "Бристоль Сити",
-   "away_en": "Шеффилд Юнайтед",
+   "home_en": "Bristol City",
+   "away_en": "Sheffield United",
    "market": "BTTS",
    "selection": "NO",
    "line": null,
@@ -989,7 +1237,10 @@
    "id": 111,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "0:1"
+   },
    "source": "consensus"
   },
   {
@@ -998,8 +1249,8 @@
    "league": "E2",
    "home": "Уиган Атлетик",
    "away": "Рединг",
-   "home_en": "Уиган Атлетик",
-   "away_en": "Рединг",
+   "home_en": "Wigan",
+   "away_en": "Reading",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1020,7 +1271,10 @@
    "id": 108,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 89,
+    "score": "1:0"
+   },
    "source": "consensus"
   },
   {
@@ -1028,9 +1282,9 @@
    "time": "17:15",
    "league": "SP2",
    "home": "Эйбар",
-   "away": "Мальорка",
-   "home_en": "Эйбар",
-   "away_en": "Мальорка",
+   "away": "Mallorca",
+   "home_en": "Eibar",
+   "away_en": "Mallorca",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1051,7 +1305,10 @@
    "id": 109,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 74,
+    "score": "0:1"
+   },
    "source": "consensus"
   },
   {
@@ -1091,8 +1348,8 @@
    "league": "E3",
    "home": "Аккрингтон Стэнли",
    "away": "Джиллингем",
-   "home_en": "Аккрингтон Стэнли",
-   "away_en": "Джиллингем",
+   "home_en": "Accrington",
+   "away_en": "Gillingham",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1113,7 +1370,10 @@
    "id": 107,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 60,
+    "score": "2:1"
+   },
    "source": "consensus"
   },
   {
@@ -1277,8 +1537,8 @@
    "league": "D1",
    "home": "Унион Берлин",
    "away": "Боруссия Дортмунд",
-   "home_en": "Унион Берлин",
-   "away_en": "Боруссия Дортмунд",
+   "home_en": "Union Berlin",
+   "away_en": "Dortmund",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1299,7 +1559,10 @@
    "id": 100,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -1337,10 +1600,10 @@
    "date": "2026-10-17",
    "time": "16:00",
    "league": "I2",
-   "home": "Асколи",
+   "home": "Ascoli",
    "away": "Эмполи",
-   "home_en": "Асколи",
-   "away_en": "Эмполи",
+   "home_en": "Ascoli",
+   "away_en": "Empoli",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1361,7 +1624,10 @@
    "id": 98,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 86,
+    "score": "1:1"
+   },
    "source": "consensus"
   },
   {
@@ -1370,8 +1636,8 @@
    "league": "I2",
    "home": "Падова",
    "away": "Энтелла",
-   "home_en": "Падова",
-   "away_en": "Энтелла",
+   "home_en": "Padova",
+   "away_en": "Virtus Entella",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1392,17 +1658,20 @@
    "id": 97,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 77,
+    "score": "1:1"
+   },
    "source": "consensus"
   },
   {
    "date": "2026-10-17",
    "time": "16:00",
    "league": "I2",
-   "home": "Беневенто",
-   "away": "Виченца",
-   "home_en": "Беневенто",
-   "away_en": "Виченца",
+   "home": "Benevento",
+   "away": "Vicenza",
+   "home_en": "Benevento",
+   "away_en": "Vicenza",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1423,7 +1692,10 @@
    "id": 96,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 90,
+    "score": "2:2"
+   },
    "source": "consensus"
   },
   {
@@ -1461,10 +1733,10 @@
    "date": "2026-10-17",
    "time": "16:00",
    "league": "I1",
-   "home": "Венеция",
+   "home": "Виченца",
    "away": "Наполи",
-   "home_en": "Венеция",
-   "away_en": "Наполи",
+   "home_en": "Venezia",
+   "away_en": "Napoli",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1485,7 +1757,10 @@
    "id": 88,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "1:0"
+   },
    "source": "consensus"
   },
   {
@@ -1494,8 +1769,8 @@
    "league": "T1",
    "home": "Генчлербирлиги",
    "away": "Галатасарай",
-   "home_en": "Генчлербирлиги",
-   "away_en": "Галатасарай",
+   "home_en": "Genclerbirligi",
+   "away_en": "Galatasaray",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1516,7 +1791,10 @@
    "id": 89,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 86,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -1618,8 +1896,8 @@
    "league": "SP1",
    "home": "Эспаньол",
    "away": "Атлетико Мадрид",
-   "home_en": "Эспаньол",
-   "away_en": "Атлетико Мадрид",
+   "home_en": "Espanol",
+   "away_en": "Ath Madrid",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1640,7 +1918,10 @@
    "id": 84,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 85,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
@@ -1680,8 +1961,8 @@
    "league": "E3",
    "home": "Шрусбери Таун",
    "away": "Бристоль Роверс",
-   "home_en": "Шрусбери Таун",
-   "away_en": "Бристоль Роверс",
+   "home_en": "Shrewsbury",
+   "away_en": "Bristol Rvs",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1702,7 +1983,10 @@
    "id": 82,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "1:0"
+   },
    "source": "consensus"
   },
   {
@@ -1711,8 +1995,8 @@
    "league": "E2",
    "home": "Питерборо Юнайтед",
    "away": "Бертон Альбион",
-   "home_en": "Питерборо Юнайтед",
-   "away_en": "Бертон Альбион",
+   "home_en": "Peterboro",
+   "away_en": "Burton",
    "market": "ITOT_A",
    "selection": "UNDER",
    "line": 0.5,
@@ -1733,17 +2017,20 @@
    "id": 81,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "1:1"
+   },
    "source": "consensus"
   },
   {
    "date": "2026-10-17",
    "time": "14:30",
    "league": "E1",
-   "home": "Уотфорд",
+   "home": "Watford",
    "away": "Чарльтон Атлетик",
-   "home_en": "Уотфорд",
-   "away_en": "Чарльтон Атлетик",
+   "home_en": "Watford",
+   "away_en": "Charlton",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1764,7 +2051,10 @@
    "id": 80,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 67,
+    "score": "1:0"
+   },
    "source": "consensus"
   },
   {
@@ -1804,8 +2094,8 @@
    "league": "JPN",
    "home": "Касива Рейсол",
    "away": "Нагоя Грампус",
-   "home_en": "Касива Рейсол",
-   "away_en": "Нагоя Грампус",
+   "home_en": "Kashiwa Reysol",
+   "away_en": "Nagoya Grampus",
    "market": "OU",
    "selection": "UNDER",
    "line": 4.5,
@@ -1826,17 +2116,20 @@
    "id": 77,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 75,
+    "score": "1:2"
+   },
    "source": "consensus"
   },
   {
    "date": "2026-10-17",
    "time": "13:30",
    "league": "T1",
-   "home": "Эрзурумспор ББ",
+   "home": "Erzurumspor",
    "away": "Эюпспор",
-   "home_en": "Эрзурумспор ББ",
-   "away_en": "Эюпспор",
+   "home_en": "Erzurumspor",
+   "away_en": "Eyupspor",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -1857,7 +2150,10 @@
    "id": 76,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 45,
+    "score": "1:0"
+   },
    "source": "consensus"
   },
   {
@@ -1866,8 +2162,8 @@
    "league": "JPN",
    "home": "Мито Холлихок",
    "away": "Урава Ред Даймондс",
-   "home_en": "Мито Холлихок",
-   "away_en": "Урава Ред Даймондс",
+   "home_en": "Mito",
+   "away_en": "Urawa Reds",
    "market": "DC",
    "selection": "1X",
    "line": null,
@@ -1888,17 +2184,20 @@
    "id": 70,
    "stage": "прематч",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 81,
+    "score": "0:0"
+   },
    "source": "consensus"
   },
   {
    "date": "2026-10-17",
-   "time": null,
+   "time": "07:00",
    "league": "JPN",
    "home": "Симидзу С-Палс",
    "away": "Гамба Осака",
-   "home_en": "Симидзу С-Палс",
-   "away_en": "Гамба Осака",
+   "home_en": "Shimizu S-Pulse",
+   "away_en": "Gamba Osaka",
    "market": "BTTS",
    "selection": "NO",
    "line": null,
@@ -2047,13 +2346,13 @@
    "source": "consensus"
   },
   {
-   "date": "2026-10-16",
-   "time": null,
+   "date": "2026-10-17",
+   "time": "01:00",
    "league": "ARG",
-   "home": "Дефенса и Хустисия",
+   "home": "Дефенса И Хустисия",
    "away": "Институто Кордоба",
-   "home_en": "Дефенса и Хустисия",
-   "away_en": "Институто Кордоба",
+   "home_en": "Defensa y Justicia",
+   "away_en": "Instituto",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -2113,9 +2412,9 @@
    "time": "17:00",
    "league": "I1",
    "home": "Аталанта",
-   "away": "Фрозиноне",
-   "home_en": "Аталанта",
-   "away_en": "Фрозиноне",
+   "away": "Frosinone",
+   "home_en": "Atalanta",
+   "away_en": "Frosinone",
    "market": "BTTS",
    "selection": "NO",
    "line": null,
@@ -2207,8 +2506,8 @@
    "league": "SP1",
    "home": "Хетафе",
    "away": "Райо Вальекано",
-   "home_en": "Хетафе",
-   "away_en": "Райо Вальекано",
+   "home_en": "Getafe",
+   "away_en": "Vallecano",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -2269,8 +2568,8 @@
    "league": "SP1",
    "home": "Алавес",
    "away": "Малага",
-   "home_en": "Алавес",
-   "away_en": "Малага",
+   "home_en": "Alaves",
+   "away_en": "Malaga",
    "market": "BTTS",
    "selection": "YES",
    "line": null,
@@ -2298,7 +2597,7 @@
    "date": "2026-10-23",
    "time": "21:30",
    "league": "D1",
-   "home": "Штутгарт 2",
+   "home": "Штутгарт",
    "away": "Боруссия Менхенгладбах",
    "home_en": "Stuttgart",
    "away_en": "M'gladbach",
@@ -2416,8 +2715,8 @@
    "stage": "прематч",
    "playing": false,
    "live": {
-    "minute": 30,
-    "score": "1:2"
+    "minute": 83,
+    "score": "3:4"
    },
    "source": "consensus"
   },
@@ -2449,15 +2748,18 @@
    "id": 35,
    "stage": "прематч",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 46,
+    "score": "1:1"
+   },
    "source": "consensus"
   },
   {
    "date": "2026-10-18",
    "time": "22:00",
    "league": "SP1",
-   "home": "Реал Сосьедад",
-   "away": "Сабадель",
+   "home": "Реал Мадрид",
+   "away": "Севилья",
    "home_en": "Real Madrid",
    "away_en": "Sevilla",
    "market": "BTTS",
@@ -2908,9 +3210,9 @@
    "odds": 4.1,
    "stake": 60.0,
    "edge": 0.039,
-   "status": "open",
-   "result": null,
-   "pnl": null,
+   "status": "void",
+   "result": "снято по решению",
+   "pnl": 0.0,
    "clv": 0.0485,
    "placed_at": "2026-10-15T18:03:39+00:00",
    "mode": "paper",
@@ -3116,7 +3418,7 @@
    "date": "2026-10-17",
    "time": null,
    "league": "CHN",
-   "home": "Чжэцзян",
+   "home": "Qingdao Hainiu",
    "away": "Ляонин Тиерен",
    "home_en": "Qingdao Hainiu",
    "away_en": "Liaoning Tieren",
@@ -3213,13 +3515,13 @@
   }
  ],
  "track": {
-  "updated_at": "2026-10-17T18:35:05+00:00",
+  "updated_at": "2026-10-17T21:29:22+00:00",
   "bank_start": 15048.0,
-  "bank_now": 15125.2,
-  "n": 46,
-  "turnover": 13630.0,
-  "pnl": 77.2,
-  "roi": 0.0057,
+  "bank_now": 15620.2,
+  "n": 52,
+  "turnover": 15350.0,
+  "pnl": 572.2,
+  "roi": 0.0373,
   "clv": 0.0554,
   "clv_ci": [
    -0.0674,
@@ -3227,18 +3529,18 @@
   ],
   "by_track": {
    "CONSENSUS": {
-    "n": 42,
-    "won": 16,
-    "wr": 0.381,
+    "n": 48,
+    "won": 19,
+    "wr": 0.3958,
     "wr_ci": [
-     0.25,
-     0.5319
+     0.2702,
+     0.5369
     ],
-    "turnover": 11930.0,
-    "pnl": -747.8,
-    "roi": -0.0627,
+    "turnover": 13650.0,
+    "pnl": -252.8,
+    "roi": -0.0185,
     "clv": 0.0554,
-    "avg_odds": 2.992
+    "avg_odds": 2.906
    },
    "PRESSURE": {
     "n": 4,
@@ -3257,32 +3559,32 @@
   },
   "by_odds_bucket": {
    "2.0-2.3": {
-    "n": 3,
-    "won": 1,
-    "wr": 0.3333,
+    "n": 5,
+    "won": 3,
+    "wr": 0.6,
     "wr_ci": [
-     0.0615,
-     0.7923
+     0.2307,
+     0.8824
     ],
-    "turnover": 960.0,
-    "pnl": -661.8,
-    "roi": -0.6894,
+    "turnover": 1610.0,
+    "pnl": 78.2,
+    "roi": 0.0486,
     "clv": null,
-    "avg_odds": 2.14
+    "avg_odds": 2.148
    },
    "2.3-2.8": {
-    "n": 17,
-    "won": 8,
-    "wr": 0.4706,
+    "n": 21,
+    "won": 9,
+    "wr": 0.4286,
     "wr_ci": [
-     0.2616,
-     0.6904
+     0.2447,
+     0.6345
     ],
-    "turnover": 5560.0,
-    "pnl": 1322.0,
-    "roi": 0.2378,
+    "turnover": 6630.0,
+    "pnl": 1077.0,
+    "roi": 0.1624,
     "clv": null,
-    "avg_odds": 2.471
+    "avg_odds": 2.452
    },
    "2.8-3.5": {
     "n": 8,
@@ -3515,19 +3817,43 @@
     "bank": 14103.2
    },
    {
+    "ts": "2026-10-17T16:44:04+00:00",
+    "bank": 14598.2
+   },
+   {
     "ts": "2026-10-17T17:13:23+00:00",
-    "bank": 13603.2
+    "bank": 14098.2
    },
    {
     "ts": "2026-10-17T17:19:53+00:00",
-    "bank": 14453.2
+    "bank": 14948.2
    },
    {
     "ts": "2026-10-17T17:28:13+00:00",
-    "bank": 15125.2
+    "bank": 15620.2
+   },
+   {
+    "ts": "2026-10-17T18:46:34+00:00",
+    "bank": 15440.2
+   },
+   {
+    "ts": "2026-10-17T18:52:51+00:00",
+    "bank": 15620.2
+   },
+   {
+    "ts": "2026-10-17T18:55:40+00:00",
+    "bank": 15120.2
+   },
+   {
+    "ts": "2026-10-17T19:04:47+00:00",
+    "bank": 15060.2
+   },
+   {
+    "ts": "2026-10-17T19:16:33+00:00",
+    "bank": 15620.2
    }
   ],
-  "open": 2
+  "open": 0
  },
  "calibration": {
   "grid": [
@@ -3936,15 +4262,15 @@
   "fold_improvement": 0.0027165187395046253
  },
  "coverage": {
-  "fixtures": 220892,
+  "fixtures": 220881,
   "fixtures_with_closing": 203350,
-  "leagues": 354,
-  "leagues_live": 343,
-  "matches_tracked": 2357,
-  "teams": 4926,
-  "odds_rows": 7239944,
-  "fonbet_rows": 471597,
-  "live_snapshots": 7728,
+  "leagues": 356,
+  "leagues_live": 345,
+  "matches_tracked": 2391,
+  "teams": 4880,
+  "odds_rows": 7268579,
+  "fonbet_rows": 500232,
+  "live_snapshots": 8291,
   "date_range": [
    "2012-03-02",
    "2026-10-27"
@@ -3952,32 +4278,6 @@
   "snapshot_since": "2026-10-15T14:54:38+00:00"
  },
  "upcoming": [
-  {
-   "date": "2026-10-17",
-   "time": null,
-   "league": "G1",
-   "league_name": "Super League",
-   "home": "Levadeiakos",
-   "away": "Volos NFC",
-   "odds": [
-    2.3,
-    1.8,
-    13.0
-   ]
-  },
-  {
-   "date": "2026-10-17",
-   "time": null,
-   "league": "JPN",
-   "league_name": "JPN",
-   "home": "Mito",
-   "away": "Urawa Reds",
-   "odds": [
-    29.0,
-    1.68,
-    2.3
-   ]
-  },
   {
    "date": "2026-10-17",
    "time": null,
@@ -4032,5 +4332,5 @@
   }
  ],
  "model_version": "dc-0.2",
- "generated_at": "2026-10-17T18:35:08+00:00"
+ "generated_at": "2026-10-17T21:29:27+00:00"
 }
