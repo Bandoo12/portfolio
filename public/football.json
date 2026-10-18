@@ -29,7 +29,7 @@
    "stage": "лайв",
    "playing": true,
    "live": {
-    "minute": 40,
+    "minute": 45,
     "score": "0:1"
    },
    "source": "consensus",
@@ -40,9 +40,9 @@
    "time": "19:30",
    "league": "SP1",
    "home": "Малага",
-   "away": "Реал Мадрид",
+   "away": "Реал Сосьедад",
    "home_en": "Malaga",
-   "away_en": "Real Madrid",
+   "away_en": "Sociedad",
    "market": "OU",
    "selection": "OVER",
    "line": 4.5,
@@ -63,7 +63,10 @@
    "id": 187,
    "stage": "лайв",
    "playing": true,
-   "live": null,
+   "live": {
+    "minute": 56,
+    "score": "1:2"
+   },
    "source": "consensus",
    "era": "new"
   },
@@ -72,7 +75,7 @@
    "time": "19:30",
    "league": "SP2",
    "home": "Вальядолид",
-   "away": "Эльденсе",
+   "away": "Cultural Leonesa",
    "home_en": "Valladolid",
    "away_en": "Cultural Leonesa",
    "market": "DC",
@@ -240,9 +243,9 @@
    "date": "2026-10-18",
    "time": "15:30",
    "league": "N1",
-   "home": "NAC Breda",
+   "home": "Камбур",
    "away": "Аз Алкмар",
-   "home_en": "NAC Breda",
+   "home_en": "Cambuur",
    "away_en": "AZ Alkmaar",
    "market": "1X2",
    "selection": "A",
@@ -255,16 +258,19 @@
    "odds": 2.4,
    "stake": 200.0,
    "edge": 0.109,
-   "status": "open",
-   "result": null,
-   "pnl": null,
+   "status": "lost",
+   "result": "2:2",
+   "pnl": -200.0,
    "clv": null,
    "placed_at": "2026-10-18T16:32:09+00:00",
    "mode": "paper",
    "id": 166,
    "stage": "лайв",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 87,
+    "score": "2:2"
+   },
    "source": "consensus",
    "era": "new"
   },
@@ -1749,7 +1755,7 @@
    "date": "2026-10-17",
    "time": "18:00",
    "league": "AUT",
-   "home": "A. Lustenau",
+   "home": "Аустрия Лустенау",
    "away": "Ласк",
    "home_en": "A. Lustenau",
    "away_en": "LASK",
@@ -1813,7 +1819,7 @@
    "date": "2026-10-17",
    "time": "16:30",
    "league": "D1",
-   "home": "Elversberg",
+   "home": "Эльверсберг",
    "away": "Аугсбург",
    "home_en": "Elversberg",
    "away_en": "Augsburg",
@@ -2901,7 +2907,7 @@
    "date": "2026-10-17",
    "time": "16:00",
    "league": "I2",
-   "home": "Ascoli",
+   "home": "Асколи",
    "away": "Эмполи",
    "home_en": "Ascoli",
    "away_en": "Empoli",
@@ -3416,7 +3422,7 @@
    "date": "2026-10-17",
    "time": "13:30",
    "league": "T1",
-   "home": "Erzurumspor",
+   "home": "Эрзурумспор Бб",
    "away": "Эюпспор",
    "home_en": "Erzurumspor",
    "away_en": "Eyupspor",
@@ -4159,9 +4165,9 @@
    "time": null,
    "league": "UNK",
    "home": "Мэнсфилд Таун",
-   "away": "Cardiff",
+   "away": "Oxford",
    "home_en": "Mansfield",
-   "away_en": "Cardiff",
+   "away_en": "Oxford",
    "market": "1X2",
    "selection": "X",
    "line": null,
@@ -4223,9 +4229,9 @@
    "time": null,
    "league": "UNK",
    "home": "Мэнсфилд Таун",
-   "away": "Cardiff",
+   "away": "Oxford",
    "home_en": "Mansfield",
-   "away_en": "Cardiff",
+   "away_en": "Oxford",
    "market": "1X2",
    "selection": "П1",
    "line": null,
@@ -4287,9 +4293,9 @@
    "time": null,
    "league": "UNK",
    "home": "Мэнсфилд Таун",
-   "away": "Cardiff",
+   "away": "Oxford",
    "home_en": "Mansfield",
-   "away_en": "Cardiff",
+   "away_en": "Oxford",
    "market": "1X2",
    "selection": "12",
    "line": null,
@@ -4766,7 +4772,7 @@
    "date": "2026-10-16",
    "time": null,
    "league": "SC1",
-   "home": "Эйр Юнайтед",
+   "home": "Airdrie Utd",
    "away": "Партик Тисл",
    "home_en": "Airdrie Utd",
    "away_en": "Partick",
@@ -4828,51 +4834,51 @@
   }
  ],
  "track": {
-  "updated_at": "2026-10-18T17:50:22+00:00",
+  "updated_at": "2026-10-18T17:56:56+00:00",
   "since": "2026-10-18T12:20:36+00:00",
   "until": null,
   "bank_start": 14899.0,
-  "bank_now": 15175.0,
-  "n": 17,
-  "turnover": 3400.0,
-  "pnl": 276.0,
-  "roi": 0.0812,
+  "bank_now": 14975.0,
+  "n": 18,
+  "turnover": 3600.0,
+  "pnl": 76.0,
+  "roi": 0.0211,
   "clv": -0.0424,
   "clv_n": 1,
   "clv_need": 50,
   "clv_ci": null,
   "by_track": {
    "CONSENSUS": {
-    "n": 17,
+    "n": 18,
     "won": 8,
-    "wr": 0.4706,
+    "wr": 0.4444,
     "wr_ci": [
-     0.2616,
-     0.6904
+     0.2456,
+     0.6628
     ],
-    "turnover": 3400.0,
-    "pnl": 276.0,
-    "roi": 0.0812,
+    "turnover": 3600.0,
+    "pnl": 76.0,
+    "roi": 0.0211,
     "clv": -0.0424,
-    "avg_odds": 2.537,
-    "exp_wr": 0.4073
+    "avg_odds": 2.529,
+    "exp_wr": 0.4078
    }
   },
   "by_market": {
    "1X2": {
-    "n": 1,
+    "n": 2,
     "won": 0,
     "wr": 0.0,
     "wr_ci": [
      0.0,
-     0.7935
+     0.6576
     ],
-    "turnover": 200.0,
-    "pnl": -200.0,
+    "turnover": 400.0,
+    "pnl": -400.0,
     "roi": -1.0,
     "clv": null,
-    "avg_odds": 3.0,
-    "exp_wr": 0.3333
+    "avg_odds": 2.7,
+    "exp_wr": 0.375
    },
    "DC": {
     "n": 3,
@@ -4922,19 +4928,19 @@
     "exp_wr": 0.5
    },
    "2.3-2.8": {
-    "n": 10,
+    "n": 11,
     "won": 6,
-    "wr": 0.6,
+    "wr": 0.5455,
     "wr_ci": [
-     0.3127,
-     0.8318
+     0.2801,
+     0.7873
     ],
-    "turnover": 2000.0,
-    "pnl": 900.0,
-    "roi": 0.45,
+    "turnover": 2200.0,
+    "pnl": 700.0,
+    "roi": 0.3182,
     "clv": null,
-    "avg_odds": 2.41,
-    "exp_wr": 0.4153
+    "avg_odds": 2.409,
+    "exp_wr": 0.4154
    },
    "2.8-3.5": {
     "n": 3,
@@ -5028,68 +5034,74 @@
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 8,
-    "bank": 13789.0,
-    "won": true
+    "bank": 13299.0,
+    "won": false
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 9,
-    "bank": 13989.0,
+    "bank": 13589.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 10,
-    "bank": 14249.0,
+    "bank": 13789.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 11,
-    "bank": 14529.0,
+    "bank": 14049.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 12,
-    "bank": 14705.0,
+    "bank": 14329.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 13,
-    "bank": 14995.0,
+    "bank": 14505.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 14,
-    "bank": 15295.0,
+    "bank": 14795.0,
+    "won": true
+   },
+   {
+    "ts": "2026-10-18T16:32:09+00:00",
+    "n": 15,
+    "bank": 15095.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:37:35+00:00",
-    "n": 15,
-    "bank": 15095.0,
+    "n": 16,
+    "bank": 14895.0,
     "won": false
    },
    {
     "ts": "2026-10-18T16:40:25+00:00",
-    "n": 16,
-    "bank": 15375.0,
+    "n": 17,
+    "bank": 15175.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:55:01+00:00",
-    "n": 17,
-    "bank": 15175.0,
+    "n": 18,
+    "bank": 14975.0,
     "won": false
    }
   ],
-  "open": 5
+  "open": 4
  },
  "track_old": {
-  "updated_at": "2026-10-18T17:50:22+00:00",
+  "updated_at": "2026-10-18T17:56:56+00:00",
   "since": null,
   "until": "2026-10-18T12:20:36+00:00",
   "bank_start": 15048.0,
@@ -6077,15 +6089,15 @@
   "fold_improvement": 0.0027165187395046253
  },
  "coverage": {
-  "fixtures": 221445,
+  "fixtures": 221443,
   "fixtures_with_closing": 203350,
   "leagues": 380,
   "leagues_live": 368,
   "matches_tracked": 2951,
   "teams": 5632,
-  "odds_rows": 7564752,
-  "fonbet_rows": 796405,
-  "live_snapshots": 13019,
+  "odds_rows": 7567254,
+  "fonbet_rows": 798907,
+  "live_snapshots": 13045,
   "date_range": [
    "2012-03-02",
    "2026-12-07"
@@ -6094,5 +6106,5 @@
  },
  "upcoming": [],
  "model_version": "dc-0.2",
- "generated_at": "2026-10-18T17:50:24+00:00"
+ "generated_at": "2026-10-18T17:57:00+00:00"
 }
