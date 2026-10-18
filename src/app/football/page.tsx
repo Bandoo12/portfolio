@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import fallback from '@/content/football.json';
+import { Charts } from './charts';
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
 
@@ -236,6 +237,8 @@ export default function FootballPage() {
             tone={tone}
           />
         </div>
+
+        <Charts track={data.track as never} />
 
         {playing.length > 0 && (
           <section className="mt-10">
