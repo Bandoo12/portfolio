@@ -19,15 +19,15 @@
    "odds": 2.5,
    "stake": 200.0,
    "edge": 0.0275,
-   "status": "open",
-   "result": null,
-   "pnl": null,
+   "status": "lost",
+   "result": "4:1",
+   "pnl": -200.0,
    "clv": null,
    "placed_at": "2026-10-18T20:12:50+00:00",
    "mode": "paper",
    "id": 196,
    "stage": "лайв",
-   "playing": true,
+   "playing": false,
    "live": {
     "minute": 45,
     "score": "2:0"
@@ -54,18 +54,18 @@
    "odds": 2.25,
    "stake": 200.0,
    "edge": 0.0216,
-   "status": "open",
-   "result": null,
-   "pnl": null,
+   "status": "lost",
+   "result": "1:2",
+   "pnl": -200.0,
    "clv": null,
    "placed_at": "2026-10-18T19:42:05+00:00",
    "mode": "paper",
    "id": 195,
    "stage": "лайв",
-   "playing": true,
+   "playing": false,
    "live": {
-    "minute": 46,
-    "score": "1:0"
+    "minute": 88,
+    "score": "1:2"
    },
    "source": "consensus",
    "era": "new"
@@ -99,8 +99,8 @@
    "stage": "лайв",
    "playing": false,
    "live": {
-    "minute": 50,
-    "score": "0:0"
+    "minute": 71,
+    "score": "1:0"
    },
    "source": "consensus",
    "era": "new"
@@ -124,18 +124,18 @@
    "odds": 1.82,
    "stake": 200.0,
    "edge": 0.034,
-   "status": "open",
-   "result": null,
-   "pnl": null,
+   "status": "lost",
+   "result": "1:0",
+   "pnl": -200.0,
    "clv": null,
    "placed_at": "2026-10-18T19:09:59+00:00",
    "mode": "paper",
    "id": 193,
    "stage": "лайв",
-   "playing": true,
+   "playing": false,
    "live": {
-    "minute": 50,
-    "score": "0:0"
+    "minute": 71,
+    "score": "1:0"
    },
    "source": "consensus",
    "era": "new"
@@ -194,15 +194,15 @@
    "odds": 1.82,
    "stake": 200.0,
    "edge": 0.0317,
-   "status": "open",
-   "result": null,
-   "pnl": null,
+   "status": "won",
+   "result": "2:2",
+   "pnl": 164.0,
    "clv": null,
    "placed_at": "2026-10-18T18:20:19+00:00",
    "mode": "paper",
    "id": 191,
    "stage": "лайв",
-   "playing": true,
+   "playing": false,
    "live": {
     "minute": 78,
     "score": "1:2"
@@ -745,9 +745,9 @@
    "odds": 3.75,
    "stake": 200.0,
    "edge": 0.066,
-   "status": "open",
-   "result": null,
-   "pnl": null,
+   "status": "lost",
+   "result": "2:1",
+   "pnl": -200.0,
    "clv": null,
    "placed_at": "2026-10-18T16:32:09+00:00",
    "mode": "paper",
@@ -5120,51 +5120,51 @@
   }
  ],
  "track": {
-  "updated_at": "2026-10-18T20:13:39+00:00",
+  "updated_at": "2026-10-18T21:06:22+00:00",
   "since": "2026-10-18T12:20:36+00:00",
   "until": null,
   "bank_start": 14899.0,
-  "bank_now": 15455.0,
-  "n": 23,
-  "turnover": 4600.0,
-  "pnl": 556.0,
-  "roi": 0.1209,
+  "bank_now": 14819.0,
+  "n": 28,
+  "turnover": 5600.0,
+  "pnl": -80.0,
+  "roi": -0.0143,
   "clv": -0.0424,
   "clv_n": 1,
   "clv_need": 50,
   "clv_ci": null,
   "by_track": {
    "CONSENSUS": {
-    "n": 23,
-    "won": 11,
-    "wr": 0.4783,
+    "n": 28,
+    "won": 12,
+    "wr": 0.4286,
     "wr_ci": [
-     0.2924,
-     0.6704
+     0.2651,
+     0.6093
     ],
-    "turnover": 4600.0,
-    "pnl": 556.0,
-    "roi": 0.1209,
+    "turnover": 5600.0,
+    "pnl": -80.0,
+    "roi": -0.0143,
     "clv": -0.0424,
-    "avg_odds": 2.501,
-    "exp_wr": 0.41
+    "avg_odds": 2.488,
+    "exp_wr": 0.4157
    }
   },
   "by_market": {
    "1X2": {
-    "n": 2,
+    "n": 3,
     "won": 0,
     "wr": 0.0,
     "wr_ci": [
      0.0,
-     0.6576
+     0.5615
     ],
-    "turnover": 400.0,
-    "pnl": -400.0,
+    "turnover": 600.0,
+    "pnl": -600.0,
     "roi": -1.0,
     "clv": null,
-    "avg_odds": 2.7,
-    "exp_wr": 0.375
+    "avg_odds": 3.05,
+    "exp_wr": 0.3389
    },
    "DC": {
     "n": 3,
@@ -5182,51 +5182,51 @@
     "exp_wr": 0.2932
    },
    "OU": {
-    "n": 18,
-    "won": 11,
-    "wr": 0.6111,
+    "n": 22,
+    "won": 12,
+    "wr": 0.5455,
     "wr_ci": [
-     0.3862,
-     0.797
+     0.3466,
+     0.7308
     ],
-    "turnover": 3600.0,
-    "pnl": 1556.0,
-    "roi": 0.4322,
+    "turnover": 4400.0,
+    "pnl": 1120.0,
+    "roi": 0.2545,
     "clv": null,
-    "avg_odds": 2.327,
-    "exp_wr": 0.4333
+    "avg_odds": 2.285,
+    "exp_wr": 0.4429
    }
   },
   "by_odds_bucket": {
    "2.0-2.3": {
-    "n": 1,
+    "n": 2,
     "won": 1,
-    "wr": 1.0,
+    "wr": 0.5,
     "wr_ci": [
-     0.2065,
-     1.0
+     0.0945,
+     0.9055
     ],
-    "turnover": 200.0,
-    "pnl": 200.0,
-    "roi": 1.0,
+    "turnover": 400.0,
+    "pnl": 0.0,
+    "roi": 0.0,
     "clv": null,
-    "avg_odds": 2.0,
-    "exp_wr": 0.5
+    "avg_odds": 2.125,
+    "exp_wr": 0.4722
    },
    "2.3-2.8": {
-    "n": 16,
+    "n": 17,
     "won": 9,
-    "wr": 0.5625,
+    "wr": 0.5294,
     "wr_ci": [
-     0.3318,
-     0.769
+     0.3096,
+     0.7384
     ],
-    "turnover": 3200.0,
-    "pnl": 1180.0,
-    "roi": 0.3688,
+    "turnover": 3400.0,
+    "pnl": 980.0,
+    "roi": 0.2882,
     "clv": null,
-    "avg_odds": 2.406,
-    "exp_wr": 0.4161
+    "avg_odds": 2.412,
+    "exp_wr": 0.4152
    },
    "2.8-3.5": {
     "n": 3,
@@ -5244,34 +5244,34 @@
     "exp_wr": 0.3117
    },
    "3.5-5.0": {
-    "n": 1,
+    "n": 2,
     "won": 0,
     "wr": 0.0,
     "wr_ci": [
      0.0,
-     0.7935
-    ],
-    "turnover": 200.0,
-    "pnl": -200.0,
-    "roi": -1.0,
-    "clv": null,
-    "avg_odds": 3.6,
-    "exp_wr": 0.2778
-   },
-   "<2.0": {
-    "n": 2,
-    "won": 1,
-    "wr": 0.5,
-    "wr_ci": [
-     0.0945,
-     0.9055
+     0.6576
     ],
     "turnover": 400.0,
-    "pnl": -24.0,
-    "roi": -0.06,
+    "pnl": -400.0,
+    "roi": -1.0,
     "clv": null,
-    "avg_odds": 1.89,
-    "exp_wr": 0.5291
+    "avg_odds": 3.675,
+    "exp_wr": 0.2722
+   },
+   "<2.0": {
+    "n": 4,
+    "won": 2,
+    "wr": 0.5,
+    "wr_ci": [
+     0.15,
+     0.85
+    ],
+    "turnover": 800.0,
+    "pnl": -60.0,
+    "roi": -0.075,
+    "clv": null,
+    "avg_odds": 1.855,
+    "exp_wr": 0.5393
    }
   },
   "equity": [
@@ -5326,98 +5326,128 @@
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 9,
-    "bank": 13589.0,
-    "won": true
+    "bank": 13099.0,
+    "won": false
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 10,
-    "bank": 13789.0,
+    "bank": 13389.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 11,
-    "bank": 14049.0,
+    "bank": 13589.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 12,
-    "bank": 14329.0,
+    "bank": 13849.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 13,
-    "bank": 14505.0,
+    "bank": 14129.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 14,
-    "bank": 14795.0,
+    "bank": 14305.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:32:09+00:00",
     "n": 15,
-    "bank": 15095.0,
+    "bank": 14595.0,
+    "won": true
+   },
+   {
+    "ts": "2026-10-18T16:32:09+00:00",
+    "n": 16,
+    "bank": 14895.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:37:35+00:00",
-    "n": 16,
-    "bank": 14895.0,
+    "n": 17,
+    "bank": 14695.0,
     "won": false
    },
    {
     "ts": "2026-10-18T16:40:25+00:00",
-    "n": 17,
-    "bank": 15175.0,
+    "n": 18,
+    "bank": 14975.0,
     "won": true
    },
    {
     "ts": "2026-10-18T16:43:12+00:00",
-    "n": 18,
-    "bank": 14975.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:55:01+00:00",
     "n": 19,
     "bank": 14775.0,
     "won": false
    },
    {
-    "ts": "2026-10-18T17:01:21+00:00",
+    "ts": "2026-10-18T16:55:01+00:00",
     "n": 20,
-    "bank": 15095.0,
+    "bank": 14575.0,
+    "won": false
+   },
+   {
+    "ts": "2026-10-18T17:01:21+00:00",
+    "n": 21,
+    "bank": 14895.0,
     "won": true
    },
    {
     "ts": "2026-10-18T17:18:57+00:00",
-    "n": 21,
-    "bank": 15355.0,
+    "n": 22,
+    "bank": 15155.0,
     "won": true
    },
    {
     "ts": "2026-10-18T18:14:22+00:00",
-    "n": 22,
-    "bank": 15155.0,
+    "n": 23,
+    "bank": 14955.0,
     "won": false
    },
    {
-    "ts": "2026-10-18T18:39:48+00:00",
-    "n": 23,
-    "bank": 15455.0,
+    "ts": "2026-10-18T18:20:19+00:00",
+    "n": 24,
+    "bank": 15119.0,
     "won": true
+   },
+   {
+    "ts": "2026-10-18T18:39:48+00:00",
+    "n": 25,
+    "bank": 15419.0,
+    "won": true
+   },
+   {
+    "ts": "2026-10-18T19:09:59+00:00",
+    "n": 26,
+    "bank": 15219.0,
+    "won": false
+   },
+   {
+    "ts": "2026-10-18T19:42:05+00:00",
+    "n": 27,
+    "bank": 15019.0,
+    "won": false
+   },
+   {
+    "ts": "2026-10-18T20:12:50+00:00",
+    "n": 28,
+    "bank": 14819.0,
+    "won": false
    }
   ],
-  "open": 5
+  "open": 0
  },
  "track_old": {
-  "updated_at": "2026-10-18T20:13:39+00:00",
+  "updated_at": "2026-10-18T21:06:22+00:00",
   "since": null,
   "until": "2026-10-18T12:20:36+00:00",
   "bank_start": 15048.0,
@@ -6405,15 +6435,15 @@
   "fold_improvement": 0.0027165187395046253
  },
  "coverage": {
-  "fixtures": 221489,
+  "fixtures": 221495,
   "fixtures_with_closing": 203350,
   "leagues": 381,
   "leagues_live": 369,
-  "matches_tracked": 2997,
-  "teams": 5667,
-  "odds_rows": 7592041,
-  "fonbet_rows": 823694,
-  "live_snapshots": 13550,
+  "matches_tracked": 3003,
+  "teams": 5673,
+  "odds_rows": 7598693,
+  "fonbet_rows": 830346,
+  "live_snapshots": 13706,
   "date_range": [
    "2012-03-02",
    "2026-12-07"
@@ -6422,5 +6452,5 @@
  },
  "upcoming": [],
  "model_version": "dc-0.2",
- "generated_at": "2026-10-18T20:13:42+00:00"
+ "generated_at": "2026-10-18T21:06:25+00:00"
 }
