@@ -238,10 +238,61 @@ export function MarketChart({ byMarket }: { byMarket: Record<string, MarketStat>
   );
 }
 
+/* Доля против предела — по форме это измеритель, а не график.
+   CLV здесь главный показатель, потому что ROI при нашем разбросе
+   (±1.61 на рубль ставки) требует тысяч ставок, а CLV читается на
+   пятидесяти. Пока замеров мало, честнее показывать шкалу набора,
+   а не делать вид, что число уже о чём-то говорит. */
+function ClvCard({ clv, n, need, ci }: {
+  clv: number | null; n: number; need: number; ci: [number, number] | null;
+}) {
+  const ready = n >= need;
+  const pct = Math.min(1, n / need);
+  return (
+    <div
+      className="rounded-2xl p-5 min-w-0"
+      style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <div className="text-sm font-medium">Берём ли мы цену лучше закрывающей</div>
+        <div className="text-xs" style={{ color: 'var(--c-muted)' }}>
+          {n} из {need} замеров
+        </div>
+      </div>
+
+      <div className="flex items-baseline gap-3 mt-3">
+        <div className="text-3xl font-semibold tabular-nums"
+          style={{ color: ready ? (clv ?? 0) > 0 ? '#4ade80' : '#f87171' : 'var(--c-text)' }}>
+          {clv === null ? '—' : `${clv > 0 ? '+' : ''}${(clv * 100).toFixed(1)}%`}
+        </div>
+        {ci && (
+          <div className="text-xs tabular-nums" style={{ color: 'var(--c-muted)' }}>
+            от {(ci[0] * 100).toFixed(1)}% до {(ci[1] * 100).toFixed(1)}%
+          </div>
+        )}
+      </div>
+
+      <div className="mt-3 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.08)' }}>
+        <div className="h-full rounded-full" style={{ width: `${pct * 100}%`, background: SERIES }} />
+      </div>
+
+      <div className="text-xs mt-3 leading-snug" style={{ color: 'var(--c-muted)' }}>
+        {ready
+          ? 'Замеров достаточно, чтобы числу верить.'
+          : `Пока это число ничего не значит — интервал накрывает ноль. CLV выбран главным
+             показателем потому, что читается на ${need} ставках, тогда как ROI при нашем
+             разбросе требует тысяч.`}
+      </div>
+    </div>
+  );
+}
+
 export function Charts({ track }: {
   track: {
     equity?: EquityPoint[]; bank_start?: number;
     by_market?: Record<string, MarketStat>;
+    clv?: number | null; clv_n?: number; clv_need?: number;
+    clv_ci?: [number, number] | null;
   };
 }) {
   const eq = track.equity ?? [];
@@ -249,7 +300,16 @@ export function Charts({ track }: {
   if (!eq.length) return null;
 
   return (
-    <section className="mt-10 grid gap-3 lg:grid-cols-2 items-start">
+    <>
+    <section className="mt-10">
+      <ClvCard
+        clv={track.clv ?? null}
+        n={track.clv_n ?? 0}
+        need={track.clv_need ?? 50}
+        ci={track.clv_ci ?? null}
+      />
+    </section>
+    <section className="mt-3 grid gap-3 lg:grid-cols-2 items-start">
       <Card
         title="Банк"
         note={`${eq.length} рассчитанных ставок по порядку. Ось снизу — номер ставки, а не дата: за один вечер их бывает десять.`}
@@ -263,5 +323,6 @@ export function Charts({ track }: {
         <MarketChart byMarket={bm} />
       </Card>
     </section>
+    </>
   );
 }

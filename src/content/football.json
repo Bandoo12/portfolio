@@ -1,6 +1,99 @@
 {
  "picks": [
   {
+   "date": "2026-10-18",
+   "time": "15:00",
+   "league": "SP1",
+   "home": "Осасуна",
+   "away": "Фк Андорра",
+   "home_en": "Osasuna",
+   "away_en": "Andorra",
+   "market": "DC",
+   "selection": "X2",
+   "line": null,
+   "pick_label": "X2",
+   "p": 0.3182,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 3.25,
+   "stake": 120.0,
+   "edge": 0.0342,
+   "status": "open",
+   "result": null,
+   "pnl": null,
+   "clv": null,
+   "placed_at": "2026-10-18T12:12:22+00:00",
+   "mode": "paper",
+   "id": 163,
+   "stage": "прематч",
+   "playing": true,
+   "live": null,
+   "source": "consensus"
+  },
+  {
+   "date": "2026-10-18",
+   "time": null,
+   "league": "Ekstraklasa",
+   "home": "Гурник Забже",
+   "away": "Пяст Гливице",
+   "home_en": "Gornik Zabrze",
+   "away_en": "Piast Gliwice",
+   "market": "1X2",
+   "selection": "H",
+   "line": null,
+   "pick_label": "П1",
+   "p": 0.3226,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "PRESSURE",
+   "odds": 3.8,
+   "stake": 500.0,
+   "edge": 0.2258,
+   "status": "lost",
+   "result": "1:1",
+   "pnl": -500.0,
+   "clv": null,
+   "placed_at": "2026-10-18T11:58:51+00:00",
+   "mode": "paper",
+   "id": 162,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "pressure"
+  },
+  {
+   "date": "2026-10-25",
+   "time": "14:15",
+   "league": "N1",
+   "home": "Фортуна Ситтард",
+   "away": "Эксельсиор",
+   "home_en": "For Sittard",
+   "away_en": "Excelsior",
+   "market": "1X2",
+   "selection": "A",
+   "line": null,
+   "pick_label": "П2",
+   "p": 0.3874,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.7,
+   "stake": 290.0,
+   "edge": 0.0458,
+   "status": "open",
+   "result": null,
+   "pnl": null,
+   "clv": 0.0458,
+   "placed_at": "2026-10-18T11:41:46+00:00",
+   "mode": "paper",
+   "id": 161,
+   "stage": "прематч",
+   "playing": false,
+   "live": null,
+   "source": "consensus"
+  },
+  {
    "date": "2026-10-25",
    "time": "03:30",
    "league": "USA",
@@ -58,8 +151,11 @@
    "mode": "paper",
    "id": 160,
    "stage": "прематч",
-   "playing": false,
-   "live": null,
+   "playing": true,
+   "live": {
+    "minute": 24,
+    "score": "2:0"
+   },
    "source": "consensus"
   },
   {
@@ -3740,17 +3836,19 @@
   }
  ],
  "track": {
-  "updated_at": "2026-10-18T11:23:00+00:00",
+  "updated_at": "2026-10-18T12:18:48+00:00",
   "bank_start": 15048.0,
-  "bank_now": 15399.2,
-  "n": 58,
-  "turnover": 16840.0,
-  "pnl": 351.2,
-  "roi": 0.0209,
-  "clv": 0.0554,
+  "bank_now": 14899.2,
+  "n": 59,
+  "turnover": 17340.0,
+  "pnl": -148.8,
+  "roi": -0.0086,
+  "clv": 0.0488,
+  "clv_n": 5,
+  "clv_need": 50,
   "clv_ci": [
-   -0.0674,
-   0.1783
+   -0.0191,
+   0.1167
   ],
   "by_track": {
    "CONSENSUS": {
@@ -3769,36 +3867,36 @@
     "exp_wr": 0.3885
    },
    "PRESSURE": {
-    "n": 4,
+    "n": 5,
     "won": 2,
-    "wr": 0.5,
+    "wr": 0.4,
     "wr_ci": [
-     0.15,
-     0.85
+     0.1176,
+     0.7693
     ],
-    "turnover": 1700.0,
-    "pnl": 825.0,
-    "roi": 0.4853,
+    "turnover": 2200.0,
+    "pnl": 325.0,
+    "roi": 0.1477,
     "clv": null,
-    "avg_odds": 3.538,
-    "exp_wr": 0.2895
+    "avg_odds": 3.59,
+    "exp_wr": 0.2842
    }
   },
   "by_market": {
    "1X2": {
-    "n": 17,
+    "n": 18,
     "won": 8,
-    "wr": 0.4706,
+    "wr": 0.4444,
     "wr_ci": [
-     0.2616,
-     0.6904
+     0.2456,
+     0.6628
     ],
-    "turnover": 4170.0,
-    "pnl": 1482.0,
-    "roi": 0.3554,
+    "turnover": 4670.0,
+    "pnl": 982.0,
+    "roi": 0.2103,
     "clv": 0.0454,
-    "avg_odds": 3.975,
-    "exp_wr": 0.2987
+    "avg_odds": 3.965,
+    "exp_wr": 0.2967
    },
    "BTTS": {
     "n": 7,
@@ -3908,19 +4006,19 @@
     "exp_wr": 0.3205
    },
    "3.5-5.0": {
-    "n": 9,
+    "n": 10,
     "won": 2,
-    "wr": 0.2222,
+    "wr": 0.2,
     "wr_ci": [
-     0.0632,
-     0.5474
+     0.0567,
+     0.5098
     ],
-    "turnover": 2350.0,
-    "pnl": -1015.0,
-    "roi": -0.4319,
+    "turnover": 2850.0,
+    "pnl": -1515.0,
+    "roi": -0.5316,
     "clv": 0.0554,
-    "avg_odds": 4.028,
-    "exp_wr": 0.2512
+    "avg_odds": 4.005,
+    "exp_wr": 0.2524
    },
    "5.0+": {
     "n": 2,
@@ -4301,9 +4399,15 @@
     "n": 58,
     "bank": 15399.2,
     "won": true
+   },
+   {
+    "ts": "2026-10-18T11:58:51+00:00",
+    "n": 59,
+    "bank": 14899.2,
+    "won": false
    }
   ],
-  "open": 5
+  "open": 7
  },
  "calibration": {
   "grid": [
@@ -4712,15 +4816,15 @@
   "fold_improvement": 0.0027165187395046253
  },
  "coverage": {
-  "fixtures": 221299,
+  "fixtures": 221314,
   "fixtures_with_closing": 203350,
-  "leagues": 370,
-  "leagues_live": 359,
-  "matches_tracked": 2808,
-  "teams": 5534,
-  "odds_rows": 7418096,
-  "fonbet_rows": 649749,
-  "live_snapshots": 9903,
+  "leagues": 372,
+  "leagues_live": 360,
+  "matches_tracked": 2821,
+  "teams": 5547,
+  "odds_rows": 7438638,
+  "fonbet_rows": 670291,
+  "live_snapshots": 10198,
   "date_range": [
    "2012-03-02",
    "2026-10-27"
@@ -4729,5 +4833,5 @@
  },
  "upcoming": [],
  "model_version": "dc-0.2",
- "generated_at": "2026-10-18T11:23:04+00:00"
+ "generated_at": "2026-10-18T12:18:50+00:00"
 }
