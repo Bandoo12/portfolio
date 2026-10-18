@@ -4,7 +4,8 @@ let DATA = null, THEME = 'dark', ZOOM = 'fit', VIEW = { type: 'kit', id: null },
 const $ = s => document.querySelector(s);
 function curZoom(frame) {
   const m = /scale\(([\d.]+)\)/.exec(frame && frame.style.transform || '');
-  return m ? parseFloat(m[1]) : (typeof ZOOM === 'number' ? ZOOM : 1);
+  const z = m ? parseFloat(m[1]) : (typeof ZOOM === 'number' ? ZOOM : 1);
+  return (isFinite(z) && z > 0) ? z : 1;   // без запаса NaN ломает рамку наведения
 }
 const E = (t, c) => { const e = document.createElement(t); if (c) e.className = c; return e; };
 
@@ -169,7 +170,9 @@ $('#zoom').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
   if (b.dataset.zs) ZOOM = nextZoom(shownZoom(), +b.dataset.zs);
   else if (b.id === 'zval') ZOOM = 1;
-  else ZOOM = b.dataset.z === 'fit' ? 'fit' : +b.dataset.z;
+  else { const v = b.dataset.z === 'fit' ? 'fit' : +b.dataset.z;
+         if (v !== 'fit' && !isFinite(v)) return;
+         ZOOM = v; }
   applyZoom();
 };
 
@@ -192,7 +195,8 @@ function zoomFor(f) {
   if (ZOOM !== 'fit') return ZOOM;
   // поля: #body 24*2 + рамка карточки 1*2 + отступы stage 18*2
   const avail = ($('#body').clientWidth || 1000) - 86;
-  return Math.min(1, Math.max(0.25, avail / (f.w || 1)));
+  const z = Math.min(1, Math.max(0.25, avail / (f.w || 1)));
+  return isFinite(z) ? z : 1;
 }
 
 /* ---------- масштаб и панорамирование ---------- */

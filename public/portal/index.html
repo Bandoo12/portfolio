@@ -2,6 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="pragma" content="no-cache">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Дизайн-портал</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -71,6 +73,11 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh}
 .stage{padding:18px;overflow:auto;position:relative;user-select:none;
   overscroll-behavior:contain;
   background:repeating-conic-gradient(#141415 0 25%, #121213 0 50%) 0 0/16px 16px}
+.stage::-webkit-scrollbar{width:12px;height:12px}
+.stage::-webkit-scrollbar-track{background:rgba(127,127,127,.10)}
+.stage::-webkit-scrollbar-thumb{background:rgba(127,127,127,.45);border-radius:7px;border:3px solid transparent;background-clip:content-box}
+.stage::-webkit-scrollbar-thumb:hover{background:rgba(127,127,127,.70);border:3px solid transparent;background-clip:content-box}
+.stage::-webkit-scrollbar-corner{background:transparent}
 .stage.pan{cursor:grab}
 .stage.panning{cursor:grabbing}
 .frameholder{position:relative}
@@ -197,7 +204,7 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh}
 </head>
 <body>
 <aside id="nav">
-  <header><span id="build" style="display:block;font:11px/1.2 ui-monospace,Menlo,monospace;color:#00ff6b">сборка 01:55:26</span></header>
+  <header><span id="build" style="display:block;font:11px/1.2 ui-monospace,Menlo,monospace;color:#00ff6b">сборка 20261019-020439</span></header>
   <div class="navsearch"><input type="search" id="navq" placeholder="поиск по разделам"></div>
   <nav id="navlist"></nav>
 </aside>
@@ -245,6 +252,6 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh}
   <button class="go" id="gocomp">Перейти к компоненту</button>
   <button class="go alt" id="gofigma">Открыть в Figma</button>
 </div>
-<script src="app.js"></script>
+<script src="app.js?v=20261019-020439"></script>
 </body>
 </html>
