@@ -34,6 +34,7 @@ type Pick = {
   track: string; odds: number; stake: number; edge: number | null;
   status: string; pnl: number | null; clv: number | null;
   placed_at: string; mode: string; id: number;
+  era?: 'new' | 'old';
   playing?: boolean;
   live?: { minute: number; score: string } | null;
 };
@@ -189,9 +190,56 @@ function Table({ rows, showResult, showLive }: {
   );
 }
 
+/* Две системы считаются раздельно: 18.10.2026 правила сменились целиком
+   (плоская ставка вместо Келли, только лайв, три рынка закрыты). Старые
+   результаты не подмешиваются в новые, но и не прячутся — переключатель
+   рядом, и обе цифры видно. */
+function Tabs({ value, onChange, counts }: {
+  value: 'new' | 'old';
+  onChange: (v: 'new' | 'old') => void;
+  counts: { new: number; old: number };
+}) {
+  const items: { k: 'new' | 'old'; label: string }[] = [
+    { k: 'new', label: 'Новая система' },
+    { k: 'old', label: 'Старая система' },
+  ];
+  return (
+    <div
+      className="inline-flex p-1 rounded-xl gap-1"
+      style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}
+    >
+      {items.map(({ k, label }) => (
+        <button
+          key={k}
+          onClick={() => onChange(k)}
+          aria-pressed={value === k}
+          className="px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors"
+          style={{
+            background: value === k ? 'var(--c-accent)' : 'transparent',
+            color: value === k ? '#fff' : 'var(--c-muted)',
+            fontWeight: value === k ? 600 : 400,
+          }}
+        >
+          {label}
+          <span className="ml-2 tabular-nums" style={{ opacity: 0.7 }}>{counts[k]}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export default function FootballPage() {
   const data = useLiveData();
-  const picks = data.picks as unknown as Pick[];
+  const [tab, setTab] = useState<'new' | 'old'>('new');
+  const all = data.picks as unknown as Pick[];
+  const counts = {
+    new: all.filter((p) => (p.era ?? 'new') === 'new').length,
+    old: all.filter((p) => p.era === 'old').length,
+  };
+  const picks = all.filter((p) => (p.era ?? 'new') === tab);
+  const track = (tab === 'new' ? data.track : (data as Record<string, unknown>).track_old) as
+    | Record<string, unknown>
+    | null;
 
   // ключ сортировки: дата матча плюс время начала, если оно известно
   const when = (p: Pick) => `${p.date} ${p.time ?? '00:00'}`;
@@ -223,7 +271,16 @@ export default function FootballPage() {
           </div>
         </div>
 
-        <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mt-6">
+        <div className="mt-6">
+          <Tabs value={tab} onChange={setTab} counts={counts} />
+          <div className="text-xs mt-2" style={{ color: 'var(--c-muted)' }}>
+            {tab === 'new'
+              ? 'Плоская ставка 200 ₽, только лайв. Счёт с 18.10.2026.'
+              : 'Ставка по Келли, прематч и лайв, все рынки. Закрыта 18.10.2026.'}
+          </div>
+        </div>
+
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mt-4">
           <Tile label="Открытых" value={String(open.length + playing.length)} />
           <Tile label="Сыграло" value={`${won} из ${done.length}`} />
           <Tile
@@ -238,7 +295,20 @@ export default function FootballPage() {
           />
         </div>
 
-        <Charts track={data.track as never} />
+        <Charts key={tab} track={(track ?? {}) as never} />
+
+        {tab === 'new' && done.length === 0 && (
+          <section
+            className="mt-10 rounded-2xl p-6 text-sm"
+            style={{
+              background: 'var(--c-surface)', border: '1px solid var(--c-border)',
+              color: 'var(--c-muted)',
+            }}
+          >
+            Новая система только запущена, рассчитанных ставок пока нет.
+            Результаты старой лежат на соседней вкладке и в счёт не идут.
+          </section>
+        )}
 
         {playing.length > 0 && (
           <section className="mt-10">
