@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Смарт Лента — дизайн-портал</title>
+<title>Дизайн-портал</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,7 +18,7 @@ html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,sans-serif;display:flex}
 #nav{width:248px;flex:0 0 248px;background:var(--panel);border-right:1px solid var(--line);
   display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
-#nav header{padding:20px 18px 14px;border-bottom:1px solid var(--line)}
+#nav header{padding:14px 18px 12px;border-bottom:1px solid var(--line)}
 #nav header b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em}
 #nav header span{display:block;color:var(--muted);font-size:12px;margin-top:3px}
 #nav nav{overflow:auto;padding:10px 10px 24px;flex:1}
@@ -68,8 +68,14 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh}
 .ptag{display:inline-flex;flex-direction:column;gap:2px;background:var(--panel2);border:1px solid var(--line);
   border-radius:8px;padding:5px 9px;margin:0 6px 6px 0;font-size:11px;line-height:1.3}
 .ptag i{color:var(--muted);font-style:normal;font-size:10px}
-.stage{padding:18px;overflow:auto;position:relative;
+.stage{padding:18px;overflow:auto;position:relative;user-select:none;
+  overscroll-behavior:contain;
   background:repeating-conic-gradient(#141415 0 25%, #121213 0 50%) 0 0/16px 16px}
+.stage.pan{cursor:grab}
+.stage.panning{cursor:grabbing}
+.frameholder{position:relative}
+.zbtn{min-width:26px;font-size:14px;line-height:1}
+.zval{min-width:52px;font-variant-numeric:tabular-nums}
 .stage.light{background:repeating-conic-gradient(#e9eaec 0 25%, #e2e3e6 0 50%) 0 0/16px 16px}
 .frame{position:relative;transform-origin:0 0}
 .shot{position:absolute;left:0;top:0;display:block;image-rendering:-webkit-optimize-contrast}
@@ -191,7 +197,7 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh}
 </head>
 <body>
 <aside id="nav">
-  <header><b>Смарт Лента</b><span>дизайн-портал · UI KIT</span><span id="build" style="display:block;margin-top:6px;font:11px/1.2 ui-monospace,Menlo,monospace;color:#00ff6b">сборка 17:03:29</span></header>
+  <header><span id="build" style="display:block;font:11px/1.2 ui-monospace,Menlo,monospace;color:#00ff6b">сборка 01:55:26</span></header>
   <div class="navsearch"><input type="search" id="navq" placeholder="поиск по разделам"></div>
   <nav id="navlist"></nav>
 </aside>
@@ -201,8 +207,7 @@ main{flex:1;min-width:0;display:flex;flex-direction:column;height:100vh}
     <span class="meta mono" id="subtitle"></span>
     <div class="sp"></div>
     <div class="toggle" id="zoom" style="display:none">
-      <button data-z="fit" class="on">Вписать</button><button data-z="0.5">50%</button><button data-z="0.75">75%</button>
-      <button data-z="1">100%</button>
+      <button data-z="fit" class="on">Вписать</button><button data-zs="-1" class="zbtn" title="Уменьшить">−</button><button id="zval" class="zval" title="Сбросить на 100%">100%</button><button data-zs="1" class="zbtn" title="Увеличить">+</button>
     </div>
     <div class="toggle" id="theme">
       <button data-th="dark" class="on">Тёмная</button>

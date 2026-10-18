@@ -1,4 +1,4 @@
-/* Дизайн-портал «Смарт Лента». Рендер живого DOM из выгрузки Figma. */
+/* Дизайн-портал. Рендер живого DOM из выгрузки Figma. */
 let DATA = null, THEME = 'dark', ZOOM = 'fit', VIEW = { type: 'kit', id: null }, LAST = null, SPACING = false, EXACT = false;
 
 const $ = s => document.querySelector(s);
@@ -167,9 +167,10 @@ $('#theme').onclick = e => {
 };
 $('#zoom').onclick = e => {
   const b = e.target.closest('button'); if (!b) return;
-  ZOOM = b.dataset.z === 'fit' ? 'fit' : +b.dataset.z;
-  document.querySelectorAll('#zoom button').forEach(x => x.classList.toggle('on', x === b));
-  route();
+  if (b.dataset.zs) ZOOM = nextZoom(shownZoom(), +b.dataset.zs);
+  else if (b.id === 'zval') ZOOM = 1;
+  else ZOOM = b.dataset.z === 'fit' ? 'fit' : +b.dataset.z;
+  applyZoom();
 };
 
 function route() {
@@ -189,9 +190,103 @@ function head(title, sub) { $('#title').textContent = title; $('#subtitle').text
 
 function zoomFor(f) {
   if (ZOOM !== 'fit') return ZOOM;
-  const avail = ($('#body').clientWidth || 1000) - 76;   // поля карточки
+  // поля: #body 24*2 + рамка карточки 1*2 + отступы stage 18*2
+  const avail = ($('#body').clientWidth || 1000) - 86;
   return Math.min(1, Math.max(0.25, avail / (f.w || 1)));
 }
+
+/* ---------- масштаб и панорамирование ---------- */
+const ZSTEPS = [0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4];
+const STAGE_MAX = 760;        // предел высоты окна просмотра, выше — панорамируем
+
+function nextZoom(z, dir) {
+  if (dir > 0) { for (const s of ZSTEPS) if (s > z + 1e-4) return s; return ZSTEPS[ZSTEPS.length - 1]; }
+  for (let i = ZSTEPS.length - 1; i >= 0; i--) if (ZSTEPS[i] < z - 1e-4) return ZSTEPS[i];
+  return ZSTEPS[0];
+}
+function shownZoom() {
+  if (typeof ZOOM === 'number') return ZOOM;
+  const st = document.querySelector('.stage');
+  return st && st._f ? zoomFor(st._f) : 1;
+}
+function canPan(st) {
+  return st.scrollWidth > st.clientWidth + 1 || st.scrollHeight > st.clientHeight + 1;
+}
+function layoutStage(st) {
+  const f = st._f; if (!f) return;
+  const fr = st.querySelector('.frame'), hold = st.querySelector('.frameholder');
+  if (!fr || !hold) return;
+  const z = zoomFor(f);
+  fr.style.transform = `scale(${z})`;
+  hold.style.width = (f.w * z) + 'px';
+  hold.style.height = (f.h * z) + 'px';
+  const full = f.h * z + 36;
+  // «Вписать» оставляем как было — кадр целиком, скроллится страница;
+  // при ручном зуме даём окно просмотра фиксированной высоты и панорамирование внутри
+  st.style.height = (ZOOM === 'fit' ? full : Math.min(full, STAGE_MAX)) + 'px';
+  st.classList.toggle('pan', canPan(st));
+}
+function syncZoomUI() {
+  const v = $('#zval'); if (v) v.textContent = Math.round(shownZoom() * 100) + '%';
+  document.querySelectorAll('#zoom button').forEach(b =>
+    b.classList.toggle('on', b.dataset.z ? (b.dataset.z === 'fit' ? 'fit' : +b.dataset.z) === ZOOM : false));
+}
+function applyZoom() {
+  document.querySelectorAll('.stage').forEach(layoutStage);
+  syncZoomUI();
+  if (LAST && LAST.isConnected) {
+    const fr = LAST.closest('.frame');
+    if (fr) { const sel = fr.querySelector('.sel'); if (sel) boxTo(sel, LAST, fr); }
+  }
+}
+/* масштаб к точке под курсором */
+function zoomAt(st, dir, cx, cy) {
+  const f = st._f; if (!f) return;
+  const z0 = zoomFor(f), z1 = nextZoom(z0, dir);
+  if (z1 === z0) return;
+  const r = st.getBoundingClientRect();
+  const px = (st.scrollLeft + cx - r.left - 18) / z0;   // точка кадра под курсором
+  const py = (st.scrollTop + cy - r.top - 18) / z0;
+  ZOOM = z1; applyZoom();
+  st.scrollLeft = px * z1 + 18 - (cx - r.left);
+  st.scrollTop  = py * z1 + 18 - (cy - r.top);
+}
+/* перетаскивание зажатой мышью; короткий клик по-прежнему выделяет слой */
+let PANNED = false;
+(function initPan() {
+  let st = null, sx = 0, sy = 0, l = 0, t0 = 0, moved = false;
+  document.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    const s = e.target.closest('.stage');
+    if (!s || !canPan(s)) return;
+    st = s; moved = false; sx = e.clientX; sy = e.clientY; l = s.scrollLeft; t0 = s.scrollTop;
+  });
+  document.addEventListener('mousemove', e => {
+    if (!st) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
+    if (!moved) {
+      if (Math.abs(dx) + Math.abs(dy) < 4) return;     // порог, чтобы не терять клик
+      moved = true; st.classList.add('panning');
+    }
+    st.scrollLeft = l - dx; st.scrollTop = t0 - dy;
+    e.preventDefault();
+  });
+  document.addEventListener('mouseup', () => {
+    if (!st) return;
+    st.classList.remove('panning');
+    if (moved) { PANNED = true; setTimeout(() => { PANNED = false; }, 0); }
+    st = null;
+  });
+  document.addEventListener('click', e => {
+    if (PANNED && e.target.closest('.stage')) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
+  document.addEventListener('wheel', e => {
+    if (!(e.ctrlKey || e.metaKey)) return;
+    const s = e.target.closest('.stage'); if (!s) return;
+    e.preventDefault();
+    zoomAt(s, e.deltaY < 0 ? 1 : -1, e.clientX, e.clientY);
+  }, { passive: false });
+})();
 function stage(frames) {
   const body = $('#body');
   body.innerHTML = '';
@@ -201,10 +296,10 @@ function stage(frames) {
     const h2 = E('h2');
     h2.innerHTML = `${f.name}<span class="meta">${Math.round(f.w)}×${Math.round(f.h)} · ${f.theme === 'light' ? 'светлая' : 'тёмная'} тема</span>`;
     const st = E('div', 'stage ' + f.theme);
+    st._f = f;
+    const hold = E('div', 'frameholder');
     const fr = E('div', 'frame');
     fr.style.width = f.w + 'px'; fr.style.height = f.h + 'px';
-    const z = zoomFor(f);
-    fr.style.transform = `scale(${z})`;
     if (f.shot && EXACT) {
       const img = E('img', 'shot');
       img.src = f.shot; img.width = f.w; img.height = f.h; img.alt = f.name;
@@ -216,8 +311,7 @@ function stage(frames) {
     fr.appendChild(tree);
     const hov = E('div', 'hov'), sel = E('div', 'sel');
     fr.appendChild(hov); fr.appendChild(sel);
-    st.appendChild(fr);
-    st.style.height = (f.h * z + 36) + 'px';
+    hold.appendChild(fr); st.appendChild(hold);
     const sets = [];
     (function scan(t) {
       if (t.pd) sets.push({ name: t.n, pd: t.pd });
@@ -234,7 +328,9 @@ function stage(frames) {
     wire(fr, hov, sel);
     fitTexts(fr);
     paintSpacing(fr);
+    layoutStage(st);
   });
+  syncZoomUI();
 }
 
 function renderKit() {
@@ -260,7 +356,7 @@ function renderScreen() {
 function hint(t) { const p = E('p', 'hint'); p.textContent = t; setTimeout(() => $('#body').prepend(p), 0); }
 
 function renderStart() {
-  head('Смарт Лента', 'дизайн-система');
+  head('Дизайн-система', 'UI KIT и макеты');
   $('#theme').style.display = 'none';
   $('#zoom').style.display = 'none';
 
@@ -296,7 +392,7 @@ function renderStart() {
   $('#body').innerHTML = `
     <div class="cover">
       <div class="covtext">
-        <h2>Смарт Лента</h2>
+        <h2>Дизайн-система</h2>
         <p>Дизайн-система и макеты продукта. Всё, что видно на этой странице, выгружено
            прямо из Figma: размеры, отступы, токены, текстовые стили и состав компонентов.</p>
         <div class="stats">
