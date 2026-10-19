@@ -1,6 +1,143 @@
 {
  "picks": [
   {
+   "date": "2026-10-19",
+   "time": "21:45",
+   "league": "F2",
+   "home": "Родез",
+   "away": "Монпелье",
+   "home_en": "Rodez",
+   "away_en": "Montpellier",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.5179,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.03,
+   "stake": 200.0,
+   "edge": 0.0513,
+   "status": "open",
+   "result": null,
+   "pnl": null,
+   "clv": null,
+   "placed_at": "2026-10-19T19:04:09+00:00",
+   "mode": "paper",
+   "id": 200,
+   "stage": "лайв",
+   "playing": true,
+   "live": {
+    "minute": 19,
+    "score": "0:0"
+   },
+   "source": "consensus",
+   "era": "new"
+  },
+  {
+   "date": "2026-10-19",
+   "time": "20:00",
+   "league": "DNK",
+   "home": "Виборг",
+   "away": "Мидтьюлланн",
+   "home_en": "Viborg",
+   "away_en": "Midtjylland",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 3.5,
+   "pick_label": "ТБ3.5",
+   "p": 0.4375,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.45,
+   "stake": 200.0,
+   "edge": 0.0718,
+   "status": "lost",
+   "result": "1:2",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-19T18:43:03+00:00",
+   "mode": "paper",
+   "id": 199,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 87,
+    "score": "1:2"
+   },
+   "source": "consensus",
+   "era": "new"
+  },
+  {
+   "date": "2026-10-19",
+   "time": "20:00",
+   "league": "SWE",
+   "home": "Дегерфорс",
+   "away": "Кальмар Фф",
+   "home_en": "Degerfors",
+   "away_en": "Kalmar",
+   "market": "OU",
+   "selection": "UNDER",
+   "line": 3.5,
+   "pick_label": "ТМ3.5",
+   "p": 0.4714,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.2,
+   "stake": 200.0,
+   "edge": 0.0371,
+   "status": "won",
+   "result": "1:2",
+   "pnl": 240.00000000000003,
+   "clv": null,
+   "placed_at": "2026-10-19T17:38:54+00:00",
+   "mode": "paper",
+   "id": 198,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 79,
+    "score": "1:2"
+   },
+   "source": "consensus",
+   "era": "new"
+  },
+  {
+   "date": "2026-10-19",
+   "time": "20:05",
+   "league": "SWE2",
+   "home": "Варберг",
+   "away": "Хельсингборг",
+   "home_en": "Варберг",
+   "away_en": "Хельсингборг",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.5212,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.1,
+   "stake": 200.0,
+   "edge": 0.0946,
+   "status": "lost",
+   "result": "0:0",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-19T17:21:02+00:00",
+   "mode": "paper",
+   "id": 197,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "consensus",
+   "era": "new"
+  },
+  {
    "date": "2026-10-18",
    "time": "22:00",
    "league": "SP1",
@@ -28,10 +165,7 @@
    "id": 196,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 45,
-    "score": "2:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -63,10 +197,7 @@
    "id": 195,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 88,
-    "score": "1:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -98,10 +229,7 @@
    "id": 194,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 71,
-    "score": "1:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -133,10 +261,7 @@
    "id": 193,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 71,
-    "score": "1:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -168,10 +293,7 @@
    "id": 192,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 84,
-    "score": "1:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -203,10 +325,7 @@
    "id": 191,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 78,
-    "score": "1:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -238,10 +357,7 @@
    "id": 190,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 77,
-    "score": "1:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -273,10 +389,7 @@
    "id": 189,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 78,
-    "score": "1:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -308,10 +421,7 @@
    "id": 188,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 84,
-    "score": "1:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -343,10 +453,7 @@
    "id": 187,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 56,
-    "score": "1:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -410,10 +517,7 @@
    "id": 185,
    "stage": "прематч",
    "playing": false,
-   "live": {
-    "minute": 83,
-    "score": "1:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -445,10 +549,7 @@
    "id": 184,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 83,
-    "score": "3:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -512,10 +613,7 @@
    "id": 182,
    "stage": "прематч",
    "playing": false,
-   "live": {
-    "minute": 71,
-    "score": "2:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -547,10 +645,7 @@
    "id": 166,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 87,
-    "score": "2:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -582,10 +677,7 @@
    "id": 176,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 73,
-    "score": "4:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -649,10 +741,7 @@
    "id": 167,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 67,
-    "score": "1:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -684,10 +773,7 @@
    "id": 180,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 41,
-    "score": "2:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -719,10 +805,7 @@
    "id": 181,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 83,
-    "score": "1:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -754,10 +837,7 @@
    "id": 175,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 81,
-    "score": "2:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -789,10 +869,7 @@
    "id": 177,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 87,
-    "score": "0:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -824,10 +901,7 @@
    "id": 174,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 70,
-    "score": "1:3"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -859,10 +933,7 @@
    "id": 171,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 71,
-    "score": "0:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -894,10 +965,7 @@
    "id": 165,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 67,
-    "score": "1:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -929,10 +997,7 @@
    "id": 169,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 68,
-    "score": "0:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -964,10 +1029,7 @@
    "id": 179,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 90,
-    "score": "1:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -999,10 +1061,7 @@
    "id": 172,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 80,
-    "score": "2:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -1034,10 +1093,7 @@
    "id": 178,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 72,
-    "score": "0:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -1069,10 +1125,7 @@
    "id": 168,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 70,
-    "score": "0:2"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -1104,10 +1157,7 @@
    "id": 173,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 67,
-    "score": "1:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "new"
   },
@@ -1203,10 +1253,7 @@
    "id": 162,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 80,
-    "score": "1:1"
-   },
+   "live": null,
    "source": "pressure",
    "era": "old"
   },
@@ -1302,10 +1349,7 @@
    "id": 160,
    "stage": "прематч",
    "playing": false,
-   "live": {
-    "minute": 46,
-    "score": "2:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -1337,10 +1381,7 @@
    "id": 158,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 61,
-    "score": "1:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -1436,10 +1477,7 @@
    "id": 155,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 87,
-    "score": "1:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -1471,10 +1509,7 @@
    "id": 154,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 74,
-    "score": "0:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -1506,10 +1541,7 @@
    "id": 153,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 83,
-    "score": "1:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -1541,10 +1573,7 @@
    "id": 152,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 52,
-    "score": "0:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -1576,10 +1605,7 @@
    "id": 151,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 52,
-    "score": "0:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -3659,10 +3685,7 @@
    "id": 78,
    "stage": "прематч",
    "playing": false,
-   "live": {
-    "minute": 67,
-    "score": "1:1"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -3918,10 +3941,7 @@
    "id": 68,
    "stage": "прематч",
    "playing": false,
-   "live": {
-    "minute": 23,
-    "score": "0:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -4113,7 +4133,10 @@
    "id": 54,
    "stage": "прематч",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 6,
+    "score": "0:0"
+   },
    "source": "consensus",
    "era": "old"
   },
@@ -4369,10 +4392,7 @@
    "id": 39,
    "stage": "прематч",
    "playing": false,
-   "live": {
-    "minute": 45,
-    "score": "2:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -4436,10 +4456,7 @@
    "id": 29,
    "stage": "прематч",
    "playing": false,
-   "live": {
-    "minute": 23,
-    "score": "0:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -4855,10 +4872,7 @@
    "id": 9,
    "stage": "прематч",
    "playing": false,
-   "live": {
-    "minute": 86,
-    "score": "0:0"
-   },
+   "live": null,
    "source": "consensus",
    "era": "old"
   },
@@ -5120,34 +5134,34 @@
   }
  ],
  "track": {
-  "updated_at": "2026-10-18T21:06:22+00:00",
+  "updated_at": "2026-10-19T19:14:47+00:00",
   "since": "2026-10-18T12:20:36+00:00",
   "until": null,
   "bank_start": 14899.0,
-  "bank_now": 14819.0,
-  "n": 28,
-  "turnover": 5600.0,
-  "pnl": -80.0,
-  "roi": -0.0143,
+  "bank_now": 14659.0,
+  "n": 31,
+  "turnover": 6200.0,
+  "pnl": -240.0,
+  "roi": -0.0387,
   "clv": -0.0424,
   "clv_n": 1,
   "clv_need": 50,
   "clv_ci": null,
   "by_track": {
    "CONSENSUS": {
-    "n": 28,
-    "won": 12,
-    "wr": 0.4286,
+    "n": 31,
+    "won": 13,
+    "wr": 0.4194,
     "wr_ci": [
-     0.2651,
-     0.6093
+     0.2642,
+     0.5923
     ],
-    "turnover": 5600.0,
-    "pnl": -80.0,
-    "roi": -0.0143,
+    "turnover": 6200.0,
+    "pnl": -240.0,
+    "roi": -0.0387,
     "clv": -0.0424,
-    "avg_odds": 2.488,
-    "exp_wr": 0.4157
+    "avg_odds": 2.465,
+    "exp_wr": 0.4187
    }
   },
   "by_market": {
@@ -5182,51 +5196,51 @@
     "exp_wr": 0.2932
    },
    "OU": {
-    "n": 22,
-    "won": 12,
-    "wr": 0.5455,
+    "n": 25,
+    "won": 13,
+    "wr": 0.52,
     "wr_ci": [
-     0.3466,
-     0.7308
+     0.335,
+     0.6997
     ],
-    "turnover": 4400.0,
-    "pnl": 1120.0,
-    "roi": 0.2545,
+    "turnover": 5000.0,
+    "pnl": 960.0,
+    "roi": 0.192,
     "clv": null,
-    "avg_odds": 2.285,
-    "exp_wr": 0.4429
+    "avg_odds": 2.281,
+    "exp_wr": 0.4433
    }
   },
   "by_odds_bucket": {
    "2.0-2.3": {
-    "n": 2,
-    "won": 1,
+    "n": 4,
+    "won": 2,
     "wr": 0.5,
     "wr_ci": [
-     0.0945,
-     0.9055
+     0.15,
+     0.85
     ],
-    "turnover": 400.0,
-    "pnl": 0.0,
-    "roi": 0.0,
+    "turnover": 800.0,
+    "pnl": 40.0,
+    "roi": 0.05,
     "clv": null,
-    "avg_odds": 2.125,
-    "exp_wr": 0.4722
+    "avg_odds": 2.138,
+    "exp_wr": 0.4688
    },
    "2.3-2.8": {
-    "n": 17,
+    "n": 18,
     "won": 9,
-    "wr": 0.5294,
+    "wr": 0.5,
     "wr_ci": [
-     0.3096,
-     0.7384
+     0.2903,
+     0.7097
     ],
-    "turnover": 3400.0,
-    "pnl": 980.0,
-    "roi": 0.2882,
+    "turnover": 3600.0,
+    "pnl": 780.0,
+    "roi": 0.2167,
     "clv": null,
-    "avg_odds": 2.412,
-    "exp_wr": 0.4152
+    "avg_odds": 2.414,
+    "exp_wr": 0.4148
    },
    "2.8-3.5": {
     "n": 3,
@@ -5442,12 +5456,30 @@
     "n": 28,
     "bank": 14819.0,
     "won": false
+   },
+   {
+    "ts": "2026-10-19T17:21:02+00:00",
+    "n": 29,
+    "bank": 14619.0,
+    "won": false
+   },
+   {
+    "ts": "2026-10-19T17:38:54+00:00",
+    "n": 30,
+    "bank": 14859.0,
+    "won": true
+   },
+   {
+    "ts": "2026-10-19T18:43:03+00:00",
+    "n": 31,
+    "bank": 14659.0,
+    "won": false
    }
   ],
-  "open": 0
+  "open": 1
  },
  "track_old": {
-  "updated_at": "2026-10-18T21:06:22+00:00",
+  "updated_at": "2026-10-19T19:14:47+00:00",
   "since": null,
   "until": "2026-10-18T12:20:36+00:00",
   "bank_start": 15048.0,
@@ -6435,22 +6467,426 @@
   "fold_improvement": 0.0027165187395046253
  },
  "coverage": {
-  "fixtures": 221495,
+  "fixtures": 221754,
   "fixtures_with_closing": 203350,
-  "leagues": 381,
-  "leagues_live": 369,
-  "matches_tracked": 3003,
-  "teams": 5673,
-  "odds_rows": 7598693,
-  "fonbet_rows": 830346,
-  "live_snapshots": 13706,
+  "leagues": 392,
+  "leagues_live": 379,
+  "matches_tracked": 3266,
+  "teams": 5820,
+  "odds_rows": 7777301,
+  "fonbet_rows": 1008954,
+  "live_snapshots": 14984,
   "date_range": [
    "2012-03-02",
    "2026-12-07"
   ],
   "snapshot_since": "2026-10-15T14:54:38+00:00"
  },
- "upcoming": [],
+ "upcoming": [
+  {
+   "date": "2026-10-19",
+   "time": "22:15",
+   "league": "P1",
+   "league_name": "Primeira Liga",
+   "home": "Sp Braga",
+   "away": "Gil Vicente",
+   "odds": [
+    1.72,
+    3.4,
+    5.3
+   ]
+  },
+  {
+   "date": "2026-10-19",
+   "time": "22:30",
+   "league": "FB19995",
+   "league_name": "Парагвай. 2-й дивизион",
+   "home": "Энкарнасион",
+   "away": "Хенераль Кабальеро",
+   "odds": [
+    4.1,
+    3.95,
+    1.63
+   ]
+  },
+  {
+   "date": "2026-10-19",
+   "time": "22:30",
+   "league": "FB19995",
+   "league_name": "Парагвай. 2-й дивизион",
+   "home": "12 де Хунио Вилья Айес",
+   "away": "Гуайренья",
+   "odds": [
+    1.55,
+    3.65,
+    5.1
+   ]
+  },
+  {
+   "date": "2026-10-19",
+   "time": "22:30",
+   "league": "FB19995",
+   "league_name": "Парагвай. 2-й дивизион",
+   "home": "Депортиво Сантани",
+   "away": "3 де Новьембре",
+   "odds": [
+    1.58,
+    3.85,
+    4.6
+   ]
+  },
+  {
+   "date": "2026-10-19",
+   "time": "23:30",
+   "league": "FB133361",
+   "league_name": "Эквадор. Премьер-Лига. Группа вылета",
+   "home": "Мушук Руна",
+   "away": "Оренсе",
+   "odds": [
+    1.68,
+    3.55,
+    4.8
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "00:00",
+   "league": "FB18609",
+   "league_name": "Колумбия. Серия В",
+   "home": "Интернасиональ Пальмира",
+   "away": "Унион Магдалена",
+   "odds": [
+    1.98,
+    3.2,
+    3.45
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "00:00",
+   "league": "FB42382",
+   "league_name": "Панама. 2-я лига",
+   "home": "Потрос-дель-Эсте",
+   "away": "Тауро (р)",
+   "odds": [
+    2.35,
+    3.4,
+    2.55
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "01:00",
+   "league": "ARG",
+   "league_name": "ARG",
+   "home": "Newells Old Boys",
+   "away": "Central Cordoba",
+   "odds": [
+    1.85,
+    3.2,
+    4.6
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "01:00",
+   "league": "ARG",
+   "league_name": "ARG",
+   "home": "Sarmiento Junin",
+   "away": "Barracas Central",
+   "odds": [
+    2.3,
+    2.9,
+    3.55
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "01:00",
+   "league": "FB18142",
+   "league_name": "Чили. Серия В",
+   "home": "Унион Эспаньола",
+   "away": "Депортес Копьяпо",
+   "odds": [
+    2.07,
+    3.55,
+    2.9
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "01:00",
+   "league": "ARG",
+   "league_name": "ARG",
+   "home": "Newells Old Boys",
+   "away": "Godoy Cruz",
+   "odds": [
+    1.75,
+    3.35,
+    5.0
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "01:00",
+   "league": "ARG",
+   "league_name": "ARG",
+   "home": "Sarmiento Junin",
+   "away": "Central Cordoba",
+   "odds": [
+    2.25,
+    2.95,
+    3.55
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "01:00",
+   "league": "FB18609",
+   "league_name": "Колумбия. Серия В",
+   "home": "Орсомарсо",
+   "away": "Богота",
+   "odds": [
+    2.0,
+    3.1,
+    3.45
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "01:05",
+   "league": "FB18746",
+   "league_name": "Ямайка. Премьер-Лига",
+   "home": "Молайнес Юнайтед",
+   "away": "Кавалиер",
+   "odds": [
+    5.2,
+    4.05,
+    1.5
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "01:30",
+   "league": "BRA2",
+   "league_name": "Brazil Serie B",
+   "home": "Гояс",
+   "away": "Наутико Капибарибе",
+   "odds": [
+    1.65,
+    3.55,
+    4.6
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "01:30",
+   "league": "FB121345",
+   "league_name": "Бразилия. Параибано. 1/2 финала. Первые матчи",
+   "home": "Спартакс Жоао Песоа",
+   "away": "Санта-Рита",
+   "odds": [
+    12.5,
+    4.8,
+    1.2
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "02:00",
+   "league": "BRA",
+   "league_name": "BRA",
+   "home": "Corinthians",
+   "away": "Vitoria",
+   "odds": [
+    1.52,
+    3.9,
+    6.7
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "02:00",
+   "league": "FB15186",
+   "league_name": "Уругвай. Премьер-Лига",
+   "home": "Насьональ Монтевидео",
+   "away": "Депортиво Мальдонадо",
+   "odds": [
+    1.8,
+    3.5,
+    4.15
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "02:00",
+   "league": "FB18609",
+   "league_name": "Колумбия. Серия В",
+   "home": "Реал Картахена",
+   "away": "Патриотас Бояка",
+   "odds": [
+    1.63,
+    3.4,
+    4.9
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "03:00",
+   "league": "FB80210",
+   "league_name": "Коста-Рика. Премьер-дивизион",
+   "home": "Спортинг Сан-Хосе",
+   "away": "АД Сан-Карлос",
+   "odds": [
+    1.65,
+    3.6,
+    4.9
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "03:15",
+   "league": "ARG",
+   "league_name": "ARG",
+   "home": "Dep. Riestra",
+   "away": "Union de Santa Fe",
+   "odds": [
+    2.13,
+    2.95,
+    3.9
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "04:00",
+   "league": "FB18746",
+   "league_name": "Ямайка. Премьер-Лига",
+   "home": "Расинг Юнайтед",
+   "away": "Уотерхаус",
+   "odds": [
+    2.95,
+    3.0,
+    2.25
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "04:00",
+   "league": "FB15325",
+   "league_name": "Гватемала. Лига Насьональ",
+   "home": "Депортиво Антигуа",
+   "away": "Шелаху",
+   "odds": [
+    1.7,
+    3.5,
+    4.2
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "04:00",
+   "league": "FB17827",
+   "league_name": "Панама. Высшая лига",
+   "home": "Спортинг Сан Мигелито",
+   "away": "Тауро",
+   "odds": [
+    2.55,
+    3.1,
+    2.55
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "04:05",
+   "league": "FB15187",
+   "league_name": "Колумбия. Серия А",
+   "home": "Депортиво Пасто",
+   "away": "Альянса Вальедупар",
+   "odds": [
+    1.7,
+    3.45,
+    4.9
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "05:00",
+   "league": "FB80210",
+   "league_name": "Коста-Рика. Премьер-дивизион",
+   "home": "Эскорпионес Белен",
+   "away": "Пунтаренас",
+   "odds": [
+    2.5,
+    3.35,
+    2.55
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "05:00",
+   "league": "FB61292",
+   "league_name": "Коста-Рика. 2-й дивизион",
+   "home": "Кофутпа",
+   "away": "Кепос Камбуте",
+   "odds": [
+    4.2,
+    3.45,
+    1.7
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "11:30",
+   "league": "FB18989",
+   "league_name": "Индонезия. 1-я лига",
+   "home": "Исенмуланг Калтенг",
+   "away": "Джава Юнайтед",
+   "odds": [
+    4.15,
+    3.85,
+    1.73
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "14:00",
+   "league": "FB133987",
+   "league_name": "Лига вызова Азии. Групповой этап",
+   "home": "Хомс Аль-Фидаа",
+   "away": "Аль-Неджмех",
+   "odds": [
+    2.45,
+    3.25,
+    2.55
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "15:00",
+   "league": "FB18989",
+   "league_name": "Индонезия. 1-я лига",
+   "home": "Дева Юнайтед",
+   "away": "Персиджап Джепара",
+   "odds": [
+    1.2,
+    6.0,
+    12.5
+   ]
+  },
+  {
+   "date": "2026-10-20",
+   "time": "15:00",
+   "league": "FB18989",
+   "league_name": "Индонезия. 1-я лига",
+   "home": "Бхаянгкара",
+   "away": "ПСИМ Джокьякарта",
+   "odds": [
+    1.65,
+    3.5,
+    5.3
+   ]
+  }
+ ],
  "model_version": "dc-0.2",
- "generated_at": "2026-10-18T21:06:25+00:00"
+ "generated_at": "2026-10-19T19:14:49+00:00"
 }
