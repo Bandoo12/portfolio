@@ -1,6 +1,606 @@
 {
  "picks": [
   {
+   "date": "2026-10-21",
+   "time": "01:30",
+   "league": "BRA2",
+   "home": "Лондрина",
+   "away": "Куяба",
+   "home_en": "Лондрина",
+   "away_en": "Куяба",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 1.5,
+   "pick_label": "ТБ1.5",
+   "p": 0.5374,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 1.9,
+   "stake": 200.0,
+   "edge": 0.021,
+   "status": "open",
+   "result": null,
+   "pnl": null,
+   "clv": null,
+   "placed_at": "2026-10-20T23:03:10+00:00",
+   "mode": "paper",
+   "id": 218,
+   "stage": "лайв",
+   "playing": true,
+   "live": null,
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "22:00",
+   "league": "E3",
+   "home": "Джиллингем",
+   "away": "Порт Вейл",
+   "home_en": "Gillingham",
+   "away_en": "Port Vale",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.3586,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 3.1,
+   "stake": 200.0,
+   "edge": 0.1117,
+   "status": "lost",
+   "result": "1:1",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-20T20:40:56+00:00",
+   "mode": "paper",
+   "id": 217,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "21:45",
+   "league": "E2",
+   "home": "Блэкпул",
+   "away": "Milton Keynes Dons",
+   "home_en": "Blackpool",
+   "away_en": "Milton Keynes Dons",
+   "market": "1X2",
+   "selection": "A",
+   "line": null,
+   "pick_label": "П2",
+   "p": 0.3366,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "PRESSURE",
+   "odds": 3.4,
+   "stake": 200.0,
+   "edge": 0.1446,
+   "status": "lost",
+   "result": "2:0",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-20T20:09:23+00:00",
+   "mode": "paper",
+   "id": 216,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 74,
+    "score": "1:0"
+   },
+   "source": "pressure",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "21:45",
+   "league": "E3",
+   "home": "Честерфилд",
+   "away": "Колчестер Юнайтед",
+   "home_en": "Chesterfield",
+   "away_en": "Colchester",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.5028,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.25,
+   "stake": 200.0,
+   "edge": 0.1313,
+   "status": "lost",
+   "result": "1:1",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-20T19:59:38+00:00",
+   "mode": "paper",
+   "id": 215,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 85,
+    "score": "1:1"
+   },
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "21:45",
+   "league": "E2",
+   "home": "Донкастер Роверс",
+   "away": "Стокпорт Каунти",
+   "home_en": "Doncaster",
+   "away_en": "Stockport",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 1.5,
+   "pick_label": "ТБ1.5",
+   "p": 0.4849,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.1,
+   "stake": 200.0,
+   "edge": 0.0182,
+   "status": "won",
+   "result": "0:2",
+   "pnl": 220.00000000000003,
+   "clv": null,
+   "placed_at": "2026-10-20T19:56:53+00:00",
+   "mode": "paper",
+   "id": 214,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 49,
+    "score": "0:0"
+   },
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "22:00",
+   "league": "UCL",
+   "home": "Ливерпуль",
+   "away": "Вильярреал",
+   "home_en": "Liverpool",
+   "away_en": "Villarreal",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 3.5,
+   "pick_label": "ТБ3.5",
+   "p": 0.496,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.1,
+   "stake": 200.0,
+   "edge": 0.0416,
+   "status": "won",
+   "result": "4:3",
+   "pnl": 220.00000000000003,
+   "clv": null,
+   "placed_at": "2026-10-20T19:29:46+00:00",
+   "mode": "paper",
+   "id": 213,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "21:45",
+   "league": "E3",
+   "home": "Бристоль Роверс",
+   "away": "Солфорд Сити",
+   "home_en": "Bristol Rvs",
+   "away_en": "Salford",
+   "market": "OU",
+   "selection": "UNDER",
+   "line": 3.5,
+   "pick_label": "ТМ3.5",
+   "p": 0.4508,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.35,
+   "stake": 200.0,
+   "edge": 0.0595,
+   "status": "won",
+   "result": "1:2",
+   "pnl": 270.0,
+   "clv": null,
+   "placed_at": "2026-10-20T19:24:42+00:00",
+   "mode": "paper",
+   "id": 212,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 82,
+    "score": "1:2"
+   },
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "21:45",
+   "league": "E3",
+   "home": "Барнет",
+   "away": "Суиндон Таун",
+   "home_en": "Barnet",
+   "away_en": "Swindon",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 3.5,
+   "pick_label": "ТБ3.5",
+   "p": 0.5269,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.1,
+   "stake": 200.0,
+   "edge": 0.1065,
+   "status": "won",
+   "result": "1:3",
+   "pnl": 220.00000000000003,
+   "clv": null,
+   "placed_at": "2026-10-20T19:18:24+00:00",
+   "mode": "paper",
+   "id": 211,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 62,
+    "score": "0:3"
+   },
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "22:00",
+   "league": "UCL",
+   "home": "Рома",
+   "away": "Слован Братислава",
+   "home_en": "Roma",
+   "away_en": "Слован Братислава",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 3.5,
+   "pick_label": "ТБ3.5",
+   "p": 0.5388,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 1.9,
+   "stake": 200.0,
+   "edge": 0.0237,
+   "status": "won",
+   "result": "4:0",
+   "pnl": 179.99999999999997,
+   "clv": null,
+   "placed_at": "2026-10-20T19:06:32+00:00",
+   "mode": "paper",
+   "id": 210,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "22:00",
+   "league": "UCL",
+   "home": "Наполи",
+   "away": "Буде/Глимт",
+   "home_en": "Napoli",
+   "away_en": "Bodo/Glimt",
+   "market": "OU",
+   "selection": "UNDER",
+   "line": 3.5,
+   "pick_label": "ТМ3.5",
+   "p": 0.5876,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 1.73,
+   "stake": 200.0,
+   "edge": 0.0166,
+   "status": "lost",
+   "result": "4:3",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-20T19:00:54+00:00",
+   "mode": "paper",
+   "id": 209,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "21:45",
+   "league": "E2",
+   "home": "Оксфорд Юнайтед",
+   "away": "Уиган Атлетик",
+   "home_en": "Oxford",
+   "away_en": "Wigan",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.4972,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.1,
+   "stake": 200.0,
+   "edge": 0.0442,
+   "status": "won",
+   "result": "2:1",
+   "pnl": 220.00000000000003,
+   "clv": null,
+   "placed_at": "2026-10-20T19:00:53+00:00",
+   "mode": "paper",
+   "id": 208,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 64,
+    "score": "1:0"
+   },
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "21:45",
+   "league": "E3",
+   "home": "Нортгемптон Таун",
+   "away": "Транмир Роверс",
+   "home_en": "Northampton",
+   "away_en": "Tranmere",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.4271,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.45,
+   "stake": 200.0,
+   "edge": 0.0464,
+   "status": "lost",
+   "result": "0:1",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-20T18:57:50+00:00",
+   "mode": "paper",
+   "id": 207,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 86,
+    "score": "0:1"
+   },
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "21:45",
+   "league": "E2",
+   "home": "Бертон Альбион",
+   "away": "Брэдфорд Сити",
+   "home_en": "Burton",
+   "away_en": "Bradford",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.5137,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.0,
+   "stake": 200.0,
+   "edge": 0.0273,
+   "status": "lost",
+   "result": "0:0",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-20T18:55:07+00:00",
+   "mode": "paper",
+   "id": 206,
+   "stage": "лайв",
+   "playing": false,
+   "live": {
+    "minute": 85,
+    "score": "0:0"
+   },
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "19:45",
+   "league": "UCL",
+   "home": "Сабах Баку",
+   "away": "Боруссия Дортмунд",
+   "home_en": "Сабах Баку",
+   "away_en": "Dortmund",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 4.5,
+   "pick_label": "ТБ4.5",
+   "p": 0.4702,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.4,
+   "stake": 200.0,
+   "edge": 0.1285,
+   "status": "lost",
+   "result": "1:2",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-20T18:07:48+00:00",
+   "mode": "paper",
+   "id": 205,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-20",
+   "time": "19:45",
+   "league": "UCL",
+   "home": "Фенербахче",
+   "away": "Славия Прага",
+   "home_en": "Fenerbahce",
+   "away_en": "Славия Прага",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 5.5,
+   "pick_label": "ТБ5.5",
+   "p": 0.5794,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 1.8,
+   "stake": 200.0,
+   "edge": 0.043,
+   "status": "lost",
+   "result": "2:2",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-20T17:06:38+00:00",
+   "mode": "paper",
+   "id": 204,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-19",
+   "time": null,
+   "league": "Segunda División",
+   "home": "Сельта",
+   "away": "Тенерифе",
+   "home_en": "Celta",
+   "away_en": "Tenerife",
+   "market": "1X2",
+   "selection": "H",
+   "line": null,
+   "pick_label": "П1",
+   "p": 0.2353,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "PRESSURE",
+   "odds": 4.7,
+   "stake": 200.0,
+   "edge": 0.1059,
+   "status": "lost",
+   "result": "1:1",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-19T20:03:57+00:00",
+   "mode": "paper",
+   "id": 203,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "pressure",
+   "era": 1
+  },
+  {
+   "date": "2026-10-19",
+   "time": "22:00",
+   "league": "SP1",
+   "home": "Хетафе",
+   "away": "Райо Вальекано",
+   "home_en": "Getafe",
+   "away_en": "Vallecano",
+   "market": "OU",
+   "selection": "OVER",
+   "line": 2.5,
+   "pick_label": "ТБ2.5",
+   "p": 0.5353,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 1.9,
+   "stake": 200.0,
+   "edge": 0.017,
+   "status": "lost",
+   "result": "1:1",
+   "pnl": -200.0,
+   "clv": null,
+   "placed_at": "2026-10-19T19:38:05+00:00",
+   "mode": "paper",
+   "id": 202,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "consensus",
+   "era": 1
+  },
+  {
+   "date": "2026-10-19",
+   "time": "21:45",
+   "league": "I1",
+   "home": "Парма",
+   "away": "Торино",
+   "home_en": "Parma",
+   "away_en": "Torino",
+   "market": "OU",
+   "selection": "UNDER",
+   "line": 3.5,
+   "pick_label": "ТМ3.5",
+   "p": 0.5253,
+   "lambda_h": null,
+   "lambda_a": null,
+   "track": "CONSENSUS",
+   "odds": 2.0,
+   "stake": 200.0,
+   "edge": 0.0506,
+   "status": "won",
+   "result": "0:3",
+   "pnl": 200.0,
+   "clv": null,
+   "placed_at": "2026-10-19T19:24:55+00:00",
+   "mode": "paper",
+   "id": 201,
+   "stage": "лайв",
+   "playing": false,
+   "live": null,
+   "source": "consensus",
+   "era": 1
+  },
+  {
    "date": "2026-10-19",
    "time": "21:45",
    "league": "F2",
@@ -19,21 +619,18 @@
    "odds": 2.03,
    "stake": 200.0,
    "edge": 0.0513,
-   "status": "open",
-   "result": null,
-   "pnl": null,
+   "status": "won",
+   "result": "0:3",
+   "pnl": 205.99999999999997,
    "clv": null,
    "placed_at": "2026-10-19T19:04:09+00:00",
    "mode": "paper",
    "id": 200,
    "stage": "лайв",
-   "playing": true,
-   "live": {
-    "minute": 19,
-    "score": "0:0"
-   },
+   "playing": false,
+   "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-19",
@@ -63,12 +660,9 @@
    "id": 199,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 87,
-    "score": "1:2"
-   },
+   "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-19",
@@ -98,12 +692,9 @@
    "id": 198,
    "stage": "лайв",
    "playing": false,
-   "live": {
-    "minute": 79,
-    "score": "1:2"
-   },
+   "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-19",
@@ -135,7 +726,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -167,7 +758,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -199,7 +790,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -231,7 +822,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -263,7 +854,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -295,7 +886,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -327,7 +918,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -359,7 +950,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -391,7 +982,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -423,7 +1014,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -455,7 +1046,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -487,7 +1078,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -519,7 +1110,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -551,7 +1142,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -583,7 +1174,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -615,7 +1206,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -647,7 +1238,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -679,7 +1270,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -711,7 +1302,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -743,7 +1334,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -775,7 +1366,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -807,7 +1398,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -839,7 +1430,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -871,7 +1462,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -903,7 +1494,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -935,7 +1526,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -967,7 +1558,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -999,7 +1590,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -1031,7 +1622,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -1063,7 +1654,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -1095,7 +1686,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -1127,7 +1718,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -1159,7 +1750,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -1191,7 +1782,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "new"
+   "era": 1
   },
   {
    "date": "2026-10-18",
@@ -1223,7 +1814,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -1255,7 +1846,7 @@
    "playing": false,
    "live": null,
    "source": "pressure",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-25",
@@ -1287,7 +1878,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-25",
@@ -1319,7 +1910,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -1351,7 +1942,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -1383,7 +1974,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-24",
@@ -1415,7 +2006,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-21",
@@ -1447,7 +2038,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -1479,7 +2070,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -1511,7 +2102,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -1543,7 +2134,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -1575,7 +2166,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -1607,7 +2198,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-24",
@@ -1639,7 +2230,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -1671,7 +2262,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1703,7 +2294,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1735,7 +2326,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1767,7 +2358,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1799,7 +2390,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1831,7 +2422,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1863,7 +2454,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1895,7 +2486,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1927,7 +2518,7 @@
    "playing": false,
    "live": null,
    "source": "pressure",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1959,7 +2550,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -1991,7 +2582,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2023,7 +2614,7 @@
    "playing": false,
    "live": null,
    "source": "pressure",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2055,7 +2646,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2087,7 +2678,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2119,7 +2710,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2151,7 +2742,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2183,7 +2774,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2215,7 +2806,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2247,7 +2838,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2279,7 +2870,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2311,7 +2902,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2343,7 +2934,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2375,7 +2966,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2407,7 +2998,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2439,7 +3030,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2471,7 +3062,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2503,7 +3094,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2535,7 +3126,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2567,7 +3158,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2599,7 +3190,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2631,7 +3222,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2663,7 +3254,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2695,7 +3286,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2727,7 +3318,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2759,7 +3350,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2791,7 +3382,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2823,7 +3414,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2855,7 +3446,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2887,7 +3478,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2919,7 +3510,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2951,7 +3542,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -2983,7 +3574,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3015,7 +3606,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3047,7 +3638,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3079,7 +3670,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3111,7 +3702,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3143,7 +3734,7 @@
    "playing": false,
    "live": null,
    "source": "pressure",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3175,7 +3766,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3207,7 +3798,7 @@
    "playing": false,
    "live": null,
    "source": "pressure",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3239,7 +3830,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3271,7 +3862,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3303,7 +3894,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -3335,7 +3926,7 @@
    "playing": false,
    "live": null,
    "source": "pressure",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3367,7 +3958,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3399,7 +3990,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3431,7 +4022,7 @@
    "playing": false,
    "live": null,
    "source": "pressure",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3463,7 +4054,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3495,7 +4086,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3527,7 +4118,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3559,7 +4150,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3591,7 +4182,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3623,7 +4214,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3655,7 +4246,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -3687,7 +4278,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3719,7 +4310,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3751,7 +4342,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3783,7 +4374,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3815,7 +4406,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-20",
@@ -3847,7 +4438,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-24",
@@ -3879,7 +4470,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-25",
@@ -3911,7 +4502,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -3943,7 +4534,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -3975,7 +4566,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-21",
@@ -4007,7 +4598,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-25",
@@ -4039,7 +4630,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-22",
@@ -4071,7 +4662,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-20",
@@ -4101,9 +4692,12 @@
    "id": 53,
    "stage": "прематч",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 34,
+    "score": "1:0"
+   },
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-19",
@@ -4133,12 +4727,9 @@
    "id": 54,
    "stage": "прематч",
    "playing": false,
-   "live": {
-    "minute": 6,
-    "score": "0:0"
-   },
+   "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-20",
@@ -4168,9 +4759,12 @@
    "id": 56,
    "stage": "прематч",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 78,
+    "score": "3:2"
+   },
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-23",
@@ -4202,7 +4796,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-23",
@@ -4234,7 +4828,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-24",
@@ -4266,7 +4860,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-16",
@@ -4298,7 +4892,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -4330,7 +4924,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -4362,7 +4956,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -4394,7 +4988,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-20",
@@ -4424,9 +5018,12 @@
    "id": 41,
    "stage": "прематч",
    "playing": false,
-   "live": null,
+   "live": {
+    "minute": 90,
+    "score": "1:1"
+   },
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -4458,7 +5055,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4490,7 +5087,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4522,7 +5119,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4554,7 +5151,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4586,7 +5183,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4618,7 +5215,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4650,7 +5247,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4682,7 +5279,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4714,7 +5311,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4746,7 +5343,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-15",
@@ -4778,7 +5375,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -4810,7 +5407,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-25",
@@ -4842,7 +5439,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-18",
@@ -4874,7 +5471,7 @@
    "playing": false,
    "live": null,
    "source": "consensus",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -4906,7 +5503,7 @@
    "playing": false,
    "live": null,
    "source": "legacy",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-16",
@@ -4938,7 +5535,7 @@
    "playing": false,
    "live": null,
    "source": "legacy",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -4970,7 +5567,7 @@
    "playing": false,
    "live": null,
    "source": "legacy",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-16",
@@ -5002,7 +5599,7 @@
    "playing": false,
    "live": null,
    "source": "legacy",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-16",
@@ -5034,7 +5631,7 @@
    "playing": false,
    "live": null,
    "source": "legacy",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -5066,7 +5663,7 @@
    "playing": false,
    "live": null,
    "source": "legacy",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-16",
@@ -5098,7 +5695,7 @@
    "playing": false,
    "live": null,
    "source": "legacy",
-   "era": "old"
+   "era": 0
   },
   {
    "date": "2026-10-17",
@@ -5130,936 +5727,1102 @@
    "playing": false,
    "live": null,
    "source": "legacy",
-   "era": "old"
+   "era": 0
   }
  ],
- "track": {
-  "updated_at": "2026-10-19T19:14:47+00:00",
-  "since": "2026-10-18T12:20:36+00:00",
-  "until": null,
-  "bank_start": 14899.0,
-  "bank_now": 14659.0,
-  "n": 31,
-  "turnover": 6200.0,
-  "pnl": -240.0,
-  "roi": -0.0387,
-  "clv": -0.0424,
-  "clv_n": 1,
-  "clv_need": 50,
-  "clv_ci": null,
-  "by_track": {
-   "CONSENSUS": {
-    "n": 31,
-    "won": 13,
-    "wr": 0.4194,
-    "wr_ci": [
-     0.2642,
-     0.5923
-    ],
-    "turnover": 6200.0,
-    "pnl": -240.0,
-    "roi": -0.0387,
-    "clv": -0.0424,
-    "avg_odds": 2.465,
-    "exp_wr": 0.4187
-   }
-  },
-  "by_market": {
-   "1X2": {
-    "n": 3,
-    "won": 0,
-    "wr": 0.0,
-    "wr_ci": [
-     0.0,
-     0.5615
-    ],
-    "turnover": 600.0,
-    "pnl": -600.0,
-    "roi": -1.0,
-    "clv": null,
-    "avg_odds": 3.05,
-    "exp_wr": 0.3389
-   },
-   "DC": {
-    "n": 3,
-    "won": 0,
-    "wr": 0.0,
-    "wr_ci": [
-     0.0,
-     0.5615
-    ],
-    "turnover": 600.0,
-    "pnl": -600.0,
-    "roi": -1.0,
-    "clv": -0.0424,
-    "avg_odds": 3.417,
-    "exp_wr": 0.2932
-   },
-   "OU": {
-    "n": 25,
-    "won": 13,
-    "wr": 0.52,
-    "wr_ci": [
-     0.335,
-     0.6997
-    ],
-    "turnover": 5000.0,
-    "pnl": 960.0,
-    "roi": 0.192,
-    "clv": null,
-    "avg_odds": 2.281,
-    "exp_wr": 0.4433
-   }
-  },
-  "by_odds_bucket": {
-   "2.0-2.3": {
-    "n": 4,
-    "won": 2,
-    "wr": 0.5,
-    "wr_ci": [
-     0.15,
-     0.85
-    ],
-    "turnover": 800.0,
-    "pnl": 40.0,
-    "roi": 0.05,
-    "clv": null,
-    "avg_odds": 2.138,
-    "exp_wr": 0.4688
-   },
-   "2.3-2.8": {
-    "n": 18,
-    "won": 9,
-    "wr": 0.5,
-    "wr_ci": [
-     0.2903,
-     0.7097
-    ],
-    "turnover": 3600.0,
-    "pnl": 780.0,
-    "roi": 0.2167,
-    "clv": null,
-    "avg_odds": 2.414,
-    "exp_wr": 0.4148
-   },
-   "2.8-3.5": {
-    "n": 3,
-    "won": 0,
-    "wr": 0.0,
-    "wr_ci": [
-     0.0,
-     0.5615
-    ],
-    "turnover": 600.0,
-    "pnl": -600.0,
-    "roi": -1.0,
-    "clv": -0.0424,
-    "avg_odds": 3.217,
-    "exp_wr": 0.3117
-   },
-   "3.5-5.0": {
-    "n": 2,
-    "won": 0,
-    "wr": 0.0,
-    "wr_ci": [
-     0.0,
-     0.6576
-    ],
-    "turnover": 400.0,
-    "pnl": -400.0,
-    "roi": -1.0,
-    "clv": null,
-    "avg_odds": 3.675,
-    "exp_wr": 0.2722
-   },
-   "<2.0": {
-    "n": 4,
-    "won": 2,
-    "wr": 0.5,
-    "wr_ci": [
-     0.15,
-     0.85
-    ],
-    "turnover": 800.0,
-    "pnl": -60.0,
-    "roi": -0.075,
-    "clv": null,
-    "avg_odds": 1.855,
-    "exp_wr": 0.5393
-   }
-  },
-  "equity": [
-   {
-    "ts": "2026-10-18T15:46:28+00:00",
-    "n": 1,
-    "bank": 14699.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 2,
-    "bank": 14499.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 3,
-    "bank": 14299.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 4,
-    "bank": 14099.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 5,
-    "bank": 13899.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 6,
-    "bank": 13699.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 7,
-    "bank": 13499.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 8,
-    "bank": 13299.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 9,
-    "bank": 13099.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 10,
-    "bank": 13389.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 11,
-    "bank": 13589.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 12,
-    "bank": 13849.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 13,
-    "bank": 14129.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 14,
-    "bank": 14305.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 15,
-    "bank": 14595.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T16:32:09+00:00",
-    "n": 16,
-    "bank": 14895.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T16:37:35+00:00",
-    "n": 17,
-    "bank": 14695.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:40:25+00:00",
-    "n": 18,
-    "bank": 14975.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T16:43:12+00:00",
-    "n": 19,
-    "bank": 14775.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T16:55:01+00:00",
-    "n": 20,
-    "bank": 14575.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T17:01:21+00:00",
-    "n": 21,
-    "bank": 14895.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T17:18:57+00:00",
-    "n": 22,
-    "bank": 15155.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T18:14:22+00:00",
-    "n": 23,
-    "bank": 14955.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T18:20:19+00:00",
-    "n": 24,
-    "bank": 15119.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T18:39:48+00:00",
-    "n": 25,
-    "bank": 15419.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T19:09:59+00:00",
-    "n": 26,
-    "bank": 15219.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T19:42:05+00:00",
-    "n": 27,
-    "bank": 15019.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T20:12:50+00:00",
-    "n": 28,
-    "bank": 14819.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-19T17:21:02+00:00",
-    "n": 29,
-    "bank": 14619.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-19T17:38:54+00:00",
-    "n": 30,
-    "bank": 14859.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-19T18:43:03+00:00",
-    "n": 31,
-    "bank": 14659.0,
-    "won": false
-   }
-  ],
-  "open": 1
- },
- "track_old": {
-  "updated_at": "2026-10-19T19:14:47+00:00",
-  "since": null,
-  "until": "2026-10-18T12:20:36+00:00",
-  "bank_start": 15048.0,
-  "bank_now": 15061.7,
-  "n": 60,
-  "turnover": 17470.0,
-  "pnl": 13.7,
-  "roi": 0.0008,
-  "clv": 0.0488,
-  "clv_n": 5,
-  "clv_need": 50,
-  "clv_ci": [
-   -0.0191,
-   0.1167
-  ],
-  "by_track": {
-   "CONSENSUS": {
-    "n": 55,
-    "won": 22,
-    "wr": 0.4,
-    "wr_ci": [
-     0.2812,
-     0.5319
-    ],
-    "turnover": 15270.0,
-    "pnl": -311.3,
-    "roi": -0.0204,
-    "clv": 0.0554,
-    "avg_odds": 2.853,
-    "exp_wr": 0.3895
-   },
-   "PRESSURE": {
-    "n": 5,
-    "won": 2,
-    "wr": 0.4,
-    "wr_ci": [
-     0.1176,
-     0.7693
-    ],
-    "turnover": 2200.0,
-    "pnl": 325.0,
-    "roi": 0.1477,
-    "clv": null,
-    "avg_odds": 3.59,
-    "exp_wr": 0.2842
-   }
-  },
-  "by_market": {
-   "1X2": {
-    "n": 18,
-    "won": 8,
-    "wr": 0.4444,
-    "wr_ci": [
-     0.2456,
-     0.6628
-    ],
-    "turnover": 4670.0,
-    "pnl": 982.0,
-    "roi": 0.2103,
-    "clv": 0.0454,
-    "avg_odds": 3.965,
-    "exp_wr": 0.2967
-   },
-   "BTTS": {
-    "n": 7,
-    "won": 1,
-    "wr": 0.1429,
-    "wr_ci": [
-     0.0257,
-     0.5131
-    ],
-    "turnover": 2930.0,
-    "pnl": -1705.0,
-    "roi": -0.5819,
-    "clv": null,
-    "avg_odds": 2.093,
-    "exp_wr": 0.4829
-   },
-   "DC": {
-    "n": 5,
-    "won": 0,
-    "wr": 0.0,
-    "wr_ci": [
-     0.0,
-     0.4345
-    ],
-    "turnover": 1400.0,
-    "pnl": -1400.0,
-    "roi": -1.0,
-    "clv": 0.0605,
-    "avg_odds": 3.3,
-    "exp_wr": 0.3092
-   },
-   "ITOT_A": {
-    "n": 1,
-    "won": 0,
-    "wr": 0.0,
-    "wr_ci": [
-     0.0,
-     0.7935
-    ],
-    "turnover": 290.0,
-    "pnl": -290.0,
-    "roi": -1.0,
-    "clv": null,
-    "avg_odds": 3.2,
-    "exp_wr": 0.3125
-   },
-   "OU": {
-    "n": 29,
-    "won": 15,
-    "wr": 0.5172,
-    "wr_ci": [
-     0.3443,
-     0.6861
-    ],
-    "turnover": 8180.0,
-    "pnl": 2426.7,
-    "roi": 0.2967,
-    "clv": null,
-    "avg_odds": 2.384,
-    "exp_wr": 0.4228
-   }
-  },
-  "by_odds_bucket": {
-   "2.0-2.3": {
-    "n": 6,
-    "won": 4,
-    "wr": 0.6667,
-    "wr_ci": [
-     0.3,
-     0.9032
-    ],
-    "turnover": 1740.0,
-    "pnl": 240.7,
-    "roi": 0.1383,
-    "clv": null,
-    "avg_odds": 2.165,
-    "exp_wr": 0.4621
-   },
-   "2.3-2.8": {
-    "n": 27,
-    "won": 11,
-    "wr": 0.4074,
-    "wr_ci": [
-     0.2451,
-     0.5927
-    ],
-    "turnover": 8120.0,
-    "pnl": 856.0,
-    "roi": 0.1054,
-    "clv": null,
-    "avg_odds": 2.469,
-    "exp_wr": 0.4059
-   },
-   "2.8-3.5": {
-    "n": 8,
-    "won": 4,
-    "wr": 0.5,
-    "wr_ci": [
-     0.2152,
-     0.7848
-    ],
-    "turnover": 2150.0,
-    "pnl": 801.0,
-    "roi": 0.3726,
-    "clv": null,
-    "avg_odds": 3.138,
-    "exp_wr": 0.3205
-   },
-   "3.5-5.0": {
-    "n": 10,
-    "won": 2,
-    "wr": 0.2,
-    "wr_ci": [
-     0.0567,
-     0.5098
-    ],
-    "turnover": 2850.0,
-    "pnl": -1515.0,
-    "roi": -0.5316,
-    "clv": 0.0554,
-    "avg_odds": 4.005,
-    "exp_wr": 0.2524
-   },
-   "5.0+": {
-    "n": 2,
-    "won": 1,
-    "wr": 0.5,
-    "wr_ci": [
-     0.0945,
-     0.9055
-    ],
-    "turnover": 120.0,
-    "pnl": 336.0,
-    "roi": 2.8,
-    "clv": null,
-    "avg_odds": 8.55,
-    "exp_wr": 0.1184
-   },
-   "<2.0": {
-    "n": 7,
-    "won": 2,
-    "wr": 0.2857,
-    "wr_ci": [
-     0.0822,
-     0.6411
-    ],
-    "turnover": 2490.0,
-    "pnl": -705.0,
-    "roi": -0.2831,
-    "clv": null,
-    "avg_odds": 1.851,
-    "exp_wr": 0.5409
-   }
-  },
-  "equity": [
-   {
-    "ts": "2026-10-15T18:03:39+00:00",
-    "n": 1,
-    "bank": 15233.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-15T18:07:53+00:00",
-    "n": 2,
-    "bank": 15173.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-15T18:07:53+00:00",
-    "n": 3,
-    "bank": 15569.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-15T21:34:14+00:00",
-    "n": 4,
-    "bank": 15269.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-15T21:34:14+00:00",
-    "n": 5,
-    "bank": 15069.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-15T21:34:14+00:00",
-    "n": 6,
-    "bank": 14989.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-15T21:34:14+00:00",
-    "n": 7,
-    "bank": 14679.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-15T21:34:14+00:00",
-    "n": 8,
-    "bank": 14519.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-15T21:34:14+00:00",
-    "n": 9,
-    "bank": 14813.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-15T21:34:14+00:00",
-    "n": 10,
-    "bank": 15125.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-15T21:34:14+00:00",
-    "n": 11,
-    "bank": 15535.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-16T17:22:39+00:00",
-    "n": 12,
-    "bank": 16260.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-16T22:16:56+00:00",
-    "n": 13,
-    "bank": 15760.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T04:59:25+00:00",
-    "n": 14,
-    "bank": 15260.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T07:27:28+00:00",
-    "n": 15,
-    "bank": 14760.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T10:36:16+00:00",
-    "n": 16,
-    "bank": 14440.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T10:44:00+00:00",
-    "n": 17,
-    "bank": 14688.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T11:33:09+00:00",
-    "n": 18,
-    "bank": 14538.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T11:35:59+00:00",
-    "n": 19,
-    "bank": 14248.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T11:36:00+00:00",
-    "n": 20,
-    "bank": 13788.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T12:11:07+00:00",
-    "n": 21,
-    "bank": 13288.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T13:23:22+00:00",
-    "n": 22,
-    "bank": 14213.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T13:47:21+00:00",
-    "n": 23,
-    "bank": 15063.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T14:01:34+00:00",
-    "n": 24,
-    "bank": 15503.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T14:28:02+00:00",
-    "n": 25,
-    "bank": 16153.0,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T14:28:17+00:00",
-    "n": 26,
-    "bank": 15823.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T14:28:17+00:00",
-    "n": 27,
-    "bank": 15553.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T14:31:36+00:00",
-    "n": 28,
-    "bank": 15253.0,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T14:31:37+00:00",
-    "n": 29,
-    "bank": 15411.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T14:34:56+00:00",
-    "n": 30,
-    "bank": 15071.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T14:34:56+00:00",
-    "n": 31,
-    "bank": 15001.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T14:38:07+00:00",
-    "n": 32,
-    "bank": 15376.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T14:38:08+00:00",
-    "n": 33,
-    "bank": 15266.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T14:41:12+00:00",
-    "n": 34,
-    "bank": 15086.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T14:56:58+00:00",
-    "n": 35,
-    "bank": 14646.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T15:00:25+00:00",
-    "n": 36,
-    "bank": 15446.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T15:13:39+00:00",
-    "n": 37,
-    "bank": 15176.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T15:16:55+00:00",
-    "n": 38,
-    "bank": 14866.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T15:36:15+00:00",
-    "n": 39,
-    "bank": 14616.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T15:39:47+00:00",
-    "n": 40,
-    "bank": 14706.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T16:00:03+00:00",
-    "n": 41,
-    "bank": 14436.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T16:01:12+00:00",
-    "n": 42,
-    "bank": 13986.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T16:03:22+00:00",
-    "n": 43,
-    "bank": 14103.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T16:44:04+00:00",
-    "n": 44,
-    "bank": 14598.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T17:13:23+00:00",
-    "n": 45,
-    "bank": 14098.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T17:19:53+00:00",
-    "n": 46,
-    "bank": 14948.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T17:28:13+00:00",
-    "n": 47,
-    "bank": 15620.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T18:46:34+00:00",
-    "n": 48,
-    "bank": 15440.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T18:52:51+00:00",
-    "n": 49,
-    "bank": 15620.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T18:55:40+00:00",
-    "n": 50,
-    "bank": 15120.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T19:04:47+00:00",
-    "n": 51,
-    "bank": 15060.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-17T19:16:33+00:00",
-    "n": 52,
-    "bank": 15620.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-17T22:40:39+00:00",
-    "n": 53,
-    "bank": 15460.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T00:03:00+00:00",
-    "n": 54,
-    "bank": 16049.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T00:14:07+00:00",
-    "n": 55,
-    "bank": 15549.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T00:24:58+00:00",
-    "n": 56,
-    "bank": 15339.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T01:13:12+00:00",
-    "n": 57,
-    "bank": 15219.2,
-    "won": false
-   },
-   {
-    "ts": "2026-10-18T07:07:34+00:00",
-    "n": 58,
-    "bank": 15399.2,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T07:33:08+00:00",
-    "n": 59,
-    "bank": 15561.7,
-    "won": true
-   },
-   {
-    "ts": "2026-10-18T11:58:51+00:00",
+ "eras": [
+  {
+   "name": "Итерация 1",
+   "since": null,
+   "until": "2026-10-18T12:20:36+00:00",
+   "bank": 15048.0,
+   "rule": "Ставка по Келли, прематч и лайв, все рынки.",
+   "track": {
+    "updated_at": "2026-10-21T00:01:31+00:00",
+    "since": null,
+    "until": "2026-10-18T12:20:36+00:00",
+    "bank_start": 15048.0,
+    "bank_now": 15061.7,
     "n": 60,
-    "bank": 15061.7,
-    "won": false
+    "turnover": 17470.0,
+    "pnl": 13.7,
+    "roi": 0.0008,
+    "clv": 0.0488,
+    "clv_n": 5,
+    "clv_need": 50,
+    "clv_ci": [
+     -0.0191,
+     0.1167
+    ],
+    "by_track": {
+     "CONSENSUS": {
+      "n": 55,
+      "won": 22,
+      "wr": 0.4,
+      "wr_ci": [
+       0.2812,
+       0.5319
+      ],
+      "turnover": 15270.0,
+      "pnl": -311.3,
+      "roi": -0.0204,
+      "clv": 0.0554,
+      "avg_odds": 2.853,
+      "exp_wr": 0.3895
+     },
+     "PRESSURE": {
+      "n": 5,
+      "won": 2,
+      "wr": 0.4,
+      "wr_ci": [
+       0.1176,
+       0.7693
+      ],
+      "turnover": 2200.0,
+      "pnl": 325.0,
+      "roi": 0.1477,
+      "clv": null,
+      "avg_odds": 3.59,
+      "exp_wr": 0.2842
+     }
+    },
+    "by_market": {
+     "1X2": {
+      "n": 18,
+      "won": 8,
+      "wr": 0.4444,
+      "wr_ci": [
+       0.2456,
+       0.6628
+      ],
+      "turnover": 4670.0,
+      "pnl": 982.0,
+      "roi": 0.2103,
+      "clv": 0.0454,
+      "avg_odds": 3.965,
+      "exp_wr": 0.2967
+     },
+     "BTTS": {
+      "n": 7,
+      "won": 1,
+      "wr": 0.1429,
+      "wr_ci": [
+       0.0257,
+       0.5131
+      ],
+      "turnover": 2930.0,
+      "pnl": -1705.0,
+      "roi": -0.5819,
+      "clv": null,
+      "avg_odds": 2.093,
+      "exp_wr": 0.4829
+     },
+     "DC": {
+      "n": 5,
+      "won": 0,
+      "wr": 0.0,
+      "wr_ci": [
+       0.0,
+       0.4345
+      ],
+      "turnover": 1400.0,
+      "pnl": -1400.0,
+      "roi": -1.0,
+      "clv": 0.0605,
+      "avg_odds": 3.3,
+      "exp_wr": 0.3092
+     },
+     "ITOT_A": {
+      "n": 1,
+      "won": 0,
+      "wr": 0.0,
+      "wr_ci": [
+       0.0,
+       0.7935
+      ],
+      "turnover": 290.0,
+      "pnl": -290.0,
+      "roi": -1.0,
+      "clv": null,
+      "avg_odds": 3.2,
+      "exp_wr": 0.3125
+     },
+     "OU": {
+      "n": 29,
+      "won": 15,
+      "wr": 0.5172,
+      "wr_ci": [
+       0.3443,
+       0.6861
+      ],
+      "turnover": 8180.0,
+      "pnl": 2426.7,
+      "roi": 0.2967,
+      "clv": null,
+      "avg_odds": 2.384,
+      "exp_wr": 0.4228
+     }
+    },
+    "by_odds_bucket": {
+     "2.0-2.3": {
+      "n": 6,
+      "won": 4,
+      "wr": 0.6667,
+      "wr_ci": [
+       0.3,
+       0.9032
+      ],
+      "turnover": 1740.0,
+      "pnl": 240.7,
+      "roi": 0.1383,
+      "clv": null,
+      "avg_odds": 2.165,
+      "exp_wr": 0.4621
+     },
+     "2.3-2.8": {
+      "n": 27,
+      "won": 11,
+      "wr": 0.4074,
+      "wr_ci": [
+       0.2451,
+       0.5927
+      ],
+      "turnover": 8120.0,
+      "pnl": 856.0,
+      "roi": 0.1054,
+      "clv": null,
+      "avg_odds": 2.469,
+      "exp_wr": 0.4059
+     },
+     "2.8-3.5": {
+      "n": 8,
+      "won": 4,
+      "wr": 0.5,
+      "wr_ci": [
+       0.2152,
+       0.7848
+      ],
+      "turnover": 2150.0,
+      "pnl": 801.0,
+      "roi": 0.3726,
+      "clv": null,
+      "avg_odds": 3.138,
+      "exp_wr": 0.3205
+     },
+     "3.5-5.0": {
+      "n": 10,
+      "won": 2,
+      "wr": 0.2,
+      "wr_ci": [
+       0.0567,
+       0.5098
+      ],
+      "turnover": 2850.0,
+      "pnl": -1515.0,
+      "roi": -0.5316,
+      "clv": 0.0554,
+      "avg_odds": 4.005,
+      "exp_wr": 0.2524
+     },
+     "5.0+": {
+      "n": 2,
+      "won": 1,
+      "wr": 0.5,
+      "wr_ci": [
+       0.0945,
+       0.9055
+      ],
+      "turnover": 120.0,
+      "pnl": 336.0,
+      "roi": 2.8,
+      "clv": null,
+      "avg_odds": 8.55,
+      "exp_wr": 0.1184
+     },
+     "<2.0": {
+      "n": 7,
+      "won": 2,
+      "wr": 0.2857,
+      "wr_ci": [
+       0.0822,
+       0.6411
+      ],
+      "turnover": 2490.0,
+      "pnl": -705.0,
+      "roi": -0.2831,
+      "clv": null,
+      "avg_odds": 1.851,
+      "exp_wr": 0.5409
+     }
+    },
+    "equity": [
+     {
+      "ts": "2026-10-15T18:03:39+00:00",
+      "n": 1,
+      "bank": 15233.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-15T18:07:53+00:00",
+      "n": 2,
+      "bank": 15173.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-15T18:07:53+00:00",
+      "n": 3,
+      "bank": 15569.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-15T21:34:14+00:00",
+      "n": 4,
+      "bank": 15269.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-15T21:34:14+00:00",
+      "n": 5,
+      "bank": 15069.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-15T21:34:14+00:00",
+      "n": 6,
+      "bank": 14989.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-15T21:34:14+00:00",
+      "n": 7,
+      "bank": 14679.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-15T21:34:14+00:00",
+      "n": 8,
+      "bank": 14519.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-15T21:34:14+00:00",
+      "n": 9,
+      "bank": 14813.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-15T21:34:14+00:00",
+      "n": 10,
+      "bank": 15125.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-15T21:34:14+00:00",
+      "n": 11,
+      "bank": 15535.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-16T17:22:39+00:00",
+      "n": 12,
+      "bank": 16260.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-16T22:16:56+00:00",
+      "n": 13,
+      "bank": 15760.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T04:59:25+00:00",
+      "n": 14,
+      "bank": 15260.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T07:27:28+00:00",
+      "n": 15,
+      "bank": 14760.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T10:36:16+00:00",
+      "n": 16,
+      "bank": 14440.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T10:44:00+00:00",
+      "n": 17,
+      "bank": 14688.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T11:33:09+00:00",
+      "n": 18,
+      "bank": 14538.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T11:35:59+00:00",
+      "n": 19,
+      "bank": 14248.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T11:36:00+00:00",
+      "n": 20,
+      "bank": 13788.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T12:11:07+00:00",
+      "n": 21,
+      "bank": 13288.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T13:23:22+00:00",
+      "n": 22,
+      "bank": 14213.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T13:47:21+00:00",
+      "n": 23,
+      "bank": 15063.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T14:01:34+00:00",
+      "n": 24,
+      "bank": 15503.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T14:28:02+00:00",
+      "n": 25,
+      "bank": 16153.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T14:28:17+00:00",
+      "n": 26,
+      "bank": 15823.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T14:28:17+00:00",
+      "n": 27,
+      "bank": 15553.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T14:31:36+00:00",
+      "n": 28,
+      "bank": 15253.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T14:31:37+00:00",
+      "n": 29,
+      "bank": 15411.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T14:34:56+00:00",
+      "n": 30,
+      "bank": 15071.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T14:34:56+00:00",
+      "n": 31,
+      "bank": 15001.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T14:38:07+00:00",
+      "n": 32,
+      "bank": 15376.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T14:38:08+00:00",
+      "n": 33,
+      "bank": 15266.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T14:41:12+00:00",
+      "n": 34,
+      "bank": 15086.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T14:56:58+00:00",
+      "n": 35,
+      "bank": 14646.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T15:00:25+00:00",
+      "n": 36,
+      "bank": 15446.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T15:13:39+00:00",
+      "n": 37,
+      "bank": 15176.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T15:16:55+00:00",
+      "n": 38,
+      "bank": 14866.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T15:36:15+00:00",
+      "n": 39,
+      "bank": 14616.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T15:39:47+00:00",
+      "n": 40,
+      "bank": 14706.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T16:00:03+00:00",
+      "n": 41,
+      "bank": 14436.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T16:01:12+00:00",
+      "n": 42,
+      "bank": 13986.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T16:03:22+00:00",
+      "n": 43,
+      "bank": 14103.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T16:44:04+00:00",
+      "n": 44,
+      "bank": 14598.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T17:13:23+00:00",
+      "n": 45,
+      "bank": 14098.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T17:19:53+00:00",
+      "n": 46,
+      "bank": 14948.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T17:28:13+00:00",
+      "n": 47,
+      "bank": 15620.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T18:46:34+00:00",
+      "n": 48,
+      "bank": 15440.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T18:52:51+00:00",
+      "n": 49,
+      "bank": 15620.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T18:55:40+00:00",
+      "n": 50,
+      "bank": 15120.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T19:04:47+00:00",
+      "n": 51,
+      "bank": 15060.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-17T19:16:33+00:00",
+      "n": 52,
+      "bank": 15620.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-17T22:40:39+00:00",
+      "n": 53,
+      "bank": 15460.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T00:03:00+00:00",
+      "n": 54,
+      "bank": 16049.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T00:14:07+00:00",
+      "n": 55,
+      "bank": 15549.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T00:24:58+00:00",
+      "n": 56,
+      "bank": 15339.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T01:13:12+00:00",
+      "n": 57,
+      "bank": 15219.2,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T07:07:34+00:00",
+      "n": 58,
+      "bank": 15399.2,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T07:33:08+00:00",
+      "n": 59,
+      "bank": 15561.7,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T11:58:51+00:00",
+      "n": 60,
+      "bank": 15061.7,
+      "won": false
+     }
+    ],
+    "open": 5
    }
-  ],
-  "open": 5
- },
+  },
+  {
+   "name": "Итерация 2",
+   "since": "2026-10-18T12:20:36+00:00",
+   "until": "2026-10-21T00:01:06+00:00",
+   "bank": 14899.0,
+   "rule": "Плоская ставка 200 ₽, только лайв. По ходу отключены двойной шанс и исход.",
+   "track": {
+    "updated_at": "2026-10-21T00:01:31+00:00",
+    "since": "2026-10-18T12:20:36+00:00",
+    "until": "2026-10-21T00:01:06+00:00",
+    "bank_start": 14899.0,
+    "bank_now": 14395.0,
+    "n": 49,
+    "turnover": 9800.0,
+    "pnl": -504.0,
+    "roi": -0.0514,
+    "clv": -0.0424,
+    "clv_n": 1,
+    "clv_need": 50,
+    "clv_ci": null,
+    "by_track": {
+     "CONSENSUS": {
+      "n": 47,
+      "won": 21,
+      "wr": 0.4468,
+      "wr_ci": [
+       0.3141,
+       0.5875
+      ],
+      "turnover": 9400.0,
+      "pnl": -104.0,
+      "roi": -0.0111,
+      "clv": -0.0424,
+      "avg_odds": 2.356,
+      "exp_wr": 0.4379
+     },
+     "PRESSURE": {
+      "n": 2,
+      "won": 0,
+      "wr": 0.0,
+      "wr_ci": [
+       0.0,
+       0.6576
+      ],
+      "turnover": 400.0,
+      "pnl": -400.0,
+      "roi": -1.0,
+      "clv": null,
+      "avg_odds": 4.05,
+      "exp_wr": 0.2534
+     }
+    },
+    "by_market": {
+     "1X2": {
+      "n": 5,
+      "won": 0,
+      "wr": 0.0,
+      "wr_ci": [
+       0.0,
+       0.4345
+      ],
+      "turnover": 1000.0,
+      "pnl": -1000.0,
+      "roi": -1.0,
+      "clv": null,
+      "avg_odds": 3.45,
+      "exp_wr": 0.3047
+     },
+     "DC": {
+      "n": 3,
+      "won": 0,
+      "wr": 0.0,
+      "wr_ci": [
+       0.0,
+       0.5615
+      ],
+      "turnover": 600.0,
+      "pnl": -600.0,
+      "roi": -1.0,
+      "clv": -0.0424,
+      "avg_odds": 3.417,
+      "exp_wr": 0.2932
+     },
+     "OU": {
+      "n": 41,
+      "won": 21,
+      "wr": 0.5122,
+      "wr_ci": [
+       0.3648,
+       0.6575
+      ],
+      "turnover": 8200.0,
+      "pnl": 1096.0,
+      "roi": 0.1337,
+      "clv": null,
+      "avg_odds": 2.228,
+      "exp_wr": 0.4557
+     }
+    },
+    "by_odds_bucket": {
+     "2.0-2.3": {
+      "n": 12,
+      "won": 8,
+      "wr": 0.6667,
+      "wr_ci": [
+       0.3906,
+       0.8619
+      ],
+      "turnover": 2400.0,
+      "pnl": 926.0,
+      "roi": 0.3858,
+      "clv": null,
+      "avg_odds": 2.103,
+      "exp_wr": 0.4764
+     },
+     "2.3-2.8": {
+      "n": 21,
+      "won": 10,
+      "wr": 0.4762,
+      "wr_ci": [
+       0.2834,
+       0.6763
+      ],
+      "turnover": 4200.0,
+      "pnl": 650.0,
+      "roi": 0.1548,
+      "clv": null,
+      "avg_odds": 2.412,
+      "exp_wr": 0.4151
+     },
+     "2.8-3.5": {
+      "n": 5,
+      "won": 0,
+      "wr": 0.0,
+      "wr_ci": [
+       0.0,
+       0.4345
+      ],
+      "turnover": 1000.0,
+      "pnl": -1000.0,
+      "roi": -1.0,
+      "clv": -0.0424,
+      "avg_odds": 3.23,
+      "exp_wr": 0.3104
+     },
+     "3.5-5.0": {
+      "n": 3,
+      "won": 0,
+      "wr": 0.0,
+      "wr_ci": [
+       0.0,
+       0.5615
+      ],
+      "turnover": 600.0,
+      "pnl": -600.0,
+      "roi": -1.0,
+      "clv": null,
+      "avg_odds": 4.017,
+      "exp_wr": 0.2524
+     },
+     "<2.0": {
+      "n": 8,
+      "won": 3,
+      "wr": 0.375,
+      "wr_ci": [
+       0.1368,
+       0.6943
+      ],
+      "turnover": 1600.0,
+      "pnl": -480.0,
+      "roi": -0.3,
+      "clv": null,
+      "avg_odds": 1.844,
+      "exp_wr": 0.5429
+     }
+    },
+    "equity": [
+     {
+      "ts": "2026-10-18T15:46:28+00:00",
+      "n": 1,
+      "bank": 14699.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 2,
+      "bank": 14499.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 3,
+      "bank": 14299.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 4,
+      "bank": 14099.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 5,
+      "bank": 13899.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 6,
+      "bank": 13699.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 7,
+      "bank": 13499.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 8,
+      "bank": 13299.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 9,
+      "bank": 13099.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 10,
+      "bank": 13389.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 11,
+      "bank": 13589.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 12,
+      "bank": 13849.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 13,
+      "bank": 14129.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 14,
+      "bank": 14305.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 15,
+      "bank": 14595.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T16:32:09+00:00",
+      "n": 16,
+      "bank": 14895.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T16:37:35+00:00",
+      "n": 17,
+      "bank": 14695.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:40:25+00:00",
+      "n": 18,
+      "bank": 14975.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T16:43:12+00:00",
+      "n": 19,
+      "bank": 14775.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T16:55:01+00:00",
+      "n": 20,
+      "bank": 14575.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T17:01:21+00:00",
+      "n": 21,
+      "bank": 14895.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T17:18:57+00:00",
+      "n": 22,
+      "bank": 15155.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T18:14:22+00:00",
+      "n": 23,
+      "bank": 14955.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T18:20:19+00:00",
+      "n": 24,
+      "bank": 15119.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T18:39:48+00:00",
+      "n": 25,
+      "bank": 15419.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-18T19:09:59+00:00",
+      "n": 26,
+      "bank": 15219.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T19:42:05+00:00",
+      "n": 27,
+      "bank": 15019.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-18T20:12:50+00:00",
+      "n": 28,
+      "bank": 14819.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-19T17:21:02+00:00",
+      "n": 29,
+      "bank": 14619.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-19T17:38:54+00:00",
+      "n": 30,
+      "bank": 14859.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-19T18:43:03+00:00",
+      "n": 31,
+      "bank": 14659.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-19T19:04:09+00:00",
+      "n": 32,
+      "bank": 14865.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-19T19:24:55+00:00",
+      "n": 33,
+      "bank": 15065.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-19T19:38:05+00:00",
+      "n": 34,
+      "bank": 14865.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-19T20:03:57+00:00",
+      "n": 35,
+      "bank": 14665.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-20T17:06:38+00:00",
+      "n": 36,
+      "bank": 14465.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-20T18:07:48+00:00",
+      "n": 37,
+      "bank": 14265.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-20T18:55:07+00:00",
+      "n": 38,
+      "bank": 14065.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-20T18:57:50+00:00",
+      "n": 39,
+      "bank": 13865.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-20T19:00:53+00:00",
+      "n": 40,
+      "bank": 14085.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-20T19:00:54+00:00",
+      "n": 41,
+      "bank": 13885.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-20T19:06:32+00:00",
+      "n": 42,
+      "bank": 14065.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-20T19:18:24+00:00",
+      "n": 43,
+      "bank": 14285.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-20T19:24:42+00:00",
+      "n": 44,
+      "bank": 14555.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-20T19:29:46+00:00",
+      "n": 45,
+      "bank": 14775.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-20T19:56:53+00:00",
+      "n": 46,
+      "bank": 14995.0,
+      "won": true
+     },
+     {
+      "ts": "2026-10-20T19:59:38+00:00",
+      "n": 47,
+      "bank": 14795.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-20T20:09:23+00:00",
+      "n": 48,
+      "bank": 14595.0,
+      "won": false
+     },
+     {
+      "ts": "2026-10-20T20:40:56+00:00",
+      "n": 49,
+      "bank": 14395.0,
+      "won": false
+     }
+    ],
+    "open": 1
+   }
+  },
+  {
+   "name": "Новая система",
+   "since": "2026-10-21T00:01:06+00:00",
+   "until": null,
+   "bank": 14395.0,
+   "rule": "Плоская ставка 200 ₽, только лайв, только тотал. Справедливая цена по острой книге, детектор давления по всем ударам при равном счёте.",
+   "track": {
+    "updated_at": "2026-10-21T00:01:31+00:00",
+    "since": "2026-10-21T00:01:06+00:00",
+    "until": null,
+    "bank_start": 14395.0,
+    "bank_now": 14395.0,
+    "n": 0,
+    "turnover": 0,
+    "pnl": 0,
+    "roi": null,
+    "clv": null,
+    "clv_n": 0,
+    "clv_need": 50,
+    "clv_ci": null,
+    "by_track": {},
+    "by_market": {},
+    "by_odds_bucket": {},
+    "equity": [],
+    "open": 0
+   }
+  }
+ ],
  "calibration": {
   "grid": [
    0.005,
@@ -6467,15 +7230,15 @@
   "fold_improvement": 0.0027165187395046253
  },
  "coverage": {
-  "fixtures": 221754,
+  "fixtures": 222006,
   "fixtures_with_closing": 203350,
-  "leagues": 392,
-  "leagues_live": 379,
-  "matches_tracked": 3266,
-  "teams": 5820,
-  "odds_rows": 7777301,
-  "fonbet_rows": 1008954,
-  "live_snapshots": 14984,
+  "leagues": 400,
+  "leagues_live": 386,
+  "matches_tracked": 3511,
+  "teams": 5930,
+  "odds_rows": 7935951,
+  "fonbet_rows": 1167604,
+  "live_snapshots": 16212,
   "date_range": [
    "2012-03-02",
    "2026-12-07"
@@ -6484,409 +7247,786 @@
  },
  "upcoming": [
   {
-   "date": "2026-10-19",
-   "time": "22:15",
-   "league": "P1",
-   "league_name": "Primeira Liga",
-   "home": "Sp Braga",
-   "away": "Gil Vicente",
+   "date": "2026-10-21",
+   "time": "03:07",
+   "league": "MEX",
+   "league_name": "MEX",
+   "home": "Guadalajara Chivas",
+   "away": "Necaxa",
    "odds": [
-    1.72,
+    1.35,
+    5.2,
+    7.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "04:00",
+   "league": "MEX",
+   "league_name": "MEX",
+   "home": "Juarez",
+   "away": "Atlante",
+   "odds": [
+    3.25,
+    3.5,
+    2.1
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "04:00",
+   "league": "MEX",
+   "league_name": "MEX",
+   "home": "Atl. San Luis",
+   "away": "Queretaro",
+   "odds": [
+    2.3,
+    3.45,
+    2.95
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "04:00",
+   "league": "FB42382",
+   "league_name": "Панама. 2-я лига",
+   "home": "УМЕСИТ (р)",
+   "away": "Академия Коста-дель-Эсте",
+   "odds": [
+    7.2,
+    4.3,
+    1.35
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "04:00",
+   "league": "FB42382",
+   "league_name": "Панама. 2-я лига",
+   "home": "Арабе Унидо (р)",
+   "away": "Спортинг Сан Мигелито (р)",
+   "odds": [
+    2.02,
+    2.9,
+    3.65
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "04:30",
+   "league": "FB15187",
+   "league_name": "Колумбия. Серия А",
+   "home": "Мильонариос",
+   "away": "Онсе Кальдас",
+   "odds": [
+    1.73,
+    3.5,
+    4.6
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "05:00",
+   "league": "FB15325",
+   "league_name": "Гватемала. Лига Насьональ",
+   "home": "Малакатеко",
+   "away": "КСД Комуникасьонес",
+   "odds": [
+    2.0,
+    3.0,
+    3.6
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "06:00",
+   "league": "MEX",
+   "league_name": "MEX",
+   "home": "Tigres UANL",
+   "away": "Club Leon",
+   "odds": [
+    2.05,
+    3.45,
+    3.5
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "07:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Монтедио Ямагата",
+   "away": "Консадоле Саппоро",
+   "odds": [
+    2.2,
+    3.35,
+    2.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "07:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Нагано Парсейро",
+   "away": "Рюкю",
+   "odds": [
+    2.5,
+    3.35,
+    2.45
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "07:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Фукусима Юнайтед",
+   "away": "Джираванц Китакюсю",
+   "odds": [
+    2.03,
+    3.8,
+    2.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "07:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Тотиги",
+   "away": "Рейлак Сига",
+   "odds": [
+    1.9,
     3.4,
+    3.5
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "07:00",
+   "league": "FB57765",
+   "league_name": "Соломоновы острова. S-Лига",
+   "home": "Грин Шилд",
+   "away": "ГХУПО",
+   "odds": [
+    1.12,
+    6.2,
+    17.0
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "11:30",
+   "league": "FB18989",
+   "league_name": "Индонезия. 1-я лига",
+   "home": "Бали Юнайтед",
+   "away": "Гаруда Якса",
+   "odds": [
+    1.5,
+    4.6,
     5.3
    ]
   },
   {
-   "date": "2026-10-19",
-   "time": "22:30",
-   "league": "FB19995",
-   "league_name": "Парагвай. 2-й дивизион",
-   "home": "Энкарнасион",
-   "away": "Хенераль Кабальеро",
+   "date": "2026-10-21",
+   "time": "12:30",
+   "league": "FB133987",
+   "league_name": "Лига вызова Азии. Групповой этап",
+   "home": "Касука",
+   "away": "Шан Юнайтед",
    "odds": [
-    4.1,
-    3.95,
-    1.63
+    15.0,
+    8.5,
+    1.08
    ]
   },
   {
-   "date": "2026-10-19",
-   "time": "22:30",
-   "league": "FB19995",
-   "league_name": "Парагвай. 2-й дивизион",
-   "home": "12 де Хунио Вилья Айес",
-   "away": "Гуайренья",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "Yokohama F. Marinos",
+   "away": "FC Tokyo",
    "odds": [
-    1.55,
-    3.65,
-    5.1
+    1.83,
+    3.45,
+    4.4
    ]
   },
   {
-   "date": "2026-10-19",
-   "time": "22:30",
-   "league": "FB19995",
-   "league_name": "Парагвай. 2-й дивизион",
-   "home": "Депортиво Сантани",
-   "away": "3 де Новьембре",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "V-Varen Nagasaki",
+   "away": "Sanfrecce Hiroshima",
    "odds": [
-    1.58,
-    3.85,
-    4.6
+    6.1,
+    4.8,
+    1.45
    ]
   },
   {
-   "date": "2026-10-19",
-   "time": "23:30",
-   "league": "FB133361",
-   "league_name": "Эквадор. Премьер-Лига. Группа вылета",
-   "home": "Мушук Руна",
-   "away": "Оренсе",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "Kyoto",
+   "away": "Kashima Antlers",
    "odds": [
-    1.68,
+    3.7,
     3.55,
-    4.8
+    1.95
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "00:00",
-   "league": "FB18609",
-   "league_name": "Колумбия. Серия В",
-   "home": "Интернасиональ Пальмира",
-   "away": "Унион Магдалена",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Вегалта Сендай",
+   "away": "Имабари",
    "odds": [
-    1.98,
-    3.2,
-    3.45
+    1.4,
+    4.2,
+    6.4
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "00:00",
-   "league": "FB42382",
-   "league_name": "Панама. 2-я лига",
-   "home": "Потрос-дель-Эсте",
-   "away": "Тауро (р)",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Альбирекс Ниигата",
+   "away": "Саган Тосу",
    "odds": [
-    2.35,
-    3.4,
-    2.55
+    3.3,
+    3.15,
+    2.05
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "01:00",
-   "league": "ARG",
-   "league_name": "ARG",
-   "home": "Newells Old Boys",
-   "away": "Central Cordoba",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Токусима Вортис",
+   "away": "Ванрауре Хатинохе",
    "odds": [
     1.85,
-    3.2,
-    4.6
+    3.15,
+    3.9
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "01:00",
-   "league": "ARG",
-   "league_name": "ARG",
-   "home": "Sarmiento Junin",
-   "away": "Barracas Central",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Тотиги Сити",
+   "away": "Фудзиеда",
    "odds": [
-    2.3,
-    2.9,
-    3.55
+    2.03,
+    3.5,
+    3.0
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "01:00",
-   "league": "FB18142",
-   "league_name": "Чили. Серия В",
-   "home": "Унион Эспаньола",
-   "away": "Депортес Копьяпо",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Омия Ардия",
+   "away": "Каталлер Тояма",
    "odds": [
-    2.07,
+    2.05,
+    3.75,
+    2.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "FC Tokyo",
+   "away": "Kashiwa Reysol",
+   "odds": [
+    2.05,
+    3.55,
+    3.35
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "Nagoya Grampus",
+   "away": "Cerezo Osaka",
+   "odds": [
+    2.25,
     3.55,
     2.9
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "01:00",
-   "league": "ARG",
-   "league_name": "ARG",
-   "home": "Newells Old Boys",
-   "away": "Godoy Cruz",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "Yokohama F. Marinos",
+   "away": "Verdy",
    "odds": [
-    1.75,
-    3.35,
-    5.0
+    1.83,
+    3.45,
+    4.4
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "01:00",
-   "league": "ARG",
-   "league_name": "ARG",
-   "home": "Sarmiento Junin",
-   "away": "Central Cordoba",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Тегевахаро Мияадзаки",
+   "away": "Блаублиц Акита",
    "odds": [
-    2.25,
-    2.95,
-    3.55
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "01:00",
-   "league": "FB18609",
-   "league_name": "Колумбия. Серия В",
-   "home": "Орсомарсо",
-   "away": "Богота",
-   "odds": [
-    2.0,
+    1.9,
     3.1,
-    3.45
+    3.8
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "01:05",
-   "league": "FB18746",
-   "league_name": "Ямайка. Премьер-Лига",
-   "home": "Молайнес Юнайтед",
-   "away": "Кавалиер",
-   "odds": [
-    5.2,
-    4.05,
-    1.5
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "01:30",
-   "league": "BRA2",
-   "league_name": "Brazil Serie B",
-   "home": "Гояс",
-   "away": "Наутико Капибарибе",
-   "odds": [
-    1.65,
-    3.55,
-    4.6
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "01:30",
-   "league": "FB121345",
-   "league_name": "Бразилия. Параибано. 1/2 финала. Первые матчи",
-   "home": "Спартакс Жоао Песоа",
-   "away": "Санта-Рита",
-   "odds": [
-    12.5,
-    4.8,
-    1.2
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "02:00",
-   "league": "BRA",
-   "league_name": "BRA",
-   "home": "Corinthians",
-   "away": "Vitoria",
-   "odds": [
-    1.52,
-    3.9,
-    6.7
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "02:00",
-   "league": "FB15186",
-   "league_name": "Уругвай. Премьер-Лига",
-   "home": "Насьональ Монтевидео",
-   "away": "Депортиво Мальдонадо",
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Джубило Ивата",
+   "away": "Оита Тринита",
    "odds": [
     1.8,
+    3.25,
+    4.0
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Сенан Бельмаре",
+   "away": "Иваки",
+   "odds": [
+    2.15,
+    3.2,
+    2.95
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB12291",
+   "league_name": "Япония. 2-й дивизион",
+   "home": "Ванфоре Кофу",
+   "away": "Йокогама",
+   "odds": [
+    4.2,
+    3.75,
+    1.65
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "Okayama",
+   "away": "Mito",
+   "odds": [
+    1.73,
+    3.6,
+    4.7
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "Kawasaki Frontale",
+   "away": "Vissel Kobe",
+   "odds": [
+    2.3,
+    3.6,
+    2.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "Avispa Fukuoka",
+   "away": "Gamba Osaka",
+   "odds": [
+    2.55,
+    3.3,
+    2.7
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "Shimizu S-Pulse",
+   "away": "Machida",
+   "odds": [
+    3.45,
+    3.35,
+    2.08
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Каматамарэ Сануки",
+   "away": "Цвайген Канадзава",
+   "odds": [
+    3.65,
+    3.55,
+    1.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Кагосима Юнайтед",
+   "away": "Коти Юнайтед",
+   "odds": [
+    1.5,
+    3.65,
+    6.0
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Гифу",
+   "away": "Сагамихара",
+   "odds": [
+    2.0,
+    3.4,
+    3.15
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Мацумото Ямага",
+   "away": "Зеспакусацу Гумма",
+   "odds": [
+    1.7,
+    3.6,
+    4.05
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Роассо Кумамото",
+   "away": "Гайнарэ Тоттори",
+   "odds": [
+    1.65,
+    3.7,
+    4.3
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Эхимэ",
+   "away": "Ренофа Ямагути",
+   "odds": [
+    2.2,
+    3.3,
+    2.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:00",
+   "league": "FB61983",
+   "league_name": "Япония. 3-й дивизион",
+   "home": "Осака",
+   "away": "Нара Клуб",
+   "odds": [
+    1.93,
     3.5,
+    3.25
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "13:30",
+   "league": "JPN",
+   "league_name": "JPN",
+   "home": "Urawa Reds",
+   "away": "Albirex Niigata",
+   "odds": [
+    1.65,
+    3.9,
+    4.9
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "14:00",
+   "league": "FB93695",
+   "league_name": "Россия. 2-я лига. Дивизион А. Серебро",
+   "home": "Динамо Ставрополь",
+   "away": "Иртыш Омск",
+   "odds": [
+    1.85,
+    3.5,
+    3.93
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "14:00",
+   "league": "FB31154",
+   "league_name": "Мальдивы. Чемпионат",
+   "home": "Оди",
+   "away": "Иглз",
+   "odds": [
+    1.8,
+    3.85,
+    3.35
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "14:30",
+   "league": "FB11863",
+   "league_name": "Сингапур. Премьер-Лига",
+   "home": "Лайон Сити Сейлорс",
+   "away": "Тампинс Роверс",
+   "odds": [
+    1.65,
+    3.9,
+    4.5
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "15:00",
+   "league": "FB18989",
+   "league_name": "Индонезия. 1-я лига",
+   "home": "Персия Джакарта",
+   "away": "Арема Кронус",
+   "odds": [
+    1.33,
+    4.9,
+    7.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "15:00",
+   "league": "FB34630",
+   "league_name": "Эфиопия. Премьер-лига",
+   "home": "Эфиопия Бунна",
+   "away": "Нэгэле Арси",
+   "odds": [
+    2.55,
+    2.55,
+    3.0
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "15:00",
+   "league": "FB133987",
+   "league_name": "Лига вызова Азии. Групповой этап",
+   "home": "Тайнань Сити",
+   "away": "Борнео",
+   "odds": [
+    11.0,
+    4.7,
+    1.25
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "15:30",
+   "league": "FB133987",
+   "league_name": "Лига вызова Азии. Групповой этап",
+   "home": "Фу Джен Католик Юниверсити",
+   "away": "Манила Диггер",
+   "odds": [
+    6.4,
+    4.4,
+    1.37
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "17:00",
+   "league": "FB23989",
+   "league_name": "Египет. Премьер-Лига",
+   "home": "Газль Эль-Махалла",
+   "away": "Аль-Иттихад Александрия",
+   "odds": [
+    2.95,
+    2.6,
+    2.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "17:45",
+   "league": "FB14356",
+   "league_name": "Саудовская Аравия. 1-й дивизион",
+   "home": "Аль-Джил",
+   "away": "Аль-Джандал",
+   "odds": [
+    2.8,
+    3.05,
+    2.35
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "18:00",
+   "league": "FB14356",
+   "league_name": "Саудовская Аравия. 1-й дивизион",
+   "home": "Аль-Анвар",
+   "away": "Аль-Вахда Мекка",
+   "odds": [
+    3.0,
+    3.5,
+    2.02
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "18:00",
+   "league": "FB12730",
+   "league_name": "Эстония. Суперлига",
+   "home": "Харью Лаагри",
+   "away": "Флора Таллин",
+   "odds": [
+    3.15,
+    4.3,
+    1.8
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "18:30",
+   "league": "FB32686",
+   "league_name": "Финляндия. Переходные матчи. Первый матч",
+   "home": "ПК-35 Хельсинки",
+   "away": "Яро",
+   "odds": [
+    3.05,
+    3.05,
+    2.5
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "18:30",
+   "league": "FB16623",
+   "league_name": "Польша. 3-я лига",
+   "home": "Видзев Лодзь 2",
+   "away": "Варта Серадз",
+   "odds": [
+    2.35,
+    3.8,
+    2.4
+   ]
+  },
+  {
+   "date": "2026-10-21",
+   "time": "19:00",
+   "league": "FB60873",
+   "league_name": "Мальта. Премьер-Лига",
+   "home": "Хамрун Спартанс",
+   "away": "Бальцан",
+   "odds": [
+    1.7,
+    3.55,
     4.15
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "02:00",
-   "league": "FB18609",
-   "league_name": "Колумбия. Серия В",
-   "home": "Реал Картахена",
-   "away": "Патриотас Бояка",
+   "date": "2026-10-21",
+   "time": "19:00",
+   "league": "FB60873",
+   "league_name": "Мальта. Премьер-Лига",
+   "home": "Бирзеббуджа Сейнт Питерс",
+   "away": "Марсашлокк",
    "odds": [
-    1.63,
-    3.4,
-    4.9
+    6.1,
+    4.0,
+    1.45
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "03:00",
-   "league": "FB80210",
-   "league_name": "Коста-Рика. Премьер-дивизион",
-   "home": "Спортинг Сан-Хосе",
-   "away": "АД Сан-Карлос",
+   "date": "2026-10-21",
+   "time": "19:00",
+   "league": "FB31154",
+   "league_name": "Мальдивы. Чемпионат",
+   "home": "Нью Рэдиант",
+   "away": "Буру",
    "odds": [
-    1.65,
-    3.6,
-    4.9
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "03:15",
-   "league": "ARG",
-   "league_name": "ARG",
-   "home": "Dep. Riestra",
-   "away": "Union de Santa Fe",
-   "odds": [
-    2.13,
-    2.95,
+    1.7,
+    3.75,
     3.9
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "04:00",
-   "league": "FB18746",
-   "league_name": "Ямайка. Премьер-Лига",
-   "home": "Расинг Юнайтед",
-   "away": "Уотерхаус",
-   "odds": [
-    2.95,
-    3.0,
-    2.25
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "04:00",
-   "league": "FB15325",
-   "league_name": "Гватемала. Лига Насьональ",
-   "home": "Депортиво Антигуа",
-   "away": "Шелаху",
-   "odds": [
-    1.7,
-    3.5,
-    4.2
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "04:00",
-   "league": "FB17827",
-   "league_name": "Панама. Высшая лига",
-   "home": "Спортинг Сан Мигелито",
-   "away": "Тауро",
-   "odds": [
-    2.55,
-    3.1,
-    2.55
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "04:05",
-   "league": "FB15187",
-   "league_name": "Колумбия. Серия А",
-   "home": "Депортиво Пасто",
-   "away": "Альянса Вальедупар",
-   "odds": [
-    1.7,
-    3.45,
-    4.9
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "05:00",
-   "league": "FB80210",
-   "league_name": "Коста-Рика. Премьер-дивизион",
-   "home": "Эскорпионес Белен",
-   "away": "Пунтаренас",
+   "date": "2026-10-21",
+   "time": "19:15",
+   "league": "FB85049",
+   "league_name": "Сьерра-Леоне. Премьер-Лига",
+   "home": "Буллом Старс",
+   "away": "Уилберфорс Страйкерс",
    "odds": [
     2.5,
-    3.35,
-    2.55
+    2.9,
+    2.7
    ]
   },
   {
-   "date": "2026-10-20",
-   "time": "05:00",
-   "league": "FB61292",
-   "league_name": "Коста-Рика. 2-й дивизион",
-   "home": "Кофутпа",
-   "away": "Кепос Камбуте",
+   "date": "2026-10-21",
+   "time": "19:45",
+   "league": "UCL",
+   "league_name": "Лига чемпионов УЕФА",
+   "home": "Лилль",
+   "away": "Галатасарай",
    "odds": [
-    4.2,
-    3.45,
-    1.7
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "11:30",
-   "league": "FB18989",
-   "league_name": "Индонезия. 1-я лига",
-   "home": "Исенмуланг Калтенг",
-   "away": "Джава Юнайтед",
-   "odds": [
-    4.15,
-    3.85,
-    1.73
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "14:00",
-   "league": "FB133987",
-   "league_name": "Лига вызова Азии. Групповой этап",
-   "home": "Хомс Аль-Фидаа",
-   "away": "Аль-Неджмех",
-   "odds": [
-    2.45,
-    3.25,
-    2.55
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "15:00",
-   "league": "FB18989",
-   "league_name": "Индонезия. 1-я лига",
-   "home": "Дева Юнайтед",
-   "away": "Персиджап Джепара",
-   "odds": [
-    1.2,
-    6.0,
-    12.5
-   ]
-  },
-  {
-   "date": "2026-10-20",
-   "time": "15:00",
-   "league": "FB18989",
-   "league_name": "Индонезия. 1-я лига",
-   "home": "Бхаянгкара",
-   "away": "ПСИМ Джокьякарта",
-   "odds": [
-    1.65,
-    3.5,
-    5.3
+    2.18,
+    3.75,
+    3.1
    ]
   }
  ],
  "model_version": "dc-0.2",
- "generated_at": "2026-10-19T19:14:49+00:00"
+ "generated_at": "2026-10-21T00:01:32+00:00"
 }

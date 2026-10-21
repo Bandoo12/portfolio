@@ -34,7 +34,7 @@ type Pick = {
   track: string; odds: number; stake: number; edge: number | null;
   status: string; pnl: number | null; clv: number | null;
   placed_at: string; mode: string; id: number;
-  era?: 'new' | 'old';
+  era?: number;
   playing?: boolean;
   live?: { minute: number; score: string } | null;
 };
@@ -190,38 +190,37 @@ function Table({ rows, showResult, showLive }: {
   );
 }
 
-/* Две системы считаются раздельно: 18.10.2026 правила сменились целиком
-   (плоская ставка вместо Келли, только лайв, три рынка закрыты). Старые
-   результаты не подмешиваются в новые, но и не прячутся — переключатель
-   рядом, и обе цифры видно. */
-function Tabs({ value, onChange, counts }: {
-  value: 'new' | 'old';
-  onChange: (v: 'new' | 'old') => void;
-  counts: { new: number; old: number };
+/* Правила менялись не раз, и смешивать ставки разных правил в одну
+   цифру нечестно: средний результат получается ни о чём. Каждый период
+   со своими цифрами, прошлые остаются рядом — перезапуск счёта не
+   должен выглядеть как подчистка результатов. */
+type Era = {
+  name: string; rule?: string; since?: string | null; until?: string | null;
+  track?: Record<string, unknown>;
+};
+
+function Tabs({ eras, value, onChange, counts }: {
+  eras: Era[]; value: number; onChange: (v: number) => void; counts: number[];
 }) {
-  const items: { k: 'new' | 'old'; label: string }[] = [
-    { k: 'new', label: 'Новая система' },
-    { k: 'old', label: 'Старая система' },
-  ];
   return (
     <div
-      className="inline-flex p-1 rounded-xl gap-1"
+      className="inline-flex p-1 rounded-xl gap-1 flex-wrap"
       style={{ background: 'var(--c-surface)', border: '1px solid var(--c-border)' }}
     >
-      {items.map(({ k, label }) => (
+      {eras.map((e, i) => (
         <button
-          key={k}
-          onClick={() => onChange(k)}
-          aria-pressed={value === k}
+          key={e.name}
+          onClick={() => onChange(i)}
+          aria-pressed={value === i}
           className="px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors"
           style={{
-            background: value === k ? 'var(--c-accent)' : 'transparent',
-            color: value === k ? '#fff' : 'var(--c-muted)',
-            fontWeight: value === k ? 600 : 400,
+            background: value === i ? 'var(--c-accent)' : 'transparent',
+            color: value === i ? '#fff' : 'var(--c-muted)',
+            fontWeight: value === i ? 600 : 400,
           }}
         >
-          {label}
-          <span className="ml-2 tabular-nums" style={{ opacity: 0.7 }}>{counts[k]}</span>
+          {e.name}
+          <span className="ml-2 tabular-nums" style={{ opacity: 0.7 }}>{counts[i] ?? 0}</span>
         </button>
       ))}
     </div>
@@ -230,16 +229,13 @@ function Tabs({ value, onChange, counts }: {
 
 export default function FootballPage() {
   const data = useLiveData();
-  const [tab, setTab] = useState<'new' | 'old'>('new');
+  const eras = ((data as Record<string, unknown>).eras ?? []) as Era[];
+  // по умолчанию открыт текущий период, он последний в списке
+  const [tab, setTab] = useState(() => Math.max(0, eras.length - 1));
   const all = data.picks as unknown as Pick[];
-  const counts = {
-    new: all.filter((p) => (p.era ?? 'new') === 'new').length,
-    old: all.filter((p) => p.era === 'old').length,
-  };
-  const picks = all.filter((p) => (p.era ?? 'new') === tab);
-  const track = (tab === 'new' ? data.track : (data as Record<string, unknown>).track_old) as
-    | Record<string, unknown>
-    | null;
+  const counts = eras.map((_, i) => all.filter((p) => (p.era ?? 0) === i).length);
+  const picks = all.filter((p) => (p.era ?? 0) === tab);
+  const track = (eras[tab]?.track ?? null) as Record<string, unknown> | null;
 
   // ключ сортировки: дата матча плюс время начала, если оно известно
   const when = (p: Pick) => `${p.date} ${p.time ?? '00:00'}`;
@@ -272,11 +268,9 @@ export default function FootballPage() {
         </div>
 
         <div className="mt-6">
-          <Tabs value={tab} onChange={setTab} counts={counts} />
-          <div className="text-xs mt-2" style={{ color: 'var(--c-muted)' }}>
-            {tab === 'new'
-              ? 'Плоская ставка 200 ₽, только лайв. Счёт с 18.10.2026.'
-              : 'Ставка по Келли, прематч и лайв, все рынки. Закрыта 18.10.2026.'}
+          <Tabs eras={eras} value={tab} onChange={setTab} counts={counts} />
+          <div className="text-xs mt-2 leading-snug" style={{ color: 'var(--c-muted)' }}>
+            {eras[tab]?.rule}
           </div>
         </div>
 
@@ -297,7 +291,7 @@ export default function FootballPage() {
 
         <Charts key={tab} track={(track ?? {}) as never} />
 
-        {tab === 'new' && done.length === 0 && (
+        {tab === eras.length - 1 && done.length === 0 && (
           <section
             className="mt-10 rounded-2xl p-6 text-sm"
             style={{
@@ -305,8 +299,8 @@ export default function FootballPage() {
               color: 'var(--c-muted)',
             }}
           >
-            Новая система только запущена, рассчитанных ставок пока нет.
-            Результаты старой лежат на соседней вкладке и в счёт не идут.
+            Период только начат, рассчитанных ставок пока нет.
+            Результаты прошлых лежат на соседних вкладках и в счёт не идут.
           </section>
         )}
 
