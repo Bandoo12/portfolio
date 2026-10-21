@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Витрина быстрых игр</title>
+<style>
+:root{
+  --bg:#D9DDE5; --surface:#EEEFF3; --card:#FFFFFF; --line:#DEE0E5;
+  --text:#24282F; --muted:#737A87; --green:#00B43F; --chip:#FFFFFF; --chipOn:#24282F;
+}
+:root[data-theme="dark"]{
+  --bg:#24282F; --surface:#2E333B; --card:#2E333B; --line:#3A404A;
+  --text:#EEEFF3; --muted:#9AA3B0; --green:#00C94C; --chip:#2E333B; --chipOn:#EEEFF3;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:15px/1.4 Inter,-apple-system,system-ui,"Segoe UI",sans-serif;letter-spacing:-.01em}
+a{color:inherit;text-decoration:none}
+.rail{position:fixed;left:0;top:0;bottom:0;width:220px;padding:16px 12px;display:flex;flex-direction:column;gap:2px}
+.logo{height:40px;display:flex;align-items:center;padding:0 12px;font-weight:800;color:var(--green);margin-bottom:12px}
+.rail a{display:flex;align-items:center;gap:12px;height:44px;padding:0 12px;border-radius:12px;color:var(--text);font-weight:500}
+.rail a.on{background:var(--surface)}
+.rail a i{width:24px;height:24px;border-radius:7px;background:var(--surface);display:inline-block;flex:none}
+.rail a.on i{background:var(--green)}
+.wrap{margin-left:220px;padding:0 20px 80px}
+.top{position:sticky;top:0;z-index:5;background:var(--bg);padding:16px 0 8px}
+.search{display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;border-radius:12px;background:var(--card);border:1px solid var(--line)}
+.search input{border:0;outline:0;background:transparent;flex:1;font:inherit;color:var(--text)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:36px;padding:0 16px;border-radius:10px;background:var(--chip);border:1px solid var(--line);
+  display:flex;align-items:center;font-weight:500;cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--chipOn);color:var(--bg);border-color:var(--chipOn)}
+h2{font-size:22px;margin:24px 0 12px;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:298/168;cursor:pointer;background:var(--surface)}
+.card img{width:100%;height:100%;object-fit:cover;display:block}
+.card b{position:absolute;left:16px;top:14px;font-size:16px;color:#EEEFF3;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.star{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:8px;border:0;cursor:pointer;
+  background:rgba(36,40,47,.5);display:grid;place-items:center;padding:0}
+.star svg{width:16px;height:16px;fill:none;stroke:#EEEFF3;stroke-width:1.6}
+.star.on{background:var(--green)}
+.star.on svg{fill:#fff;stroke:#fff}
+.empty{color:var(--muted);padding:40px 0}
+.theme{position:fixed;left:12px;bottom:16px;display:flex;gap:6px}
+.theme button{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--card);cursor:pointer;color:var(--text)}
+.tabbar{display:none}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;place-items:center;z-index:20}
+.sheet.on{display:grid}
+.sheet div{background:var(--card);border-radius:16px;padding:28px 32px;max-width:340px;text-align:center}
+.sheet h3{margin:0 0 8px}
+.sheet p{margin:0 0 18px;color:var(--muted)}
+.sheet button{height:44px;padding:0 24px;border-radius:12px;border:0;background:var(--green);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+@media (max-width:1099px){
+  .rail{display:none}
+  .wrap{margin-left:0;padding:0 8px 96px}
+  .top{padding:8px 0 4px}
+  .grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .card{aspect-ratio:150/160}
+  .card b{left:10px;top:auto;bottom:10px;font-size:14px}
+  .star{right:8px;top:8px;width:24px;height:24px;border-radius:8px}
+  .star svg{width:12px;height:12px}
+  h2{font-size:18px;margin:16px 0 8px}
+  .theme{left:auto;right:12px;bottom:76px}
+  .tabbar{display:flex;position:fixed;left:8px;right:8px;bottom:8px;height:64px;border-radius:18px;
+    background:var(--card);border:1px solid var(--line);align-items:center;justify-content:space-around}
+  .tabbar i{width:24px;height:24px;border-radius:7px;background:var(--surface);display:block}
+  .tabbar i.on{background:var(--green)}
+}
+</style></head><body>
+
+<nav class="rail">
+  <div class="logo">ЛИГА СТАВОК</div>
+  <a><i></i>Главная</a><a><i></i>Сигнал</a><a class="on"><i></i>24/7 игры</a>
+  <a><i></i>Акции и бонусы</a><a><i></i>VIP</a><a><i></i>Матч-центр</a>
+  <a><i></i>Помощь</a><a><i></i>Клубы</a><a><i></i>Компания</a>
+</nav>
+<main class="wrap">
+  <div class="top">
+    <label class="search">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="6"/><path d="M13.5 13.5 18 18"/></svg>
+      <input id="q" placeholder="Поиск по названию" autocomplete="off">
+    </label>
+    <div class="chips" id="chips"></div>
+  </div>
+  <div id="list"></div>
+</main>
+<div class="tabbar"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+<div class="theme"><button id="lt">☀</button><button id="dk">☾</button></div>
+<div class="sheet" id="sheet"><div><h3 id="sheetName">Игра</h3><p>Здесь открылась бы игра</p><button onclick="closeSheet()">Назад к витрине</button></div></div>
+<script>
+const DATA = {"games": [{"name": "Крэш-бокс", "slug": "kresh-boks", "section": "Краш"}, {"name": "Ron Crash", "slug": "ron-crash", "section": "Краш"}, {"name": "Judo", "slug": "judo", "section": "Краш"}, {"name": "Hotcold", "slug": "hotcold", "section": "Казуальные"}, {"name": "Classic", "slug": "classic", "section": "Нарды"}, {"name": "Нарды 21", "slug": "nardy-21", "section": "Нарды"}, {"name": "Нарды 36", "slug": "nardy-36", "section": "Нарды"}, {"name": "Нарды X", "slug": "nardy-x", "section": "Нарды"}, {"name": "Нарды Комбо", "slug": "nardy-kombo", "section": "Нарды"}, {"name": "Royal", "slug": "royal", "section": "Нарды"}, {"name": "Trio", "slug": "trio", "section": "Нарды"}, {"name": "Дерби", "slug": "derbi", "section": "Нарды"}, {"name": "Сапер", "slug": "saper", "section": "Нарды"}, {"name": "Быстрые нарды", "slug": "bystrye-nardy", "section": "Быстрые нарды"}, {"name": "Быстрые нарды 21", "slug": "bystrye-nardy-21", "section": "Быстрые нарды"}, {"name": "Быстрые нарды 36", "slug": "bystrye-nardy-36", "section": "Быстрые нарды"}, {"name": "Быстрые нарды X", "slug": "bystrye-nardy-x", "section": "Быстрые нарды"}, {"name": "Быстрый сапёр", "slug": "bystryy-saper", "section": "Быстрые нарды"}, {"name": "Буллиты NHL21", "slug": "bullity-nhl21", "section": "Спорт"}, {"name": "Боулинг", "slug": "bouling", "section": "Спорт"}, {"name": "Ледовый сапер", "slug": "ledovyy-saper", "section": "Спорт"}, {"name": "Бокс", "slug": "boks", "section": "Спорт"}, {"name": "Теннис", "slug": "tennis", "section": "Спорт"}, {"name": "Пенальти", "slug": "penalti", "section": "Спорт"}, {"name": "Бридж", "slug": "bridzh", "section": "Спорт"}, {"name": "Колесо Фортуны", "slug": "koleso-fortuny", "section": "Дартс"}, {"name": "Больше/Меньше", "slug": "bolshe-menshe", "section": "Дартс"}, {"name": "Дартс", "slug": "darts", "section": "Дартс"}, {"name": "Турбо-футбол", "slug": "turbo-futbol", "section": "Турбо"}, {"name": "Турбо-хоккей", "slug": "turbo-hokkey", "section": "Турбо"}, {"name": "Турбо-CS", "slug": "turbo-cs", "section": "Турбо"}, {"name": "Лотереи", "slug": "loterei", "section": "Другие"}], "sections": ["Краш", "Казуальные", "Нарды", "Быстрые нарды", "Спорт", "Дартс", "Турбо", "Другие"]};
+const FAV_KEY='ls-vitrina-fav';
+let fav = new Set(JSON.parse(localStorage.getItem(FAV_KEY)||'[]'));
+let cat='Все', q='';
+const log=[];
+const ev=(t,p)=>{log.push({t,p,ms:Date.now()-T0});localStorage.setItem('ls-vitrina-log',JSON.stringify(log))};
+const T0=Date.now();
+const star=on=>`<svg viewBox="0 0 16 16"><path d="M8 1.6l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.4 4.2 13.4l.7-4.3-3.1-3 4.3-.6z"/></svg>`;
+function card(g){
+  const on = fav.has(g.slug)?' on':'';
+  return `<div class="card" data-slug="${g.slug}" data-name="${g.name}">
+    <picture>
+      <source media="(max-width:1099px)" srcset="img/${g.slug}/CardXS.webp">
+      <img src="img/${g.slug}/CardBig.webp" alt="${g.name}" loading="lazy">
+    </picture>
+    <b>${g.name}</b>
+    <button class="star${on}" data-fav="${g.slug}" aria-label="В избранное">${star()}</button>
+  </div>`;
+}
+function render(){
+  const el=document.getElementById('list');
+  const match=g=>(!q||g.name.toLowerCase().includes(q))&&(cat==='Все'||g.section===cat);
+  let html='';
+  const favs=DATA.games.filter(g=>fav.has(g.slug)&&match(g));
+  if(favs.length && !q) html+=`<h2>Избранное</h2><div class="grid">${favs.map(card).join('')}</div>`;
+  if(q){
+    const found=DATA.games.filter(match);
+    html+= found.length? `<h2>Найдено: ${found.length}</h2><div class="grid">${found.map(card).join('')}</div>`
+                       : `<div class="empty">Ничего не нашлось</div>`;
+  } else {
+    for(const s of DATA.sections){
+      const list=DATA.games.filter(g=>g.section===s&&match(g));
+      if(!list.length) continue;
+      html+=`<h2>${s}</h2><div class="grid">${list.map(card).join('')}</div>`;
+    }
+  }
+  el.innerHTML=html;
+}
+function chips(){
+  const el=document.getElementById('chips');
+  el.innerHTML=['Все',...DATA.sections].map(c=>`<div class="chip${c===cat?' on':''}" data-cat="${c}">${c}</div>`).join('');
+}
+document.addEventListener('click',e=>{
+  const f=e.target.closest('[data-fav]');
+  if(f){ const s=f.dataset.fav; fav.has(s)?fav.delete(s):fav.add(s);
+    localStorage.setItem(FAV_KEY,JSON.stringify([...fav])); ev('fav',s); render(); return; }
+  const c=e.target.closest('[data-cat]');
+  if(c){ cat=c.dataset.cat; ev('chip',cat); chips(); render(); return; }
+  const g=e.target.closest('.card');
+  if(g){ ev('open',g.dataset.slug); document.getElementById('sheetName').textContent=g.dataset.name;
+    document.getElementById('sheet').classList.add('on'); }
+});
+function closeSheet(){document.getElementById('sheet').classList.remove('on')}
+document.getElementById('q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase(); ev('search',q); render()});
+document.getElementById('lt').onclick=()=>{document.documentElement.dataset.theme='light'};
+document.getElementById('dk').onclick=()=>{document.documentElement.dataset.theme='dark'};
+addEventListener('keydown',e=>{ if(e.key==='L'&&e.shiftKey&&e.metaKey){
+  navigator.clipboard.writeText(JSON.stringify(log,null,1)); alert('Лог скопирован'); }});
+chips(); render();
+</script>
+</body></html>

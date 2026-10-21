@@ -1,0 +1,162 @@
+[
+ {
+  "name": "Крэш-бокс",
+  "slug": "kresh-boks",
+  "section": "Краш"
+ },
+ {
+  "name": "Ron Crash",
+  "slug": "ron-crash",
+  "section": "Краш"
+ },
+ {
+  "name": "Judo",
+  "slug": "judo",
+  "section": "Краш"
+ },
+ {
+  "name": "Hotcold",
+  "slug": "hotcold",
+  "section": "Казуальные"
+ },
+ {
+  "name": "Classic",
+  "slug": "classic",
+  "section": "Нарды"
+ },
+ {
+  "name": "Нарды 21",
+  "slug": "nardy-21",
+  "section": "Нарды"
+ },
+ {
+  "name": "Нарды 36",
+  "slug": "nardy-36",
+  "section": "Нарды"
+ },
+ {
+  "name": "Нарды X",
+  "slug": "nardy-x",
+  "section": "Нарды"
+ },
+ {
+  "name": "Нарды Комбо",
+  "slug": "nardy-kombo",
+  "section": "Нарды"
+ },
+ {
+  "name": "Royal",
+  "slug": "royal",
+  "section": "Нарды"
+ },
+ {
+  "name": "Trio",
+  "slug": "trio",
+  "section": "Нарды"
+ },
+ {
+  "name": "Дерби",
+  "slug": "derbi",
+  "section": "Нарды"
+ },
+ {
+  "name": "Сапер",
+  "slug": "saper",
+  "section": "Нарды"
+ },
+ {
+  "name": "Быстрые нарды",
+  "slug": "bystrye-nardy",
+  "section": "Быстрые нарды"
+ },
+ {
+  "name": "Быстрые нарды 21",
+  "slug": "bystrye-nardy-21",
+  "section": "Быстрые нарды"
+ },
+ {
+  "name": "Быстрые нарды 36",
+  "slug": "bystrye-nardy-36",
+  "section": "Быстрые нарды"
+ },
+ {
+  "name": "Быстрые нарды X",
+  "slug": "bystrye-nardy-x",
+  "section": "Быстрые нарды"
+ },
+ {
+  "name": "Быстрый сапёр",
+  "slug": "bystryy-saper",
+  "section": "Быстрые нарды"
+ },
+ {
+  "name": "Буллиты NHL21",
+  "slug": "bullity-nhl21",
+  "section": "Спорт"
+ },
+ {
+  "name": "Боулинг",
+  "slug": "bouling",
+  "section": "Спорт"
+ },
+ {
+  "name": "Ледовый сапер",
+  "slug": "ledovyy-saper",
+  "section": "Спорт"
+ },
+ {
+  "name": "Бокс",
+  "slug": "boks",
+  "section": "Спорт"
+ },
+ {
+  "name": "Теннис",
+  "slug": "tennis",
+  "section": "Спорт"
+ },
+ {
+  "name": "Пенальти",
+  "slug": "penalti",
+  "section": "Спорт"
+ },
+ {
+  "name": "Бридж",
+  "slug": "bridzh",
+  "section": "Спорт"
+ },
+ {
+  "name": "Колесо Фортуны",
+  "slug": "koleso-fortuny",
+  "section": "Дартс"
+ },
+ {
+  "name": "Больше/Меньше",
+  "slug": "bolshe-menshe",
+  "section": "Дартс"
+ },
+ {
+  "name": "Дартс",
+  "slug": "darts",
+  "section": "Дартс"
+ },
+ {
+  "name": "Турбо-футбол",
+  "slug": "turbo-futbol",
+  "section": "Турбо"
+ },
+ {
+  "name": "Турбо-хоккей",
+  "slug": "turbo-hokkey",
+  "section": "Турбо"
+ },
+ {
+  "name": "Турбо-CS",
+  "slug": "turbo-cs",
+  "section": "Турбо"
+ },
+ {
+  "name": "Лотереи",
+  "slug": "loterei",
+  "section": "Другие"
+ }
+]
