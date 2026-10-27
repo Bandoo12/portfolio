@@ -134,10 +134,13 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
   background-image:url(../img/ls-duel/point-dark.jpg)}
 .pt.alt::before{background-image:url(../img/ls-duel/point-light.jpg)}
 .pt.bot::before{transform:scaleY(-1)}
-.pt.can::after{content:'';position:absolute;left:50%;z-index:5;transform:translateX(-50%);width:10px;height:10px;border-radius:50%;background:var(--accent-l);box-shadow:0 0 0 4px rgba(39,219,85,.22);animation:pulse 1.1s infinite}
-.pt.top.can::after{top:6px}.pt.bot.can::after{bottom:6px}
 .pt.can{cursor:pointer}
-@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(39,219,85,.08)}}
+/* куда можно пойти: призрак шашки ровно в том слоте, где она встанет */
+.ch.ghost{opacity:.5;z-index:6;pointer-events:none;background-image:none;
+  background:radial-gradient(circle at 50% 50%, rgba(39,219,85,.42), rgba(39,219,85,.08) 70%);
+  box-shadow:0 0 0 2px var(--accent-l), 0 0 16px rgba(39,219,85,.6);
+  filter:none;animation:ghost 1.25s ease-in-out infinite}
+@keyframes ghost{50%{opacity:.88}}
 /* шашки — отрендеренные фишки, вырезанные в прозрачный PNG */
 .ch{position:absolute;left:50%;z-index:4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
   background-size:100% 100%;background-repeat:no-repeat;
@@ -147,7 +150,12 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
 .ch.me{background-image:url(../img/ls-duel/chip-me.png);color:#06361A}
 .ch.foe{background-image:url(../img/ls-duel/chip-foe.png);color:#3A1802}
 .ch.pick{transform:translateY(-3px) scale(1.06);filter:drop-shadow(0 6px 8px rgba(0,0,0,.6)) drop-shadow(0 0 4px rgba(238,239,243,.9))}
+/* шашка, которой МОЖНО пойти: пульсирующий ободок, чтобы было видно без объяснений */
 .ch.tap{cursor:pointer}
+.ch.tap::after{content:'';position:absolute;inset:-4px;border-radius:50%;pointer-events:none;
+  border:2px solid rgba(255,255,255,.75);animation:ring 1.5s ease-in-out infinite}
+@keyframes ring{0%,100%{opacity:.25;transform:scale(.97)}50%{opacity:.95;transform:scale(1)}}
+.ch.pick::after{opacity:0}
 .barcol{grid-column:7;grid-row:1/3;position:relative;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:6px 0;transition:box-shadow .2s;
   background:linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.2) 50%,rgba(0,0,0,.55)), url(../img/ls-duel/leather.jpg) center/120px repeat;
   border-left:1px solid rgba(198,161,88,.38);border-right:1px solid rgba(198,161,88,.38);
@@ -178,6 +186,17 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
 .pip{border-radius:50%;background:currentColor;align-self:center;justify-self:center;width:7px;height:7px;box-shadow:inset 0 -1px 1px rgba(255,255,255,.35), 0 1px 0 rgba(255,255,255,.55)}
 .status{flex:1;font-size:13px;font-weight:600;line-height:1.35}
 .status i{font-style:normal;display:block;font-size:12px;color:var(--sub);font-weight:500;margin-top:2px}
+
+/* подсказка на первые ходы: три шага, текущий подсвечен */
+.howto{display:flex;gap:6px;margin-top:10px;transition:opacity .4s,height .4s}
+.howto.gone{opacity:0;pointer-events:none;height:0;margin:0;overflow:hidden}
+.st{flex:1;display:flex;align-items:center;gap:7px;padding:9px 10px;border-radius:10px;background:var(--surface);
+  font-size:12px;font-weight:600;color:var(--sub);border:1px solid transparent;transition:.2s}
+.st i{font-style:normal;flex-shrink:0;width:18px;height:18px;border-radius:50%;background:var(--surface2);color:var(--sub);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+.st.on{color:var(--ink);border-color:var(--accent-l);background:rgba(39,219,85,.1)}
+.st.on i{background:var(--accent-l);color:#07351A}
+@media(max-width:560px){ .st{flex-direction:column;align-items:flex-start;gap:5px;font-size:11px;line-height:1.25} }
 
 /* ───────── модалка ───────── */
 .ov{position:fixed;inset:0;background:rgba(10,12,15,.74);backdrop-filter:blur(3px);z-index:60;display:none;align-items:center;justify-content:center;padding:16px}
@@ -306,6 +325,12 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
       <div class="status" id="status">Твой ход<i>Брось кубики</i></div>
       <button class="btn sm pri" id="act" onclick="mainAction()">Бросить</button>
     </div>
+    <div class="howto" id="howto">
+      <span class="st" id="st1"><i>1</i>Бросить кубики</span>
+      <span class="st" id="st2"><i>2</i>Нажать свою шашку</span>
+      <span class="st" id="st3"><i>3</i>Нажать зелёный кружок</span>
+    </div>
+
     <div class="btn-row">
       <button class="btn ghost sm" id="btn-cube" style="flex:1" onclick="offerDouble()">Удвоить банк ×2</button>
       <button class="btn ghost sm" style="flex:1" onclick="resign()">Сдаться</button>
@@ -595,14 +620,22 @@ function buildBoard(){
   $('bar-me').onclick = ()=>tapBar();
 }
 
-function drawStack(el, count, cls, isTop, picked, landing){
+function drawStack(el, count, cls, isTop, picked, landing, ghost){
   el.querySelectorAll('.ch').forEach(n=>n.remove());
-  if(!count) return;
   const h = el.clientHeight || 100;
   const w = el.clientWidth || 26;
   const size = Math.min(w - 4, Math.floor(h / 5.2), 30);
   const show = Math.min(count, 5);
   const step = count > 5 ? size * 0.74 : size * 0.92;
+  if(ghost){                                         // место, куда встанет шашка
+    const g = document.createElement('div');
+    g.className = 'ch ghost';
+    g.style.width = g.style.height = size + 'px';
+    g.style.marginLeft = (-size/2) + 'px';
+    g.style[isTop ? 'top' : 'bottom'] = (3 + Math.min(show, 4)*step) + 'px';
+    el.appendChild(g);
+  }
+  if(!count) return;
   for(let i=0;i<show;i++){
     const c = document.createElement('div');
     c.className = 'ch ' + cls
@@ -650,12 +683,19 @@ function render(){
     const el = $('p'+p); if(!el) continue;
     const v = G.pts[p], isTop = p >= 12;
     el.classList.toggle('can', dests.has(p));
-    drawStack(el, Math.abs(v), v>0 ? 'me':'foe', isTop, G.sel === p, land === p);
-    el.querySelectorAll('.ch').forEach(ch=>{ if(v>0 && froms.has(p)) ch.classList.add('tap'); });
+    drawStack(el, Math.abs(v), v>0 ? 'me':'foe', isTop, G.sel === p, land === p, dests.has(p));
+    if(v > 0 && froms.has(p)){                       // ободок только на верхней, её и берут
+      const st = el.querySelectorAll('.ch');
+      if(st.length) st[st.length-1].classList.add('tap');
+    }
   }
   drawStack($('bar-me'),  G.bar.me,  'me',  false, G.sel === 'bar', land === 'bar-me');
   drawStack($('bar-foe'), G.bar.foe, 'foe', true,  false, land === 'bar-foe');
   $('bar-me').classList.toggle('can', froms.has('bar') && G.sel !== 'bar');
+  if(froms.has('bar') && G.sel !== 'bar'){           // выбитая шашка тоже должна звать
+    const bm = $('bar-me').querySelectorAll('.ch');
+    if(bm.length) bm[bm.length-1].classList.add('tap');
+  }
 
   $('off-me').querySelector('b').textContent  = G.off.me;
   $('off-foe').querySelector('b').textContent = G.off.foe;
@@ -694,8 +734,16 @@ function startGame(){
   newGame();
   screen('table');
   buildBoard();
-  requestAnimationFrame(()=>{ render(); setStatus('Твой ход','Брось кубики','Бросить'); });
+  requestAnimationFrame(()=>{ render(); setStatus('Твой ход','Брось кубики','Бросить'); step(1); });
 }
+
+/* подсказка из трёх шагов: гаснет, когда игрок освоился */
+let movesDone = 0;
+function step(n){
+  const h = $('howto'); if(!h || h.classList.contains('gone')) return;
+  for(let i=1;i<=3;i++) $('st'+i).classList.toggle('on', i === n);
+}
+function hideHowto(){ const h = $('howto'); if(h) h.classList.add('gone'); }
 
 function setStatus(t, sub, btn){
   $('status').innerHTML = t + (sub ? '<i>'+sub+'</i>' : '');
@@ -723,7 +771,17 @@ function mainAction(){
       setTimeout(()=>{ A.busy = false; endTurn(); }, 1400);
       return;
     }
-    setStatus('Твой ход', d[0]===d[1] ? 'Дубль! Четыре хода' : 'Выбери шашку', null);
+    // если ходить можно только одной шашкой, выбираем её сами — незачем мучить игрока
+    const onlyFrom = ms.every(m => m.from === ms[0].from) ? ms[0].from : null;
+    if(onlyFrom !== null){
+      G.sel = onlyFrom; render(); step(3);
+      setStatus('Твой ход', onlyFrom === 'bar'
+        ? 'Шашку выбили, заводим обратно: нажми зелёный кружок'
+        : 'Ходить можно только одной шашкой. Нажми зелёный кружок', null);
+      return;
+    }
+    setStatus('Твой ход', d[0]===d[1] ? 'Дубль, четыре хода. Нажми шашку в белом ободке' : 'Нажми свою шашку в белом ободке', null);
+    step(2);
   } else {
     endTurn();
   }
@@ -740,7 +798,12 @@ function tapPoint(p){
     if(m){ doMove(m); return; }
   }
   if(p === 'off') return;
-  if(G.pts[p] > 0 && ms.some(x=>x.from === p)){ G.sel = (G.sel === p ? null : p); render(); return; }
+  if(G.pts[p] > 0 && ms.some(x=>x.from === p)){
+    G.sel = (G.sel === p ? null : p); render();
+    step(G.sel === null ? 2 : 3);
+    if(G.sel !== null) setStatus('Твой ход', 'Теперь нажми зелёный кружок, куда пойти', null);
+    return;
+  }
   G.sel = null; render();
 }
 
@@ -757,6 +820,7 @@ function doMove(m){
   G._land = m.to === 'off' ? null : m.to;
   if(G.bar.foe > barBefore) flashBar();
   G.left.splice(G.left.indexOf(m.d), 1);
+  if(++movesDone >= 3) hideHowto(); else step(1);
   if(G.off.me === 15){ render(); return finish('me'); }
   const rest = legal(G,'me');
   render();
@@ -765,7 +829,16 @@ function doMove(m){
     A.busy = true;
     setTimeout(()=>{ A.busy = false; endTurn(); }, 650);
   } else {
-    setStatus('Твой ход', 'Осталось кубиков: ' + G.left.length, null);
+    const onlyFrom = rest.every(x => x.from === rest[0].from) ? rest[0].from : null;
+    if(onlyFrom !== null){                           // опять одна шашка — выбираем за игрока
+      G.sel = onlyFrom; render(); step(3);
+      setStatus('Твой ход', onlyFrom === 'bar'
+        ? 'Заводим выбитую шашку: нажми зелёный кружок'
+        : 'Остался один вариант. Нажми зелёный кружок', null);
+    } else {
+      setStatus('Твой ход', 'Осталось кубиков: ' + G.left.length + '. Нажми шашку в белом ободке', null);
+      step(2);
+    }
   }
 }
 
@@ -841,7 +914,7 @@ function rollForBot(){
 function backToMe(){
   A.busy = false;
   G.turn = 'me'; G.dice = []; G.left = []; G.sel = null;
-  render(); setStatus('Твой ход','Брось кубики','Бросить');
+  render(); setStatus('Твой ход','Брось кубики','Бросить'); step(1);
 }
 
 /* ══════════════ куб удвоения ══════════════ */
