@@ -116,6 +116,46 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
 .pot i{font-style:normal;font-size:10px;color:var(--sub);text-transform:uppercase;letter-spacing:.05em}
 .cube{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 5px;border-radius:6px;background:var(--warn);color:#241003;font-size:11px;font-weight:800;margin-left:6px;vertical-align:1px}
 
+/* ───────── переключатель оформления доски ───────── */
+.themes{display:flex;gap:6px;margin-bottom:10px;justify-content:center}
+.th{padding:7px 14px;border-radius:20px;font-size:12px;font-weight:700;color:var(--sub);background:var(--surface);
+  border:1px solid transparent;transition:.18s}
+.th:hover{color:var(--ink)}
+.th.on{background:var(--ink);color:#1B1F25}
+
+/* ── Арена: поле это свет в темноте, шашки это светящиеся шайбы ── */
+body[data-board="arena"] .board{background:radial-gradient(110% 80% at 50% 50%, #12161C, #06080B 70%)}
+body[data-board="arena"] .board::after{background:none}
+body[data-board="arena"] .pt::before{background-image:url(../img/ls-duel/arena-point-dark.jpg);opacity:.42}
+body[data-board="arena"] .pt.alt::before{background-image:url(../img/ls-duel/arena-point-light.jpg);opacity:.72}
+body[data-board="arena"] .ch.me{background-image:url(../img/ls-duel/arena-chip-me.png)}
+body[data-board="arena"] .ch.foe{background-image:url(../img/ls-duel/arena-chip-foe.png)}
+body[data-board="arena"] .ch{filter:drop-shadow(0 0 7px rgba(0,0,0,.9))}
+body[data-board="arena"] .board-wrap{padding:6px;border-radius:16px;
+  background:linear-gradient(180deg,#232A33,#0D1116);
+  box-shadow:0 0 0 1px rgba(120,220,255,.14), 0 26px 54px -26px #000, inset 0 1px 0 rgba(170,230,255,.18)}
+body[data-board="arena"] .barcol{background:linear-gradient(90deg,#05070A,#0C1016 50%,#05070A);
+  border-left:1px solid rgba(120,220,255,.18);border-right:1px solid rgba(120,220,255,.18);box-shadow:none}
+body[data-board="arena"] .offcol{background:#05070A;border-left:1px solid rgba(120,220,255,.18)}
+body[data-board="arena"] .tray{border-color:rgba(120,220,255,.22);background:rgba(255,255,255,.03);box-shadow:none;color:#6F8597}
+
+/* ── Мягкая: матовый пластик, светлое поле, ничего глянцевого ── */
+body[data-board="soft"] .board{background:#E8E4DE}
+body[data-board="soft"] .board::after{background:radial-gradient(120% 70% at 50% 50%, rgba(90,80,70,.10), transparent 62%)}
+body[data-board="soft"] .pt::before{background-image:url(../img/ls-duel/soft-point-dark.jpg)}
+body[data-board="soft"] .pt.alt::before{background-image:url(../img/ls-duel/soft-point-light.jpg)}
+body[data-board="soft"] .ch.me{background-image:url(../img/ls-duel/soft-chip-me.png)}
+body[data-board="soft"] .ch.foe{background-image:url(../img/ls-duel/soft-chip-foe.png)}
+body[data-board="soft"] .ch{filter:drop-shadow(0 2px 3px rgba(70,60,50,.35))}
+body[data-board="soft"] .ch.tap::after{border-color:rgba(40,35,30,.65)}
+body[data-board="soft"] .board-wrap{padding:8px;border-radius:22px;background:#D5D0C8;
+  box-shadow:0 20px 44px -22px rgba(60,52,44,.7), inset 0 2px 0 rgba(255,255,255,.75), inset 0 -2px 4px rgba(90,80,70,.25)}
+body[data-board="soft"] .barcol{background:#DBD6CF;border-left:1px solid rgba(120,110,98,.25);border-right:1px solid rgba(120,110,98,.25);
+  box-shadow:inset 0 0 10px rgba(120,110,98,.22)}
+body[data-board="soft"] .offcol{background:#DBD6CF;border-left:1px solid rgba(120,110,98,.25)}
+body[data-board="soft"] .tray{border-color:rgba(120,110,98,.3);background:rgba(255,255,255,.4);color:#7C7266;box-shadow:inset 0 2px 5px rgba(120,110,98,.2)}
+body[data-board="soft"] .tray b{color:#45403A}
+
 /* обечайка доски: деревянный борт с латунным кантом, чтобы стол читался как предмет */
 .board-wrap{padding:9px;border-radius:19px;max-width:min(100%, calc(62vh + 18px));margin:0 auto;
   background:linear-gradient(150deg,#55483A 0%, #33291F 38%, #1A1510 72%, #241C15 100%);
@@ -316,6 +356,12 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
       <div class="pl" id="pl-foe"><div class="ava foe">А</div><div><b>Артём</b><i id="foe-st">15 на доске</i></div></div>
       <div class="pot"><b id="t-pot">600 ₽</b><i>банк<span class="cube" id="t-cube" style="display:none">×2</span></i></div>
       <div class="pl" id="pl-me" style="justify-content:flex-end;text-align:right"><div><b>Ты</b><i id="me-st">15 на доске</i></div><div class="ava me">Я</div></div>
+    </div>
+
+    <div class="themes" id="themes">
+      <button class="th on" onclick="setBoard('classic',this)">Классика</button>
+      <button class="th" onclick="setBoard('arena',this)">Арена</button>
+      <button class="th" onclick="setBoard('soft',this)">Мягкая</button>
     </div>
 
     <div class="board-wrap"><div class="board" id="board"></div></div>
@@ -736,6 +782,19 @@ function startGame(){
   buildBoard();
   requestAnimationFrame(()=>{ render(); setStatus('Твой ход','Брось кубики','Бросить'); step(1); });
 }
+
+/* оформление доски переключается на лету, геометрия не меняется */
+function setBoard(name, btn){
+  document.body.dataset.board = name;
+  document.querySelectorAll('.th').forEach(b=>b.classList.toggle('on', b === btn));
+  try{ localStorage.setItem('ls-duel-board', name); }catch(e){}
+  if(G) render();
+}
+try{
+  const saved = localStorage.getItem('ls-duel-board');
+  const b = saved && [...document.querySelectorAll('.th')].find(x=>x.getAttribute('onclick').includes("'"+saved+"'"));
+  if(b) setBoard(saved, b);
+}catch(e){}
 
 /* подсказка из трёх шагов: гаснет, когда игрок освоился */
 let movesDone = 0;
