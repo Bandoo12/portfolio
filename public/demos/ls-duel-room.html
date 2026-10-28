@@ -139,23 +139,6 @@ body[data-board="arena"] .barcol{background:linear-gradient(90deg,#05070A,#0C101
 body[data-board="arena"] .offcol{background:#05070A;border-left:1px solid rgba(120,220,255,.18)}
 body[data-board="arena"] .tray{border-color:rgba(120,220,255,.22);background:rgba(255,255,255,.03);box-shadow:none;color:#6F8597}
 
-/* ── Мягкая: матовый пластик, светлое поле, ничего глянцевого ── */
-body[data-board="soft"] .board{background:#E8E4DE}
-body[data-board="soft"] .board::after{background:radial-gradient(120% 70% at 50% 50%, rgba(90,80,70,.10), transparent 62%)}
-body[data-board="soft"] .pt::before{background-image:url(../img/ls-duel/soft-point-dark.jpg)}
-body[data-board="soft"] .pt.alt::before{background-image:url(../img/ls-duel/soft-point-light.jpg)}
-body[data-board="soft"] .ch.me{background-image:url(../img/ls-duel/soft-chip-me.png)}
-body[data-board="soft"] .ch.foe{background-image:url(../img/ls-duel/soft-chip-foe.png)}
-body[data-board="soft"] .ch{filter:drop-shadow(0 2px 3px rgba(70,60,50,.35))}
-body[data-board="soft"] .ch.tap::after{border-color:rgba(40,35,30,.65)}
-body[data-board="soft"] .board-wrap{padding:8px;border-radius:22px;background:#D5D0C8;
-  box-shadow:0 20px 44px -22px rgba(60,52,44,.7), inset 0 2px 0 rgba(255,255,255,.75), inset 0 -2px 4px rgba(90,80,70,.25)}
-body[data-board="soft"] .barcol{background:#DBD6CF;border-left:1px solid rgba(120,110,98,.25);border-right:1px solid rgba(120,110,98,.25);
-  box-shadow:inset 0 0 10px rgba(120,110,98,.22)}
-body[data-board="soft"] .offcol{background:#DBD6CF;border-left:1px solid rgba(120,110,98,.25)}
-body[data-board="soft"] .tray{border-color:rgba(120,110,98,.3);background:rgba(255,255,255,.4);color:#7C7266;box-shadow:inset 0 2px 5px rgba(120,110,98,.2)}
-body[data-board="soft"] .tray b{color:#45403A}
-
 /* обечайка доски: деревянный борт с латунным кантом, чтобы стол читался как предмет */
 .board-wrap{padding:9px;border-radius:19px;max-width:min(100%, calc(62vh + 18px));margin:0 auto;
   background:linear-gradient(150deg,#55483A 0%, #33291F 38%, #1A1510 72%, #241C15 100%);
@@ -361,7 +344,6 @@ body[data-board="soft"] .tray b{color:#45403A}
     <div class="themes" id="themes">
       <button class="th on" onclick="setBoard('classic',this)">Классика</button>
       <button class="th" onclick="setBoard('arena',this)">Арена</button>
-      <button class="th" onclick="setBoard('soft',this)">Мягкая</button>
     </div>
 
     <div class="board-wrap"><div class="board" id="board"></div></div>
