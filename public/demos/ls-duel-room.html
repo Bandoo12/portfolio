@@ -123,21 +123,33 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
 .th:hover{color:var(--ink)}
 .th.on{background:var(--ink);color:#1B1F25}
 
-/* ── Арена: поле это свет в темноте, шашки это светящиеся шайбы ── */
-body[data-board="arena"] .board{background:radial-gradient(110% 80% at 50% 50%, #12161C, #06080B 70%)}
+/* ── Арена: поле это свет в темноте, клинья горят неоном ── */
+body[data-board="arena"] .board{background:radial-gradient(110% 80% at 50% 50%, #0E1219, #04060A 72%)}
 body[data-board="arena"] .board::after{background:none}
-body[data-board="arena"] .pt::before{background-image:url(../img/ls-duel/arena-point-dark.jpg);opacity:.42}
-body[data-board="arena"] .pt.alt::before{background-image:url(../img/ls-duel/arena-point-light.jpg);opacity:.72}
+body[data-board="arena"] .pt::before{background-image:url(../img/ls-duel/arena-pt-dark.png)}
+body[data-board="arena"] .pt.alt::before{background-image:url(../img/ls-duel/arena-pt-light.png)}
 body[data-board="arena"] .ch.me{background-image:url(../img/ls-duel/arena-chip-me.png)}
 body[data-board="arena"] .ch.foe{background-image:url(../img/ls-duel/arena-chip-foe.png)}
 body[data-board="arena"] .ch{filter:drop-shadow(0 0 7px rgba(0,0,0,.9))}
+body[data-board="arena"] .ch.me{filter:drop-shadow(0 0 6px rgba(39,219,85,.55)) drop-shadow(0 2px 5px rgba(0,0,0,.8))}
+body[data-board="arena"] .ch.foe{filter:drop-shadow(0 0 6px rgba(248,117,31,.5)) drop-shadow(0 2px 5px rgba(0,0,0,.8))}
+body[data-board="arena"] .ch.tap::after{border-color:rgba(134,240,255,.9);box-shadow:0 0 10px rgba(86,231,255,.75)}
 body[data-board="arena"] .board-wrap{padding:6px;border-radius:16px;
-  background:linear-gradient(180deg,#232A33,#0D1116);
-  box-shadow:0 0 0 1px rgba(120,220,255,.14), 0 26px 54px -26px #000, inset 0 1px 0 rgba(170,230,255,.18)}
-body[data-board="arena"] .barcol{background:linear-gradient(90deg,#05070A,#0C1016 50%,#05070A);
-  border-left:1px solid rgba(120,220,255,.18);border-right:1px solid rgba(120,220,255,.18);box-shadow:none}
-body[data-board="arena"] .offcol{background:#05070A;border-left:1px solid rgba(120,220,255,.18)}
-body[data-board="arena"] .tray{border-color:rgba(120,220,255,.22);background:rgba(255,255,255,.03);box-shadow:none;color:#6F8597}
+  background:linear-gradient(180deg,#19212B,#0A0D12);
+  box-shadow:0 0 0 1px rgba(86,231,255,.30),
+             0 0 22px -4px rgba(86,231,255,.35),
+             0 0 46px -10px rgba(164,108,255,.28),
+             0 26px 54px -26px #000,
+             inset 0 1px 0 rgba(170,230,255,.22)}
+body[data-board="arena"] .barcol{background:linear-gradient(90deg,#04060A,#0A0F16 50%,#04060A);
+  border-left:1px solid rgba(86,231,255,.45);border-right:1px solid rgba(164,108,255,.45);
+  box-shadow:0 0 14px -2px rgba(86,231,255,.30) inset}
+body[data-board="arena"] .offcol{background:#04060A;border-left:1px solid rgba(164,108,255,.45);
+  box-shadow:inset 6px 0 14px -8px rgba(164,108,255,.5)}
+body[data-board="arena"] .tray{border-color:rgba(86,231,255,.28);background:rgba(86,231,255,.04);
+  box-shadow:inset 0 0 12px -4px rgba(86,231,255,.4);color:#7FA8BC}
+body[data-board="arena"] .tray.me b{text-shadow:0 0 10px rgba(39,219,85,.8)}
+body[data-board="arena"] .tray.foe b{text-shadow:0 0 10px rgba(248,117,31,.8)}
 
 /* обечайка доски: деревянный борт с латунным кантом, чтобы стол читался как предмет */
 .board-wrap{padding:9px;border-radius:19px;max-width:min(100%, calc(62vh + 18px));margin:0 auto;
@@ -154,8 +166,8 @@ body[data-board="arena"] .tray{border-color:rgba(120,220,255,.22);background:rgb
   background:radial-gradient(120% 70% at 50% 50%, rgba(0,0,0,.42), transparent 62%)}
 .pt{position:relative;cursor:default}
 .pt::before{content:'';position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;
-  background-image:url(../img/ls-duel/point-dark.jpg)}
-.pt.alt::before{background-image:url(../img/ls-duel/point-light.jpg)}
+  background-image:url(../img/ls-duel/pt-dark.png)}
+.pt.alt::before{background-image:url(../img/ls-duel/pt-light.png)}
 .pt.bot::before{transform:scaleY(-1)}
 .pt.can{cursor:pointer}
 /* куда можно пойти: призрак шашки ровно в том слоте, где она встанет */
@@ -652,9 +664,10 @@ function drawStack(el, count, cls, isTop, picked, landing, ghost){
   el.querySelectorAll('.ch').forEach(n=>n.remove());
   const h = el.clientHeight || 100;
   const w = el.clientWidth || 26;
-  const size = Math.min(w - 4, Math.floor(h / 5.2), 30);
+  // пять шашек должны влезть в половину поля, не налезая друг на друга
+  const size = Math.max(10, Math.min(w - 5, Math.floor((h - 6) / 5.35), 32));
   const show = Math.min(count, 5);
-  const step = count > 5 ? size * 0.74 : size * 0.92;
+  const step = size + Math.max(1, Math.round(size * 0.06));   // зазор, а не нахлёст
   if(ghost){                                         // место, куда встанет шашка
     const g = document.createElement('div');
     g.className = 'ch ghost';
