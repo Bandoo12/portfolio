@@ -101,6 +101,21 @@ h1{font-size:26px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
 .link code{flex:1;font-size:13px;color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .code-big{font-size:34px;font-weight:800;letter-spacing:.14em;text-align:center;padding:18px 0;color:var(--accent-l);font-variant-numeric:tabular-nums}
 
+/* ─── подбор соперника ─── */
+.radar{position:relative;height:148px;display:grid;place-items:center}
+.radar span{position:absolute;width:62px;height:62px;border-radius:50%;border:1px solid var(--accent-l);
+  animation:radar 2.4s ease-out infinite}
+.radar span:nth-of-type(2){animation-delay:.8s}
+.radar span:nth-of-type(3){animation-delay:1.6s}
+@keyframes radar{0%{transform:scale(1);opacity:.7}100%{transform:scale(3.3);opacity:0}}
+.radar.found span{animation:none;opacity:0}
+.radar-ava{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;position:relative;z-index:2;
+  font-size:24px;font-weight:800;color:#06361A;text-transform:uppercase;transition:.25s;
+  background:radial-gradient(circle at 50% 35%,#8CFFB0,#27DB55 70%);
+  box-shadow:0 0 0 3px rgba(39,219,85,.22), 0 10px 24px -12px rgba(39,219,85,.95)}
+.radar.found .radar-ava{transform:scale(1.1);box-shadow:0 0 0 4px rgba(39,219,85,.35), 0 0 30px -6px rgba(39,219,85,.9)}
+.mm-st{text-align:center;font-size:16px;font-weight:700;margin-top:4px}
+.mm-st i{display:block;font-style:normal;font-weight:500;font-size:13px;color:var(--sub);margin-top:5px}
 .seats{display:flex;align-items:center;gap:12px;margin:18px 0}
 .seat{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:10px;min-height:68px}
 .seat.wait{border-style:dashed;justify-content:center;color:var(--sub);font-size:13px}
@@ -146,7 +161,8 @@ body[data-board="arena"] .ch.foe{background-image:url(../img/ls-duel/arena-chip-
 body[data-board="arena"] .ch{filter:drop-shadow(0 0 7px rgba(0,0,0,.9))}
 body[data-board="arena"] .ch.me{filter:drop-shadow(0 0 6px rgba(39,219,85,.55)) drop-shadow(0 2px 5px rgba(0,0,0,.8))}
 body[data-board="arena"] .ch.foe{filter:drop-shadow(0 0 6px rgba(248,117,31,.5)) drop-shadow(0 2px 5px rgba(0,0,0,.8))}
-body[data-board="arena"] .ch.tap::after{border-color:rgba(134,240,255,.9);box-shadow:0 0 10px rgba(86,231,255,.75)}
+body[data-board="arena"] .ch.tap::after{border-color:#EAFBFF;
+  box-shadow:0 0 0 2px rgba(86,231,255,.95), 0 0 18px -1px rgba(86,231,255,.9)}
 body[data-board="arena"] .board-wrap{padding:6px;border-radius:16px;
   background:linear-gradient(180deg,#19212B,#0A0D12);
   box-shadow:0 0 0 1px rgba(86,231,255,.30),
@@ -177,18 +193,41 @@ body[data-board="arena"] .tray.foe b{text-shadow:0 0 10px rgba(248,117,31,.8)}
 /* затенение по центру поля, чтобы доска не была плоской простынёй */
 .board::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:3;
   background:radial-gradient(120% 70% at 50% 50%, rgba(0,0,0,.42), transparent 62%)}
+/* ─── кубики падают прямо на доску: настоящий куб из шести граней ─── */
+.d3layer{position:absolute;inset:0;z-index:9;pointer-events:none;perspective:860px;perspective-origin:50% 42%}
+.d3w{position:absolute;left:0;top:0;transform-style:preserve-3d;will-change:transform;transition:opacity .25s,filter .25s}
+.d3w.used{opacity:.4;filter:grayscale(.65)}
+.d3sh{position:absolute;left:6%;top:38%;width:88%;height:78%;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 50%, rgba(0,0,0,.75), rgba(0,0,0,0) 68%);filter:blur(3px)}
+.d3{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.d3 .f{position:absolute;inset:0;border-radius:17%;
+  background:linear-gradient(148deg,#FFFFFF,#E3E8EF 52%,#B2BAC7);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.2), inset 0 2px 5px rgba(255,255,255,.95), inset 0 -3px 7px rgba(0,0,0,.16);
+  display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:13%;gap:5%}
+.d3 .p{border-radius:50%;background:radial-gradient(circle at 36% 28%, #525A6B, #11151C 72%);
+  box-shadow:inset 0 -1px 1px rgba(255,255,255,.3)}
+body[data-board="arena"] .d3 .f{background:linear-gradient(148deg,#EAF9FF,#BFE4F2 52%,#7FA3B5);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25), inset 0 2px 5px rgba(255,255,255,.9), 0 0 12px -2px rgba(86,231,255,.55)}
 .pt{position:relative;cursor:default}
 .pt::before{content:'';position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;
   background-image:url(../img/ls-duel/pt-dark.png)}
 .pt.alt::before{background-image:url(../img/ls-duel/pt-light.png)}
 .pt.bot::before{transform:scaleY(-1)}
 .pt.can{cursor:pointer}
-/* куда можно пойти: призрак шашки ровно в том слоте, где она встанет */
-.ch.ghost{opacity:.5;z-index:6;pointer-events:none;background-image:none;
-  background:radial-gradient(circle at 50% 50%, rgba(39,219,85,.42), rgba(39,219,85,.08) 70%);
-  box-shadow:0 0 0 2px var(--accent-l), 0 0 16px rgba(39,219,85,.6);
-  filter:none;animation:ghost 1.25s ease-in-out infinite}
-@keyframes ghost{50%{opacity:.88}}
+/* куда можно пойти: колонка обводится целиком, рамка не выходит за ячейку —
+   поэтому соседние цели читаются как две, а не сливаются в одно пятно */
+.pt.can::after{content:'';position:absolute;inset:2px;border-radius:9px;z-index:5;pointer-events:none;
+  border:2px solid rgba(39,219,85,.9);background:rgba(39,219,85,.1);
+  box-shadow:inset 0 0 16px -4px rgba(39,219,85,.75);
+  animation:dest 1.1s ease-in-out infinite}
+@keyframes dest{0%,100%{border-color:rgba(39,219,85,.55);background:rgba(39,219,85,.06)}
+                50%    {border-color:rgba(146,255,180,1); background:rgba(39,219,85,.18)}}
+/* и сам слот, куда встанет шашка, с номером кубика — чтобы было видно, каким ходом */
+.ch.ghost{z-index:6;pointer-events:none;background-image:none;color:#06361A;font-weight:900;
+  background:radial-gradient(circle at 50% 36%, #A6FFC4, #27DB55 68%, #0F9A38);
+  box-shadow:0 0 0 3px rgba(255,255,255,.95), 0 0 20px -2px rgba(39,219,85,.95), 0 4px 9px rgba(0,0,0,.65);
+  filter:none;animation:ghost 1.1s ease-in-out infinite}
+@keyframes ghost{0%,100%{transform:scale(.93)}50%{transform:scale(1.05)}}
 /* шашки — отрендеренные фишки, вырезанные в прозрачный PNG */
 .ch{position:absolute;left:50%;z-index:4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;
   background-size:100% 100%;background-repeat:no-repeat;
@@ -197,13 +236,20 @@ body[data-board="arena"] .tray.foe b{text-shadow:0 0 10px rgba(248,117,31,.8)}
 .ch span{position:relative;z-index:2;text-shadow:0 1px 2px rgba(0,0,0,.45)}
 .ch.me{background-image:url(../img/ls-duel/chip-me.png);color:#06361A}
 .ch.foe{background-image:url(../img/ls-duel/chip-foe.png);color:#3A1802}
-.ch.pick{transform:translateY(-3px) scale(1.06);filter:drop-shadow(0 6px 8px rgba(0,0,0,.6)) drop-shadow(0 0 4px rgba(238,239,243,.9))}
-/* шашка, которой МОЖНО пойти: пульсирующий ободок, чтобы было видно без объяснений */
-.ch.tap{cursor:pointer}
-.ch.tap::after{content:'';position:absolute;inset:-4px;border-radius:50%;pointer-events:none;
-  border:2px solid rgba(255,255,255,.75);animation:ring 1.5s ease-in-out infinite}
-@keyframes ring{0%,100%{opacity:.25;transform:scale(.97)}50%{opacity:.95;transform:scale(1)}}
-.ch.pick::after{opacity:0}
+/* шашка, которой МОЖНО пойти: яркий ободок, чтобы было видно без объяснений */
+.ch.tap{cursor:pointer;z-index:7}
+.ch.tap{filter:drop-shadow(0 0 7px rgba(39,219,85,.85)) drop-shadow(0 3px 4px rgba(0,0,0,.55))}
+.ch.tap::after{content:'';position:absolute;inset:-6px;border-radius:50%;pointer-events:none;
+  border:3px solid #FFFFFF;
+  box-shadow:0 0 0 3px rgba(39,219,85,1), 0 0 20px 1px rgba(39,219,85,.9), inset 0 0 10px rgba(39,219,85,.7);
+  animation:ring 1.2s ease-in-out infinite}
+@keyframes ring{0%,100%{opacity:.85;transform:scale(.96)}50%{opacity:1;transform:scale(1.06)}}
+/* выбранная шашка: поднята и обведена белым, кольцо «можно взять» снимаем */
+.ch.pick{transform:translateY(-4px) scale(1.08);z-index:8;
+  filter:drop-shadow(0 7px 9px rgba(0,0,0,.65)) drop-shadow(0 0 5px rgba(255,255,255,.95))}
+.ch.pick::after{content:'';position:absolute;border-radius:50%;pointer-events:none;border:3px solid #FFFFFF;
+  animation:none;opacity:1;inset:-5px;
+  box-shadow:0 0 0 3px rgba(255,255,255,.35), 0 0 18px -2px rgba(255,255,255,.7)}
 .barcol{grid-column:7;grid-row:1/3;position:relative;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:6px 0;transition:box-shadow .2s;
   background:linear-gradient(90deg,rgba(0,0,0,.55),rgba(0,0,0,.2) 50%,rgba(0,0,0,.55)), url(../img/ls-duel/leather.jpg) center/120px repeat;
   border-left:1px solid rgba(198,161,88,.38);border-right:1px solid rgba(198,161,88,.38);
@@ -216,22 +262,14 @@ body[data-board="arena"] .tray.foe b{text-shadow:0 0 10px rgba(248,117,31,.8)}
   border-left:1px solid rgba(198,161,88,.38)}
 .tray{flex:1;border-radius:6px;border:1px solid rgba(198,161,88,.3);background:rgba(0,0,0,.42);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:8px;line-height:1;letter-spacing:0;color:#9A8F7C;position:relative;overflow:hidden;text-transform:uppercase;
   box-shadow:inset 0 2px 6px rgba(0,0,0,.6)}
-.tray.can{border-color:var(--accent-l);background:rgba(39,219,85,.16);cursor:pointer}
+.tray.can{border:2px solid rgba(146,255,180,1);background:rgba(39,219,85,.22);cursor:pointer;color:#CFF8DC;
+  box-shadow:inset 0 0 16px -4px rgba(39,219,85,.8), 0 0 14px -4px rgba(39,219,85,.7);
+  animation:dest 1.1s ease-in-out infinite}
 .tray b{font-size:16px;font-weight:800;line-height:1}
 .tray.me b{color:var(--me)} .tray.foe b{color:var(--foe)}
 
 /* ───────── панель хода ───────── */
 .panel{margin-top:12px;background:var(--surface);border-radius:var(--r);padding:12px;display:flex;align-items:center;gap:12px;min-height:72px}
-.dice{display:flex;gap:7px}
-.die{width:40px;height:40px;border-radius:11px;color:#171A1F;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:6px;gap:1px;flex-shrink:0;transition:.18s;
-  background:radial-gradient(85% 75% at 30% 22%, #FFFFFF, #D7DBE2 62%, #AEB5C0 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.9), inset 0 -3px 5px rgba(0,0,0,.18), 0 3px 6px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.25)}
-.die.used{opacity:.3;transform:scale(.86)}
-.die.roll{animation:shake .4s}
-@keyframes shake{0%,100%{transform:none}25%{transform:translateY(-6px) rotate(-14deg)}75%{transform:translateY(-3px) rotate(11deg)}}
-.die.foe{background:radial-gradient(85% 75% at 30% 22%, #FFC78E, #F8751F 62%, #BF4E07 100%);color:#2A1202;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), inset 0 -3px 5px rgba(0,0,0,.22), 0 3px 6px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.3)}
-.pip{border-radius:50%;background:currentColor;align-self:center;justify-self:center;width:7px;height:7px;box-shadow:inset 0 -1px 1px rgba(255,255,255,.35), 0 1px 0 rgba(255,255,255,.55)}
 .status{flex:1;font-size:13px;font-weight:600;line-height:1.35}
 .status i{font-style:normal;display:block;font-size:12px;color:var(--sub);font-weight:500;margin-top:2px}
 
@@ -261,10 +299,6 @@ body[data-board="arena"] .tray.foe b{text-shadow:0 0 10px rgba(248,117,31,.8)}
 .lose b{color:var(--foe)}
 .tag{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:7px;font-size:11px;font-weight:700;background:rgba(248,117,31,.16);color:var(--warn);margin-top:10px}
 
-.ticker{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(46,51,59,.94);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
-.ticker-in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub)}
-.ticker b{color:var(--accent-l);font-weight:800;font-variant-numeric:tabular-nums}
-.ticker .dot{width:6px;height:6px;border-radius:50%;background:var(--accent-l);flex-shrink:0}
 
 .toast{position:fixed;left:50%;bottom:76px;transform:translate(-50%,16px);background:var(--ink);color:#1B1F25;padding:11px 18px;border-radius:30px;font-size:13px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:70}
 .toast.on{opacity:1;transform:translate(-50%,0)}
@@ -286,8 +320,7 @@ body.playing #bgfx{display:block}
 body.playing{background:#241D2B;overflow-x:hidden;--chrome:360px}
 /* в игре доску ограничивает только обвязка, а не старый потолок в 62vh */
 body.playing .board{max-width:100%}
-body.playing .hdr,
-body.playing .ticker{display:none}
+body.playing .hdr{display:none}
 body.playing .wrap{max-width:none;margin:0;padding:0;position:relative;z-index:1}
 body.playing #s-table{max-width:none;animation:none}
 body.playing #s-table.on{display:block}
@@ -321,9 +354,6 @@ body.playing .board-wrap{max-width:min(94vw, calc((100dvh - var(--chrome)) * 1.1
 .cent-i i{font-style:normal;font-size:10px;font-weight:600;color:var(--sub);text-transform:uppercase;letter-spacing:.06em}
 .cent-i b{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums}
 .cent-sep{width:1px;align-self:stretch;background:rgba(255,255,255,.1)}
-.cent .dice{gap:5px}
-body.playing .die{width:30px;height:30px;border-radius:8px;padding:4px}
-body.playing .pip{width:5px;height:5px}
 
 /* ── нижняя панель действий ── */
 .hud-b{position:fixed;left:0;right:0;bottom:0;z-index:25;padding:0 14px 14px;
@@ -417,8 +447,8 @@ body.playing .howto .st.on i{background:var(--g-act);color:#fff}
   <section class="scr on" id="s-lobby">
     <div class="hero">
       <div class="hero-in">
-        <h1>Позови друга<br>за стол</h1>
-        <p class="lead">Создай комнату, скинь ссылку в чат. Играете вдвоём на реальные деньги, заведение берёт комиссию с банка.</p>
+        <h1>Сыграй<br>один на один</h1>
+        <p class="lead">Найди соперника за пару секунд или скинь ссылку другу. Играете вдвоём на реальные деньги, с банка удерживается комиссия 5%.</p>
       </div>
     </div>
 
@@ -427,7 +457,7 @@ body.playing .howto .st.on i{background:var(--g-act);color:#fff}
       <div class="stakes" id="stakes"></div>
       <div class="econ">
         <div class="econ-r"><span>Банк стола</span><b id="e-pot">600 ₽</b></div>
-        <div class="econ-r"><span>Комиссия заведения, 5%</span><b id="e-rake">30 ₽</b></div>
+        <div class="econ-r"><span>Комиссия, 5%</span><b id="e-rake">30 ₽</b></div>
         <div class="econ-r hl"><span>Победитель забирает</span><b id="e-win">570 ₽</b></div>
       </div>
     </div>
@@ -437,8 +467,29 @@ body.playing .howto .st.on i{background:var(--g-act);color:#fff}
       <p class="hint" style="margin:0">Полные короткие нарды. Есть <b>куб удвоения</b>: можно предложить сопернику поднять банк вдвое, он принимает или сдаётся. Выигрыш всухую засчитывается как <b>марс</b> и тоже удваивает банк.</p>
     </div>
 
-    <button class="btn pri" style="margin-top:14px" onclick="createRoom()">Создать стол</button>
+    <button class="btn pri" style="margin-top:14px" onclick="findOpponent()">Найти соперника</button>
+    <button class="btn sec" style="margin-top:10px" onclick="createRoom()">Позвать друга по ссылке</button>
     <p class="hint" style="text-align:center">Взнос спишется, когда соперник сядет за стол</p>
+  </section>
+
+  <!-- ═══ 1б. ПОДБОР СОПЕРНИКА ═══ -->
+  <section class="scr" id="s-search">
+    <h1>Ищем соперника</h1>
+    <p class="lead">Подбираем игрока с таким же взносом и близким рейтингом.</p>
+
+    <div class="card" style="margin-top:18px">
+      <div class="radar" id="mm-radar">
+        <span></span><span></span><span></span>
+        <div class="radar-ava" id="mm-ava">?</div>
+      </div>
+      <div class="mm-st" id="mm-st">Сканируем столы<i>обычно это занимает пару секунд</i></div>
+      <div class="econ">
+        <div class="econ-r"><span>Взнос с каждого</span><b id="m-stake">300 ₽</b></div>
+        <div class="econ-r"><span>Сейчас в поиске</span><b id="m-queue">— игроков</b></div>
+        <div class="econ-r hl"><span>Победитель забирает</span><b id="m-win">570 ₽</b></div>
+      </div>
+      <button class="btn ghost" style="margin-top:14px" id="mm-btn" onclick="cancelSearch()">Отменить поиск</button>
+    </div>
   </section>
 
   <!-- ═══ 2. КОМНАТА СОЗДАНА ═══ -->
@@ -469,7 +520,7 @@ body.playing .howto .st.on i{background:var(--g-act);color:#fff}
     <h1>Тебя зовут за стол</h1>
     <div class="card" style="margin-top:18px">
       <div class="seats" style="margin:0">
-        <div class="seat"><div class="ava foe">А</div><div><b>Артём</b><i>Нарды 36 · рейтинг 1 412</i></div></div>
+        <div class="seat"><div class="ava foe" id="j-ava">А</div><div><b id="j-name">Артём</b><i id="j-rat">Нарды 36 · рейтинг 1 412</i></div></div>
       </div>
       <div class="econ" style="border-top:0;padding-top:4px">
         <div class="econ-r"><span>Взнос с каждого</span><b id="j-stake">300 ₽</b></div>
@@ -497,8 +548,6 @@ body.playing .howto .st.on i{background:var(--g-act);color:#fff}
         <div class="cent-i"><i>Банк</i><b id="t-pot">600 ₽</b></div>
         <div class="cent-sep"></div>
         <div class="cent-i"><i>Куб</i><b id="t-cube">×1</b></div>
-        <div class="cent-sep"></div>
-        <div class="cent-i"><i>Броски</i><div class="dice" id="dice"></div></div>
       </div>
 
       <div class="hud-side r">
@@ -515,7 +564,7 @@ body.playing .howto .st.on i{background:var(--g-act);color:#fff}
     <!-- сцена -->
     <div class="stage">
       <div class="gseats">
-        <div class="gseat foe" id="pl-foe"><div class="ava foe">А</div><div><b>Артём</b><i id="foe-st">15 на доске</i></div></div>
+        <div class="gseat foe" id="pl-foe"><div class="ava foe" id="foe-ava">А</div><div><b id="foe-name">Артём</b><i id="foe-st">15 на доске</i></div></div>
         <div class="gseat r" id="pl-me"><div class="ava me">Я</div><div><b>Ты</b><i id="me-st">15 на доске</i></div></div>
       </div>
 
@@ -532,7 +581,6 @@ body.playing .howto .st.on i{background:var(--g-act);color:#fff}
     <div class="hud-b">
       <div class="gstatus" id="status">Твой ход<i>Брось кубики</i></div>
       <div class="glass gbar">
-        <div class="tile"><i>Комиссия</i><b id="tick-g">0 ₽</b></div>
         <div class="prize"><i>Победитель забирает</i><b id="t-prize">1 140 ₽</b></div>
         <button class="gbtn cash" id="btn-cube" onclick="offerDouble()">УДВОИТЬ<small>×2</small></button>
         <button class="gbtn act" id="act" onclick="mainAction()">БРОСИТЬ</button>
@@ -544,7 +592,6 @@ body.playing .howto .st.on i{background:var(--g-act);color:#fff}
   </section>
 </div>
 
-<div class="ticker"><div class="ticker-in"><span class="dot"></span>Комиссия заведения за сессию: <b id="tick">0 ₽</b> · столов сыграно: <b id="tick-n">0</b></div></div>
 
 <div class="ov" id="ov"><div class="modal" id="modal"></div></div>
 <div class="toast" id="toast"></div>
@@ -561,6 +608,7 @@ const A = {
   cube: 1,          // множитель банка от куба удвоения
   cubeOwner: null,  // кто владеет кубом: null = в центре, 'me' | 'foe'
   room: null,
+  foe: { name:'Артём', letter:'А', rating:1412 },
   houseTotal: 0,
   rounds: 0,
   busy: false
@@ -727,9 +775,47 @@ function renderStakes(){
   $('e-pot').textContent  = money(pot);
   $('e-rake').textContent = money(pot*RAKE);
   $('e-win').textContent  = money(pot*(1-RAKE));
+  $('m-stake').textContent = money(A.stake);
+  $('m-win').textContent   = money(pot*(1-RAKE));
   $('seat-stake').textContent = 'Взнос ' + money(A.stake);
 }
 function setStake(s){ A.stake = s; renderStakes(); }
+
+/* ══════════════ подбор соперника ══════════════
+   Второй вход за стол: не ждать друга, а встать в очередь.
+   Соперник здесь имитируется, но сценарий ровно продуктовый. */
+const NICKS = ['shturman','zenit_fan','kostya77','vortex','grizzly','mihan','tigr_ru','salam','dvoika','lis_26'];
+function pickFoe(){
+  const n = NICKS[Math.floor(Math.random()*NICKS.length)];
+  A.foe = { name:n, letter:n[0], rating: 1120 + Math.floor(Math.random()*560) };
+  return A.foe;
+}
+
+function findOpponent(){
+  if(A.balance < A.stake){ toast('Не хватает на взнос'); return; }
+  A.room = null;
+  const r = $('mm-radar'); r.classList.remove('found');
+  $('mm-ava').textContent = '?';
+  $('mm-st').innerHTML = 'Сканируем столы<i>обычно это занимает пару секунд</i>';
+  $('m-queue').textContent = (90 + Math.floor(Math.random()*140)) + ' игроков';
+  const btn = $('mm-btn');
+  btn.className = 'btn ghost'; btn.textContent = 'Отменить поиск';
+  btn.onclick = cancelSearch;
+  screen('search');
+
+  clearTimeout(window._wait);
+  window._wait = setTimeout(()=>{
+    const f = pickFoe();
+    r.classList.add('found');
+    $('mm-ava').textContent = f.letter;
+    $('mm-st').innerHTML = 'Соперник найден<i>' + f.name + ' · рейтинг ' + f.rating.toLocaleString('ru-RU') + '</i>';
+    btn.className = 'btn pri'; btn.textContent = 'За стол';
+    btn.onclick = startGame;
+    toast(f.name + ' за столом');
+    window._wait = setTimeout(startGame, 1800);      // сам садится, если игрок не жмёт
+  }, 2200 + Math.random()*2200);
+}
+function cancelSearch(){ clearTimeout(window._wait); screen('lobby'); }
 
 function roomCode(){ let c=''; for(let i=0;i<6;i++) c += '0123456789'[Math.floor(Math.random()*10)]; return c; }
 
@@ -749,8 +835,9 @@ function createRoom(){
 function foeJoined(){
   const seat = $('seat-foe');
   seat.className = 'seat';
-  seat.innerHTML = '<div class="ava foe">А</div><div><b>Артём</b><i>перешёл по ссылке</i></div>';
-  toast('Артём сел за стол');
+  const f = pickFoe();
+  seat.innerHTML = '<div class="ava foe">' + f.letter + '</div><div><b>' + f.name + '</b><i>перешёл по ссылке</i></div>';
+  toast(f.name + ' сел за стол');
   setTimeout(startGame, 1100);
 }
 
@@ -944,6 +1031,8 @@ const BOT = [11,10,9,8,7,6,null,5,4,3,2,1,0];
 
 function buildBoard(){
   const b = $('board'); b.innerHTML = '';
+  const dl = document.createElement('div'); dl.className = 'd3layer'; dl.id = 'dice3d'; b.appendChild(dl);
+  D3.vals = []; D3.nodes = [];
   const place = (el, col, row) => { el.style.gridColumn = col; el.style.gridRow = row; b.appendChild(el); };
 
   TOP.forEach((idx,i)=>{
@@ -984,7 +1073,9 @@ function drawStack(el, count, cls, isTop, picked, landing, ghost){
     g.className = 'ch ghost';
     g.style.width = g.style.height = size + 'px';
     g.style.marginLeft = (-size/2) + 'px';
+    g.style.fontSize = Math.max(9, Math.round(size*0.52)) + 'px';
     g.style[isTop ? 'top' : 'bottom'] = (3 + Math.min(show, 4)*step) + 'px';
+    if(typeof ghost === 'number') g.innerHTML = '<span>' + ghost + '</span>';  // каким кубиком
     el.appendChild(g);
   }
   if(!count) return;
@@ -1028,14 +1119,15 @@ function render(){
   if(!G) return;
   const moves = (G.turn === 'me' && !A.busy && !G.over) ? legal(G,'me') : [];
   const froms = new Set(moves.map(m=>m.from));
-  const dests = G.sel === null ? new Set() : new Set(moves.filter(m=>m.from === G.sel).map(m=>m.to));
+  const dests = new Map();                         // куда -> каким кубиком
+  if(G.sel !== null) moves.forEach(m=>{ if(m.from === G.sel && !dests.has(m.to)) dests.set(m.to, m.d); });
 
   const land = G._land; G._land = null;             // куда только что легла шашка
   for(let p=0;p<24;p++){
     const el = $('p'+p); if(!el) continue;
     const v = G.pts[p], isTop = p >= 12;
     el.classList.toggle('can', dests.has(p));
-    drawStack(el, Math.abs(v), v>0 ? 'me':'foe', isTop, G.sel === p, land === p, dests.has(p));
+    drawStack(el, Math.abs(v), v>0 ? 'me':'foe', isTop, G.sel === p, land === p, dests.get(p));
     if(v > 0 && froms.has(p)){                       // ободок только на верхней, её и берут
       const st = el.querySelectorAll('.ch');
       if(st.length) st[st.length-1].classList.add('tap');
@@ -1067,20 +1159,84 @@ function render(){
 }
 
 const PIPS = {1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
+/* ─── кубики на доске ───
+   Куб собран из шести граней: противоположные дают семь, как у настоящего.
+   Чтобы вверх смотрело нужное число, крутим куб на обратный поворот его грани. */
+const CUBE = [
+  { v:1, t:'translateZ(50%)' },                    { v:6, t:'rotateY(180deg) translateZ(50%)' },
+  { v:3, t:'rotateY(90deg) translateZ(50%)' },     { v:4, t:'rotateY(-90deg) translateZ(50%)' },
+  { v:2, t:'rotateX(90deg) translateZ(50%)' },     { v:5, t:'rotateX(-90deg) translateZ(50%)' }
+];
+const SHOW = { 1:[0,0], 6:[0,180], 3:[0,-90], 4:[0,90], 2:[-90,0], 5:[90,0] };
+const D3 = { vals:[], nodes:[] };
+
+function clearDice3d(){ const l = $('dice3d'); if(l) l.innerHTML = ''; D3.vals = []; D3.nodes = []; }
+
+function throwDice(vals, foe){
+  const layer = $('dice3d'); if(!layer) return;
+  layer.innerHTML = '';
+  D3.vals = vals.slice(); D3.nodes = [];
+  const W = layer.clientWidth, H = layer.clientHeight;
+  if(!W) return;
+  const size = Math.round(Math.max(22, Math.min(46, W * 0.074)));
+  const half = Math.round(size/2);
+  const n    = vals.length;
+  const gap  = Math.round(size * 0.34);
+  const run  = n*size + (n-1)*gap;
+  const cx   = W * (n > 2 ? 0.62 : 0.68);          // правая половина, пустая полоса по центру
+  const x0   = cx - run/2;
+  const y0   = H*0.5 - half;
+
+  vals.forEach((v,i)=>{
+    const w = document.createElement('div');
+    w.className = 'd3w';
+    w.style.width = w.style.height = size + 'px';
+    w.innerHTML = '<div class="d3sh"></div><div class="d3">' + CUBE.map(f=>{
+      let cells = '';
+      for(let k=0;k<9;k++) cells += PIPS[f.v].includes(k) ? '<div class="p"></div>' : '<div></div>';
+      return '<div class="f" style="transform:' + f.t.replace('50%', half+'px') + '">' + cells + '</div>';
+    }).join('') + '</div>';
+    layer.appendChild(w);
+    D3.nodes.push(w);
+
+    const ex = x0 + i*(size+gap) + (Math.random()*6-3);
+    const ey = y0 + (i%2 ? size*0.26 : -size*0.2) + (Math.random()*6-3);
+    const sx = W*0.5 - half, sy = foe ? -size*1.8 : H + size*0.8;   // соперник бросает сверху
+    const delay = i * 90;
+
+    w.animate([
+      { transform:`translate(${sx}px,${sy}px) scale(.5)`,                 offset:0 },
+      { transform:`translate(${(sx+ex)/2}px,${(sy+ey)/2 - size*1.1}px) scale(1.2)`, offset:.5 },
+      { transform:`translate(${ex}px,${ey - size*0.32}px) scale(1.02)`,   offset:.8 },
+      { transform:`translate(${ex}px,${ey}px) scale(1)`,                  offset:1 }
+    ], { duration:900, delay, easing:'cubic-bezier(.3,.8,.35,1)', fill:'both' });
+
+    const [fx1, fy1] = SHOW[v];
+    const cube = w.querySelector('.d3');
+    cube.animate([
+      { transform:`rotateX(${fx1-1080}deg) rotateY(${fy1-720}deg) rotateZ(-540deg)` },
+      { transform:`rotateX(${fx1}deg) rotateY(${fy1}deg) rotateZ(${Math.round(Math.random()*24-12)}deg)` }
+    ], { duration:900, delay, easing:'cubic-bezier(.25,.75,.3,1)', fill:'both' });
+  });
+}
+
+/* какие кубики уже отыграны — гасим прямо на доске */
 function renderDice(){
-  const rest = G.left.slice();                     // оставшиеся гасим слева направо
-  $('dice').innerHTML = G.dice.map(d=>{
-    const i = rest.indexOf(d);
-    const used = i < 0;
-    if(!used) rest.splice(i,1);
-    let cells = '';
-    for(let k=0;k<9;k++) cells += PIPS[d].includes(k) ? '<div class="pip"></div>' : '<div></div>';
-    return `<div class="die ${used?'used':''} ${G.turn==='foe'?'foe':''}">${cells}</div>`;
-  }).join('');
+  if(!D3.nodes.length) return;
+  const rest = G.left.slice();
+  D3.vals.forEach((v,i)=>{
+    const k = rest.indexOf(v);
+    const used = k < 0;
+    if(!used) rest.splice(k,1);
+    D3.nodes[i].classList.toggle('used', used);
+  });
 }
 
 /* ══════════════ ход игрока ══════════════ */
 function startGame(){
+  clearTimeout(window._wait);
+  $('foe-ava').textContent  = A.foe.letter;
+  $('foe-name').textContent = A.foe.name;
   A.balance -= A.stake; syncBal();
   A.cube = 1; A.cubeOwner = null;
   newGame();
@@ -1126,7 +1282,7 @@ function showRules(){
       <li>Соперник не снял ни одной — это марс, цена стола удваивается.</li>
     </ul>
     <p class="mp">Куб удвоения поднимает ставку: предлагаешь ×2, соперник принимает или
-      отдаёт стол. Комиссия заведения ${Math.round(RAKE*100)}% берётся с банка.</p>
+      отдаёт стол. Комиссия ${Math.round(RAKE*100)}% берётся с банка.</p>
     <button class="btn pri" onclick="closeOv()">Понятно</button>`;
   $('ov').classList.add('on');
 }
@@ -1172,8 +1328,8 @@ function mainAction(){
     G.dice = d[0] === d[1] ? [d[0],d[0],d[0],d[0]] : d;
     G.left = G.dice.slice();
     G.sel  = null;
+    throwDice(G.dice, false);
     render();
-    document.querySelectorAll('.die').forEach(e=>e.classList.add('roll'));
     fx.pulse(1);
     const ms = legal(G,'me');
     if(!ms.length){
@@ -1255,11 +1411,15 @@ function doMove(m){
 }
 
 function endTurn(){
-  G.turn = 'foe'; G.dice = []; G.left = []; G.sel = null;
-  render(); setStatus('Ход Артёма','думает', null);
+  G.turn = 'foe'; G.dice = []; G.left = []; G.sel = null; clearDice3d();
+  render(); setStatus('Ходит ' + A.foe.name, 'думает', null);
   A.busy = true;
-  setTimeout(botTurn, 700);
+  setTimeout(botTurn, botPause('think'));
 }
+
+/* соперник не должен тараторить: держим человеческие паузы, живой игрок столько же и думает */
+const PAUSE = { think:1300, roll:1000, move:1150, after:1200 };
+function botPause(k){ return PAUSE[k] + Math.random() * PAUSE[k] * 0.35; }
 
 /* ══════════════ ход бота ══════════════ */
 function botTurn(){
@@ -1273,7 +1433,7 @@ function botTurn(){
 function askDouble(){
   const next = A.stake * 2 * A.cube * 2;
   $('modal').innerHTML = `
-    <h2>Артём удваивает банк</h2>
+    <h2>${A.foe.name} удваивает банк</h2>
     <p class="sub">Он предлагает поднять ставку вдвое. Примешь, играете на ${money(next)}. Откажешься, партия его и ты платишь текущую ставку.</p>
     <div class="bill">
       <div class="bill-r"><span>Банк сейчас</span><b>${money(A.stake*2*A.cube)}</b></div>
@@ -1287,7 +1447,7 @@ function takeDouble(){
   $('ov').classList.remove('on');
   A.cube *= 2; A.cubeOwner = 'me';
   render(); toast('Банк ×' + A.cube);
-  setTimeout(rollForBot, 500);
+  setTimeout(rollForBot, botPause('think'));
 }
 function dropDouble(){
   $('ov').classList.remove('on');
@@ -1295,38 +1455,44 @@ function dropDouble(){
 }
 
 function rollForBot(){
-  const d = roll();
-  G.dice = d[0] === d[1] ? [d[0],d[0],d[0],d[0]] : d;
-  G.left = G.dice.slice();
-  render();
-  fx.pulse(.8);
-  const seq = bestSequence(G, G.left, 'foe');
-  if(!seq.length){
-    setStatus('Артём пропускает', d[0]+' и '+d[1]+' не заходят', null);
-    setTimeout(backToMe, 1000);
-    return;
-  }
-  let i = 0;
-  (function step(){
-    if(i >= seq.length){
-      if(G.off.foe === 15){ render(); A.busy = false; return finish('foe'); }
-      setTimeout(backToMe, 550); return;
-    }
-    const m = seq[i++], barBefore = G.bar.me;
-    const fromRect = topChipRect(m.from, 'foe');
-    Object.assign(G, apply(G, m, 'foe'), {turn:'foe', dice:G.dice, left:G.left, sel:null, over:false});
-    G._fromRect = fromRect;
-    G._land = m.to === 'off' ? null : m.to;
-    if(G.bar.me > barBefore) flashBar();
-    G.left.splice(G.left.indexOf(m.d), 1);
+  setStatus(A.foe.name + ' бросает', 'кубики в стакане', null);
+  setTimeout(()=>{
+    const d = roll();
+    G.dice = d[0] === d[1] ? [d[0],d[0],d[0],d[0]] : d;
+    G.left = G.dice.slice();
+    throwDice(G.dice, true);
     render();
-    setTimeout(step, 520);
-  })();
+    fx.pulse(.8);
+    const seq = bestSequence(G, G.left, 'foe');
+    if(!seq.length){
+      setStatus(A.foe.name + ' пропускает', d[0]+' и '+d[1]+' не заходят', null);
+      setTimeout(backToMe, 1700);
+      return;
+    }
+    setStatus('Ходит ' + A.foe.name, d[0]===d[1] ? 'выпал дубль ' + d[0] + ', четыре хода' : 'выпало ' + d[0] + ' и ' + d[1], null);
+    let i = 0;
+    const step = ()=>{
+      if(i >= seq.length){
+        if(G.off.foe === 15){ render(); A.busy = false; return finish('foe'); }
+        setTimeout(backToMe, botPause('after')); return;
+      }
+      const m = seq[i++], barBefore = G.bar.me;
+      const fromRect = topChipRect(m.from, 'foe');
+      Object.assign(G, apply(G, m, 'foe'), {turn:'foe', dice:G.dice, left:G.left, sel:null, over:false});
+      G._fromRect = fromRect;
+      G._land = m.to === 'off' ? null : m.to;
+      if(G.bar.me > barBefore) flashBar();
+      G.left.splice(G.left.indexOf(m.d), 1);
+      render();
+      setTimeout(step, botPause('move'));
+    };
+    setTimeout(step, botPause('move'));          // пауза и перед первым ходом тоже
+  }, botPause('roll'));
 }
 
 function backToMe(){
   A.busy = false;
-  G.turn = 'me'; G.dice = []; G.left = []; G.sel = null;
+  G.turn = 'me'; G.dice = []; G.left = []; G.sel = null; clearDice3d();
   render(); setStatus('Твой ход','Брось кубики','Бросить'); step(1);
 }
 
@@ -1334,7 +1500,7 @@ function backToMe(){
 function offerDouble(){
   if(!G || G.over || A.busy || G.turn !== 'me' || G.dice.length) return;
   A.busy = true;
-  setStatus('Предложил удвоить','Артём думает', null);
+  setStatus('Предложил удвоить', A.foe.name + ' думает', null);
   setTimeout(()=>{
     // бот принимает, если его позиция не хуже примерно на 25 пунктов
     const diff = pip(G,'me') - pip(G,'foe');
@@ -1342,7 +1508,7 @@ function offerDouble(){
     if(take){
       A.cube *= 2; A.cubeOwner = 'foe';
       A.busy = false; render();
-      setStatus('Артём принял','Банк вырос до ' + money(A.stake*2*A.cube), 'Бросить');
+      setStatus(A.foe.name + ' принимает','Банк вырос до ' + money(A.stake*2*A.cube), 'Бросить');
       toast('Банк ×' + A.cube);
     } else {
       A.busy = false;
@@ -1373,14 +1539,11 @@ function finish(winner, how){
   else                A.balance -= (value - A.stake);
   A.houseTotal += rake; A.rounds++;
   syncBal();
-  $('tick').textContent   = money(A.houseTotal);
-  $('tick-g').textContent = money(A.houseTotal);
-  $('tick-n').textContent = A.rounds;
 
   const win = winner === 'me';
   const title = how === 'fold'
-    ? (win ? 'Артём не принял удвоение' : 'Ты сдался')
-    : (win ? 'Ты выиграл стол' : 'Артём выиграл стол');
+    ? (win ? A.foe.name + ' не принял удвоение' : 'Ты сдался')
+    : (win ? 'Ты выиграл стол' : 'Стол за ' + A.foe.name);
   const sub = how === 'fold'
     ? (win ? 'Соперник сдал партию, банк твой без игры.' : 'Партия засчитана сопернику.')
     : (gammon ? (win ? 'Соперник не снял ни одной шашки, это марс и банк удвоен.' : 'Ты не снял ни одной шашки, это марс и банк удвоен.') : 'Все пятнадцать шашек сняты с доски.');
@@ -1394,7 +1557,7 @@ function finish(winner, how){
       <div class="bill-r"><span>Взнос на входе</span><b>${money(A.stake)}</b></div>
       ${mult>1 ? `<div class="bill-r"><span>Цена партии после ×${mult}</span><b>${money(value)}</b></div>` : ''}
       <div class="bill-r"><span>Банк стола</span><b>${money(pot)}</b></div>
-      <div class="bill-r"><span>Комиссия заведения, 5%</span><b>${money(rake)}</b></div>
+      <div class="bill-r"><span>Комиссия, 5%</span><b>${money(rake)}</b></div>
       <div class="bill-r tot ${win?'win':'lose'}"><span>${win?'Тебе на счёт':'Списано со счёта'}</span><b>${win?'+'+money(payout):'−'+money(value)}</b></div>
     </div>
     <button class="btn pri" onclick="rematch()">Реванш за ${money(A.stake)}</button>
@@ -1417,6 +1580,10 @@ window.addEventListener('resize', ()=>{ if(G) render(); });
 
 const incoming = new URLSearchParams(location.search).get('room');
 if(incoming){
+  const f = pickFoe();                               // тот, кто позвал
+  $('j-ava').textContent   = f.letter;
+  $('j-name').textContent  = f.name;
+  $('j-rat').textContent   = 'Нарды 36 · рейтинг ' + f.rating.toLocaleString('ru-RU');
   $('j-stake').textContent = money(A.stake);
   $('j-pot').textContent   = money(A.stake*2);
   $('j-win').textContent   = money(A.stake*2*(1-RAKE));
