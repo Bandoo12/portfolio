@@ -1,0 +1,139 @@
+character_atlas.png
+size: 2048, 512
+format: RGBA8888
+filter: Linear, Linear
+repeat: none
+pma: false
+boot_far
+  rotate: false
+  xy: 4, 4
+  size: 111, 142
+  orig: 111, 142
+  offset: 0, 0
+  index: -1
+boot_near
+  rotate: false
+  xy: 123, 4
+  size: 110, 142
+  orig: 110, 142
+  offset: 0, 0
+  index: -1
+forearm_far
+  rotate: false
+  xy: 241, 4
+  size: 91, 141
+  orig: 91, 141
+  offset: 0, 0
+  index: -1
+forearm_near
+  rotate: false
+  xy: 340, 4
+  size: 84, 150
+  orig: 84, 150
+  offset: 0, 0
+  index: -1
+hand_far
+  rotate: false
+  xy: 432, 4
+  size: 65, 94
+  orig: 65, 94
+  offset: 0, 0
+  index: -1
+hand_near
+  rotate: false
+  xy: 505, 4
+  size: 66, 100
+  orig: 66, 100
+  offset: 0, 0
+  index: -1
+head_hood
+  rotate: false
+  xy: 579, 4
+  size: 167, 200
+  orig: 167, 200
+  offset: 0, 0
+  index: -1
+mask_circle
+  rotate: false
+  xy: 754, 4
+  size: 104, 145
+  orig: 104, 145
+  offset: 0, 0
+  index: -1
+mask_square
+  rotate: false
+  xy: 866, 4
+  size: 104, 145
+  orig: 104, 145
+  offset: 0, 0
+  index: -1
+mask_triangle
+  rotate: false
+  xy: 978, 4
+  size: 104, 145
+  orig: 104, 145
+  offset: 0, 0
+  index: -1
+neck
+  rotate: false
+  xy: 1090, 4
+  size: 86, 100
+  orig: 86, 100
+  offset: 0, 0
+  index: -1
+pelvis
+  rotate: false
+  xy: 1184, 4
+  size: 160, 141
+  orig: 160, 141
+  offset: 0, 0
+  index: -1
+shin_far
+  rotate: false
+  xy: 1352, 4
+  size: 81, 202
+  orig: 81, 202
+  offset: 0, 0
+  index: -1
+shin_near
+  rotate: false
+  xy: 1441, 4
+  size: 83, 205
+  orig: 83, 205
+  offset: 0, 0
+  index: -1
+thigh_far
+  rotate: false
+  xy: 1532, 4
+  size: 95, 220
+  orig: 95, 220
+  offset: 0, 0
+  index: -1
+thigh_near
+  rotate: false
+  xy: 1635, 4
+  size: 94, 222
+  orig: 94, 222
+  offset: 0, 0
+  index: -1
+torso
+  rotate: false
+  xy: 1737, 4
+  size: 189, 267
+  orig: 189, 267
+  offset: 0, 0
+  index: -1
+upper_arm_far
+  rotate: false
+  xy: 1934, 4
+  size: 105, 158
+  orig: 105, 158
+  offset: 0, 0
+  index: -1
+upper_arm_near
+  rotate: false
+  xy: 4, 279
+  size: 102, 172
+  orig: 102, 172
+  offset: 0, 0
+  index: -1
